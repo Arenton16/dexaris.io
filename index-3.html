@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DEXARIS. — DeFi Yield Intelligence</title>
+  <meta name="description" content="The intelligence layer for DeFi yield. Tracking the top 30 protocols across 6 chains. Built for sophisticated investors. Launching Q3 2026." />
+  <meta name="twitter:site" content="@dexaris_io" />
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Arial, sans-serif; min-height: 100vh; background: #080E1A; }
+.page { background: #080E1A; min-height: 100vh; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+
+.grid-bg { position: fixed; inset: 0; background-image: linear-gradient(rgba(201,168,76,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(201,168,76,0.03) 1px, transparent 1px); background-size: 44px 44px; pointer-events: none; z-index: 0; }
+
+.nav { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.75rem; border-bottom: 0.5px solid rgba(255,255,255,0.07); }
+.nav-logo { display: flex; align-items: center; gap: 9px; }
+.nav-wordmark { font-size: 15px; font-weight: 100; color: #fff; letter-spacing: 5px; }
+.nav-wordmark span { color: #C9A84C; }
+.nav-right { display: flex; align-items: center; gap: 16px; }
+.nav-links { display: flex; gap: 20px; }
+.nav-links a { font-size: 12px; color: rgba(255,255,255,0.35); text-decoration: none; }
+.nav-links a:hover { color: rgba(255,255,255,0.7); }
+.nav-cta { font-size: 11px; padding: 6px 16px; border-radius: 5px; border: 0.5px solid #C9A84C; color: #C9A84C; background: transparent; cursor: pointer; letter-spacing: 0.5px; }
+
+.main { position: relative; z-index: 1; display: flex; flex: 1; min-height: calc(100vh - 57px); }
+
+.sidebar { width: 200px; flex-shrink: 0; border-right: 0.5px solid rgba(255,255,255,0.06); padding: 1.5rem 1rem; display: flex; flex-direction: column; gap: 4px; opacity: 0.35; filter: blur(1px); pointer-events: none; }
+.sidebar-label { font-size: 9px; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 1px; padding: 0 0.5rem; margin-bottom: 6px; margin-top: 8px; }
+.sidebar-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 6px; font-size: 12px; color: rgba(255,255,255,0.45); cursor: pointer; }
+.sidebar-item.active { background: rgba(201,168,76,0.12); color: #C9A84C; }
+.sidebar-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+
+.content { flex: 1; display: flex; flex-direction: column; position: relative; }
+
+.locked-overlay { position: absolute; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center; padding: 2rem; }
+.overlay-blur { position: absolute; inset: 0; backdrop-filter: blur(6px); background: rgba(8,14,26,0.65); }
+.overlay-content { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; text-align: center; max-width: 480px; width: 100%; }
+
+.badge { font-size: 10px; padding: 4px 14px; border-radius: 20px; border: 0.5px solid rgba(201,168,76,0.45); color: #C9A84C; background: rgba(201,168,76,0.08); margin-bottom: 1.25rem; letter-spacing: 1.5px; text-transform: uppercase; }
+
+.hero-logo { display: flex; align-items: center; gap: 12px; margin-bottom: 0.4rem; }
+.hero-wordmark { font-size: 36px; font-weight: 100; color: #fff; letter-spacing: 8px; }
+.hero-wordmark span { color: #C9A84C; }
+
+.tagline { font-size: 11px; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1.5rem; }
+.headline { font-size: 18px; font-weight: 400; color: #fff; line-height: 1.5; margin-bottom: 0.6rem; }
+.sub { font-size: 12px; color: rgba(255,255,255,0.4); line-height: 1.7; margin-bottom: 1.75rem; max-width: 380px; }
+
+.form { display: flex; gap: 7px; width: 100%; max-width: 380px; margin-bottom: 0.6rem; }
+.form input { flex: 1; font-size: 12px; padding: 9px 13px; border-radius: 6px; border: 0.5px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.05); color: #fff; font-family: Arial, sans-serif; outline: none; transition: border-color 0.2s; }
+.form input::placeholder { color: rgba(255,255,255,0.2); }
+.form input:focus { border-color: rgba(201,168,76,0.4); }
+.form button { font-size: 12px; padding: 9px 16px; border-radius: 6px; background: #C9A84C; color: #080E1A; border: none; cursor: pointer; font-weight: 600; white-space: nowrap; font-family: Arial, sans-serif; transition: opacity 0.2s; }
+.form button:hover { opacity: 0.88; }
+.privacy { font-size: 10px; color: rgba(255,255,255,0.2); margin-bottom: 1.75rem; }
+
+.success-msg { display: none; font-size: 12px; color: #4ECDA4; padding: 10px 16px; border: 0.5px solid rgba(78,205,164,0.3); border-radius: 5px; background: rgba(78,205,164,0.08); width: 100%; max-width: 380px; text-align: center; margin-bottom: 0.6rem; font-family: Arial, sans-serif; }
+
+.divider-line { width: 100%; max-width: 380px; border: none; border-top: 0.5px solid rgba(255,255,255,0.08); margin-bottom: 1.5rem; }
+
+.stats { display: flex; gap: 2.5rem; margin-bottom: 1.5rem; }
+.stat .val { font-size: 20px; font-weight: 300; color: #C9A84C; }
+.stat .lbl { font-size: 10px; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+
+.launch { font-size: 11px; color: rgba(255,255,255,0.25); margin-bottom: 1.5rem; }
+.launch span { color: #3B9EFF; }
+
+.socials { display: flex; gap: 8px; }
+.social-btn { font-size: 11px; padding: 5px 14px; border-radius: 5px; border: 0.5px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); background: transparent; cursor: pointer; font-family: Arial, sans-serif; text-decoration: none; display: inline-flex; align-items: center; transition: border-color 0.2s, color 0.2s; }
+.social-btn:hover { border-color: rgba(255,255,255,0.25); color: rgba(255,255,255,0.7); }
+
+.blurred-content { padding: 1.5rem; display: flex; flex-direction: column; gap: 12px; filter: blur(2px); opacity: 0.4; pointer-events: none; }
+.bc-top { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.bc-card { background: #0D1629; border: 0.5px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 12px 14px; }
+.bc-card .bc-label { font-size: 10px; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.bc-card .bc-val { font-size: 18px; font-weight: 300; color: #C9A84C; }
+.bc-card .bc-val.blue { color: #3B9EFF; }
+.bc-card .bc-val.white { color: #fff; }
+.bc-chart { background: #0D1629; border: 0.5px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 14px; }
+.bc-chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.bc-chart-title { font-size: 12px; color: rgba(255,255,255,0.5); }
+.bc-table { background: #0D1629; border: 0.5px solid rgba(255,255,255,0.08); border-radius: 8px; overflow: hidden; }
+.bc-table-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; padding: 10px 14px; border-bottom: 0.5px solid rgba(255,255,255,0.05); align-items: center; gap: 8px; }
+.bc-table-row.header { background: rgba(255,255,255,0.03); }
+.bc-table-row span { font-size: 11px; color: rgba(255,255,255,0.4); }
+.bc-table-row.header span { color: rgba(255,255,255,0.25); text-transform: uppercase; letter-spacing: 0.5px; font-size: 10px; }
+.bc-apy { color: #C9A84C !important; font-weight: 500; }
+.bc-low { color: #4ECDA4 !important; }
+.bc-med { color: #C9A84C !important; }
+.proto-pill { display: flex; align-items: center; gap: 7px; }
+.proto-icon { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 500; flex-shrink: 0; }
+
+@media (max-width: 768px) {
+  .nav-links { display: none; }
+  .sidebar { display: none; }
+  .form { flex-direction: column; }
+  .form button { width: 100%; }
+  .stats { gap: 1.5rem; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="grid-bg"></div>
+
+  <nav class="nav">
+    <div class="nav-logo">
+      <svg width="18" height="18" viewBox="0 0 44 44" fill="none">
+        <polyline points="4,32 13,18 19,25 28,10 40,14" stroke="#C9A84C" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="28" cy="10" r="3.5" fill="#C9A84C"/>
+        <line x1="28" y1="10" x2="28" y2="3" stroke="#C9A84C" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="24.5" y1="6.5" x2="28" y2="3" stroke="#C9A84C" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="31.5" y1="6.5" x2="28" y2="3" stroke="#C9A84C" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+      <div class="nav-wordmark">DEXARIS<span>.</span></div>
+    </div>
+    <div class="nav-right">
+      <div class="nav-links">
+        <a href="#">Yields</a>
+        <a href="#">Protocols</a>
+        <a href="#">Intelligence</a>
+        <a href="#">Newsletter</a>
+      </div>
+      <button class="nav-cta" onclick="document.getElementById('email-input').focus()">Early Access</button>
+    </div>
+  </nav>
+
+  <div class="main">
+    <div class="sidebar">
+      <div class="sidebar-label">Main Menu</div>
+      <div class="sidebar-item active"><div class="sidebar-dot"></div> Yields</div>
+      <div class="sidebar-item"><div class="sidebar-dot"></div> Protocols</div>
+      <div class="sidebar-item"><div class="sidebar-dot"></div> Risk Analysis</div>
+      <div class="sidebar-item"><div class="sidebar-dot"></div> Intelligence</div>
+      <div class="sidebar-label">More</div>
+      <div class="sidebar-item"><div class="sidebar-dot"></div> Newsletter</div>
+      <div class="sidebar-item"><div class="sidebar-dot"></div> Docs</div>
+    </div>
+
+    <div class="content">
+      <div class="blurred-content">
+        <div class="bc-top">
+          <div class="bc-card">
+            <div class="bc-label">Top APY today</div>
+            <div class="bc-val">18.4%</div>
+          </div>
+          <div class="bc-card">
+            <div class="bc-label">Top 30 protocols</div>
+            <div class="bc-val white">$100B+</div>
+          </div>
+          <div class="bc-card">
+            <div class="bc-label">Chains covered</div>
+            <div class="bc-val blue">6</div>
+          </div>
+        </div>
+        <div class="bc-chart">
+          <div class="bc-chart-header">
+            <span class="bc-chart-title">Yield Performance — Last 30 Days</span>
+          </div>
+          <svg width="100%" height="80" viewBox="0 0 560 80" preserveAspectRatio="none">
+            <polyline points="0,60 40,52 80,55 120,40 160,45 200,30 240,35 280,20 320,28 360,18 400,25 440,15 480,20 520,12 560,16" stroke="#C9A84C" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/>
+            <polyline points="0,70 40,65 80,68 120,60 160,62 200,55 240,58 280,48 320,52 360,44 400,48 440,40 480,44 520,36 560,38" stroke="#3B9EFF" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.5"/>
+          </svg>
+        </div>
+        <div class="bc-table">
+          <div class="bc-table-row header">
+            <span>Protocol</span><span>Asset</span><span>APY</span><span>Risk</span><span>TVL</span>
+          </div>
+          <div class="bc-table-row">
+            <span><div class="proto-pill"><div class="proto-icon" style="background:rgba(29,158,117,0.15);color:#4ECDA4;">Li</div>Lido</div></span>
+            <span>ETH</span><span class="bc-apy">4.2%</span><span class="bc-low">Low</span><span>$14.2B</span>
+          </div>
+          <div class="bc-table-row">
+            <span><div class="proto-pill"><div class="proto-icon" style="background:rgba(59,158,255,0.15);color:#3B9EFF;">Aa</div>Aave v3</div></span>
+            <span>USDC</span><span class="bc-apy">6.8%</span><span class="bc-low">Low</span><span>$8.1B</span>
+          </div>
+          <div class="bc-table-row">
+            <span><div class="proto-pill"><div class="proto-icon" style="background:rgba(201,168,76,0.15);color:#C9A84C;">Pn</div>Pendle</div></span>
+            <span>ETH</span><span class="bc-apy">18.4%</span><span class="bc-med">Medium</span><span>$3.1B</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="locked-overlay">
+        <div class="overlay-blur"></div>
+        <div class="overlay-content">
+          <div class="badge">Coming Soon</div>
+          <div class="hero-logo">
+            <svg width="38" height="38" viewBox="0 0 44 44" fill="none">
+              <polyline points="4,32 13,18 19,25 28,10 40,14" stroke="#C9A84C" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="28" cy="10" r="3.5" fill="#C9A84C"/>
+              <line x1="28" y1="10" x2="28" y2="3" stroke="#C9A84C" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="24.5" y1="6.5" x2="28" y2="3" stroke="#C9A84C" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="31.5" y1="6.5" x2="28" y2="3" stroke="#C9A84C" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+            <div class="hero-wordmark">DEXARIS<span>.</span></div>
+          </div>
+          <div class="tagline">DeFi Yield Intelligence</div>
+          <h1 class="headline">The smartest way to find,<br>compare and maximise DeFi yield</h1>
+          <p class="sub">Dexaris curates and tracks the top 30 DeFi protocols by TVL across 6 major chains — delivering the intelligence edge sophisticated investors need to maximise returns.</p>
+          <div class="form">
+            <input id="email-input" type="email" placeholder="Enter your email for early access" autocomplete="email" />
+            <!-- BEEHIIV: swap URL below with your Beehiiv subscribe page -->
+            <button type="button" onclick="handleSubscribe()">Get Early Access</button>
+          </div>
+          <div class="success-msg" id="success-msg">✓ You're on the list — we'll be in touch before launch.</div>
+          <p class="privacy">No spam. Unsubscribe anytime.</p>
+          <hr class="divider-line" />
+          <div class="stats">
+            <div class="stat"><div class="val">Top 30</div><div class="lbl">Protocols</div></div>
+            <div class="stat"><div class="val">6</div><div class="lbl">Chains</div></div>
+            <div class="stat"><div class="val">$100B+</div><div class="lbl">Tracked</div></div>
+          </div>
+          <p class="launch">Launching <span>Q3 2026</span> — join the waitlist today</p>
+          <div class="socials">
+            <!-- SOCIAL: links to @dexaris_io -->
+            <a href="https://twitter.com/dexaris_io" target="_blank" rel="noopener" class="social-btn">𝕏 Twitter</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const BEEHIIV_URL = 'https://dexaris.beehiiv.com/subscribe';
+  function handleSubscribe() {
+    const input = document.getElementById('email-input');
+    const email = input.value.trim();
+    const successMsg = document.getElementById('success-msg');
+    const formEl = input.closest('.form');
+    if (!email || !email.includes('@') || !email.includes('.')) {
+      input.style.borderColor = 'rgba(255,107,107,0.5)';
+      input.focus();
+      setTimeout(() => input.style.borderColor = '', 1500);
+      return;
+    }
+    window.open(`${BEEHIIV_URL}?email=${encodeURIComponent(email)}`, '_blank');
+    formEl.style.display = 'none';
+    successMsg.style.display = 'block';
+  }
+  document.getElementById('email-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') handleSubscribe();
+  });
+</script>
+</body>
+</html>
