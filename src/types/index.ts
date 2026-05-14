@@ -5,7 +5,17 @@ export interface Pool {
   symbol: string;
   tvlUsd: number;
   apy: number | null;
+  logo?: string;
 }
+
+export const CHAIN_LOGOS: Record<string, string> = {
+  Ethereum: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png',
+  Solana:   'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/solana/info/logo.png',
+  Arbitrum: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/arbitrum/info/logo.png',
+  Base:     'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/base/info/logo.png',
+  Avalanche:'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/avalanchec/info/logo.png',
+  Polygon:  'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/polygon/info/logo.png',
+};
 
 export type ChainKey = 'ETH' | 'SOL' | 'ARB' | 'BASE' | 'AVAX' | 'POLY';
 

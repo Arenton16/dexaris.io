@@ -1,4 +1,5 @@
 import type { Pool } from '../types';
+import { CHAIN_LOGOS } from '../types';
 
 interface Props {
   pool: Pool | null;
@@ -52,6 +53,16 @@ export default function PoolDetail({ pool, onClose }: Props) {
                   className="chain-badge"
                   style={{ backgroundColor: chain.bg, color: chain.text }}
                 >
+                  {CHAIN_LOGOS[pool.chain] && (
+                    <img
+                      src={CHAIN_LOGOS[pool.chain]}
+                      alt={pool.chain}
+                      width={16}
+                      height={16}
+                      className="chain-logo"
+                      onError={e => { e.currentTarget.style.display = 'none'; }}
+                    />
+                  )}
                   {pool.chain}
                 </span>
               </div>

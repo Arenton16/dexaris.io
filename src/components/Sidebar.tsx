@@ -1,4 +1,4 @@
-import { CHAIN_LABELS, type ChainKey } from '../types';
+import { CHAIN_LABELS, CHAIN_LOGOS, type ChainKey } from '../types';
 
 interface Props {
   selected: ChainKey[];
@@ -39,15 +39,29 @@ export default function Sidebar({
       >
         All
       </button>
-      {chains.map(chain => (
-        <button
-          key={chain}
-          className={`chain-btn${selected.includes(chain) ? ' active' : ''}`}
-          onClick={() => toggle(chain)}
-        >
-          {chain}
-        </button>
-      ))}
+      {chains.map(chain => {
+        const chainName = CHAIN_LABELS[chain];
+        const logo = CHAIN_LOGOS[chainName];
+        return (
+          <button
+            key={chain}
+            className={`chain-btn${selected.includes(chain) ? ' active' : ''}`}
+            onClick={() => toggle(chain)}
+          >
+            {logo && (
+              <img
+                src={logo}
+                alt={chainName}
+                width={14}
+                height={14}
+                className="chain-logo"
+                onError={e => { e.currentTarget.style.display = 'none'; }}
+              />
+            )}
+            {chain}
+          </button>
+        );
+      })}
 
       <div className="sidebar-divider" />
 

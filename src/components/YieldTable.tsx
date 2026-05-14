@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { CHAIN_LABELS, type ChainKey, type Pool } from '../types';
+import { CHAIN_LABELS, CHAIN_LOGOS, type ChainKey, type Pool } from '../types';
 import Charts from './Charts';
 import PoolDetail from './PoolDetail';
 
@@ -154,7 +154,12 @@ export default function YieldTable({ selectedChains, minApy, sortKey, sortDir, o
               onClick={() => setSelectedPool(pool)}
             >
               <td className="dim hide-mobile">{i + 1}</td>
-              <td className="protocol">{pool.project}</td>
+              <td className="protocol">
+                <div className="protocol-cell">
+                  <ProtocolLogo logo={pool.logo} name={pool.project} />
+                  {pool.project}
+                </div>
+              </td>
               <td>{pool.symbol}</td>
               <td>
                 <span
@@ -164,6 +169,16 @@ export default function YieldTable({ selectedChains, minApy, sortKey, sortDir, o
                     color: CHAIN_COLORS[pool.chain]?.text ?? 'rgba(232,230,255,0.45)',
                   }}
                 >
+                  {CHAIN_LOGOS[pool.chain] && (
+                    <img
+                      src={CHAIN_LOGOS[pool.chain]}
+                      alt={pool.chain}
+                      width={16}
+                      height={16}
+                      className="chain-logo"
+                      onError={e => { e.currentTarget.style.display = 'none'; }}
+                    />
+                  )}
                   {pool.chain}
                 </span>
               </td>
@@ -186,6 +201,23 @@ export default function YieldTable({ selectedChains, minApy, sortKey, sortDir, o
       )}
       <PoolDetail pool={selectedPool} onClose={() => setSelectedPool(null)} />
     </div>
+  );
+}
+
+function ProtocolLogo({ logo, name }: { logo?: string; name: string }) {
+  const [err, setErr] = useState(false);
+  if (!logo || err) {
+    return <span className="protocol-logo-placeholder">{name[0]}</span>;
+  }
+  return (
+    <img
+      src={logo}
+      alt={name}
+      width={20}
+      height={20}
+      className="protocol-logo"
+      onError={() => setErr(true)}
+    />
   );
 }
 

@@ -184,7 +184,9 @@ body {
 .chain-btn {
   -webkit-appearance: none;
   appearance: none;
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 6px;
   width: 100%;
   padding: 7px 10px;
   background-color: transparent;
@@ -195,7 +197,6 @@ body {
   font-size: 12px;
   font-weight: 400;
   cursor: pointer;
-  text-align: left;
   transition: background-color 0.15s, color 0.15s;
 }
 
@@ -434,6 +435,36 @@ body {
   text-transform: capitalize;
 }
 
+.protocol-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.protocol-logo {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.protocol-logo-placeholder {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent-fill);
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-family: 'Space Grotesk', sans-serif;
+  text-transform: uppercase;
+}
+
 .apy {
   color: var(--accent-text);
   font-weight: 600;
@@ -446,7 +477,9 @@ body {
 }
 
 .chain-badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   padding: 2px 9px;
   border-radius: 999px;
   font-size: 10px;
@@ -454,6 +487,12 @@ body {
   font-family: 'Space Grotesk', sans-serif;
   letter-spacing: 0.4px;
   text-transform: uppercase;
+}
+
+.chain-logo {
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
 }
 
 .state-msg {
