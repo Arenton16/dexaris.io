@@ -1,0 +1,212 @@
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { CHAIN_LABELS, type ChainKey, type Pool } from '../types';
+import Charts from './Charts';
+import PoolDetail from './PoolDetail';
+
+const CHAIN_COLORS: Record<string, { bg: string; text: string }> = {
+  Ethereum: { bg: '#1a3a5c', text: '#3B9EFF' },
+  Base:     { bg: '#1a1a4a', text: '#6B7FFF' },
+  Solana:   { bg: '#2d1a4a', text: '#9945FF' },
+  Arbitrum: { bg: '#1a2d4a', text: '#2D9CDB' },
+  Avalanche:{ bg: '#4a1a1a', text: '#E84142' },
+  Polygon:  { bg: '#2d1a4a', text: '#8247E5' },
+};
+
+function isValidApy(apy: number | null | undefined): boolean {
+  return apy != null && Number.isFinite(apy) && apy >= 0.005;
+}
+
+interface Props {
+  selectedChains: ChainKey[];
+  minApy: number;
+  sortKey: 'apy' | 'tvlUsd';
+  sortDir: 'desc' | 'asc';
+  onSortChange: (key: 'apy' | 'tvlUsd') => void;
+  onLoadingChange: (v: boolean) => void;
+  refreshTick: number;
+}
+
+export default function YieldTable({ selectedChains, minApy, sortKey, sortDir, onSortChange, onLoadingChange, refreshTick }: Props) {
+  const [allPools, setAllPools] = useState<Pool[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+  const [fetchedAt, setFetchedAt] = useState<Date | null>(null);
+  const [selectedPool, setSelectedPool] = useState<Pool | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const [isFlashing, setIsFlashing] = useState(false);
+  const hasLoadedOnce = useRef(false);
+
+  useEffect(() => {
+    const supportedChains = new Set(Object.values(CHAIN_LABELS));
+    const isBackground = hasLoadedOnce.current;
+
+    if (!isBackground) setLoading(true);
+    setError(null);
+    onLoadingChange(true);
+
+    fetch('https://yields.llama.fi/pools')
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json() as Promise<{ data: Pool[] }>;
+      })
+      .then(({ data }) => {
+        const filtered = data
+          .filter(p =>
+            supportedChains.has(p.chain) &&
+            p.tvlUsd >= 1_000_000 &&
+            isValidApy(p.apy) &&
+            (p.apy ?? 0) <= 200
+          )
+          .sort((a, b) => b.tvlUsd - a.tvlUsd);
+        const wasLoaded = hasLoadedOnce.current;
+        hasLoadedOnce.current = true;
+        setAllPools(filtered);
+        setFetchedAt(new Date());
+        setLoading(false);
+        onLoadingChange(false);
+        if (wasLoaded) {
+          setIsFlashing(true);
+          setTimeout(() => setIsFlashing(false), 1800);
+        }
+      })
+      .catch(() => {
+        if (!hasLoadedOnce.current) setError('fetch_failed');
+        setLoading(false);
+        onLoadingChange(false);
+      });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [retryCount, refreshTick]);
+
+  const displayPools = useMemo(() => {
+    const allowed = new Set(selectedChains.map(c => CHAIN_LABELS[c]));
+    const q = search.toLowerCase().trim();
+    return allPools
+      .filter(p =>
+        allowed.has(p.chain) &&
+        isValidApy(p.apy) &&
+        (p.apy ?? 0) >= minApy
+      )
+      .filter(p => !q || p.project.toLowerCase().includes(q) || p.symbol.toLowerCase().includes(q))
+      .sort((a, b) => {
+        const av = sortKey === 'apy' ? (a.apy ?? 0) : a.tvlUsd;
+        const bv = sortKey === 'apy' ? (b.apy ?? 0) : b.tvlUsd;
+        return sortDir === 'desc' ? bv - av : av - bv;
+      })
+      .slice(0, 30);
+  }, [allPools, selectedChains, minApy, search, sortKey, sortDir]);
+
+  if (loading) return <TableSkeleton />;
+  if (error) return (
+    <div className="error-state">
+      <p className="error-msg">Unable to load yield data. Retrying...</p>
+      <button
+        className="retry-btn"
+        onClick={() => setRetryCount(c => c + 1)}
+      >
+        Retry
+      </button>
+    </div>
+  );
+  if (displayPools.length === 0)
+    return <div className="state-msg">No pools found for selected filters.</div>;
+
+  return (
+    <div className="table-wrap">
+      <Charts displayPools={displayPools} allPools={allPools} />
+      <h2 className="table-title">Top Yields</h2>
+      <div className="search-wrap">
+        <input
+          className="search-input"
+          type="text"
+          placeholder="Search protocol or asset..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
+      </div>
+      <table className="yield-table">
+        <thead>
+          <tr>
+            <th className="hide-mobile">#</th>
+            <th>Protocol</th>
+            <th>Asset</th>
+            <th>Chain</th>
+            <th
+              className={`th-sortable hide-mobile${sortKey === 'apy' ? ' th-sort-active' : ''}`}
+              onClick={() => onSortChange('apy')}
+            >
+              APY {sortKey === 'apy' ? (sortDir === 'desc' ? '▼' : '▲') : ''}
+            </th>
+            <th
+              className={`th-sortable hide-mobile${sortKey === 'tvlUsd' ? ' th-sort-active' : ''}`}
+              onClick={() => onSortChange('tvlUsd')}
+            >
+              TVL {sortKey === 'tvlUsd' ? (sortDir === 'desc' ? '▼' : '▲') : ''}
+            </th>
+            <th className="show-mobile">APY / TVL</th>
+          </tr>
+        </thead>
+        <tbody>
+          {displayPools.map((pool, i) => (
+            <tr
+              key={pool.pool}
+              className="tr-clickable"
+              onClick={() => setSelectedPool(pool)}
+            >
+              <td className="dim hide-mobile">{i + 1}</td>
+              <td className="protocol">{pool.project}</td>
+              <td>{pool.symbol}</td>
+              <td>
+                <span
+                  className="chain-badge"
+                  style={{
+                    backgroundColor: CHAIN_COLORS[pool.chain]?.bg ?? '#1a2540',
+                    color: CHAIN_COLORS[pool.chain]?.text ?? '#4a5a78',
+                  }}
+                >
+                  {pool.chain}
+                </span>
+              </td>
+              <td className="apy hide-mobile">{pool.apy!.toFixed(2)}%</td>
+              <td className="tvl hide-mobile">${formatTvl(pool.tvlUsd)}</td>
+              <td className="show-mobile">
+                <div className="mobile-apy-tvl">
+                  <span className="mobile-apy">{pool.apy!.toFixed(2)}%</span>
+                  <span className="mobile-tvl">${formatTvl(pool.tvlUsd)}</span>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {fetchedAt && (
+        <p className={`last-updated${isFlashing ? ' flashing' : ''}`}>
+          Last updated: {fetchedAt.toLocaleTimeString()}
+        </p>
+      )}
+      <PoolDetail pool={selectedPool} onClose={() => setSelectedPool(null)} />
+    </div>
+  );
+}
+
+function TableSkeleton() {
+  const cols = ['28px', '130px', '90px', '100px', '64px', '80px'];
+  return (
+    <div className="skeleton-wrap">
+      {Array.from({ length: 9 }).map((_, i) => (
+        <div key={i} className="skeleton-row" style={{ animationDelay: `${i * 0.06}s` }}>
+          {cols.map((w, j) => (
+            <div key={j} className="skeleton-bar" style={{ width: w }} />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function formatTvl(val: number): string {
+  if (val >= 1e9) return (val / 1e9).toFixed(2) + 'B';
+  if (val >= 1e6) return (val / 1e6).toFixed(2) + 'M';
+  if (val >= 1e3) return (val / 1e3).toFixed(2) + 'K';
+  return val.toFixed(0);
+}
