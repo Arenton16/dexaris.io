@@ -20,15 +20,15 @@ const CHAIN_COLORS: Record<string, string> = {
 
 const TOOLTIP_STYLE = {
   contentStyle: {
-    background: '#080E1A',
-    border: '1px solid #1a2540',
+    background: '#0C0B1A',
+    border: '1px solid rgba(107,79,255,0.15)',
     borderRadius: 4,
-    fontFamily: 'Mulish, sans-serif',
+    fontFamily: 'Space Grotesk, sans-serif',
     fontSize: 12,
   },
-  labelStyle:  { color: '#C9A84C', fontFamily: 'Mulish, sans-serif' },
-  itemStyle:   { color: '#dce6f5', fontFamily: 'Mulish, sans-serif' },
-  cursor:      { fill: 'rgba(59, 158, 255, 0.05)' },
+  labelStyle:  { color: '#8B73FF', fontFamily: 'Space Grotesk, sans-serif' },
+  itemStyle:   { color: '#E8E6FF', fontFamily: 'Space Grotesk, sans-serif' },
+  cursor:      { fill: 'rgba(107,79,255,0.06)' },
 };
 
 export default function Charts({ displayPools, allPools }: Props) {
@@ -45,7 +45,7 @@ export default function Charts({ displayPools, allPools }: Props) {
     .map(([name, value]) => ({
       name,
       value,
-      fill: CHAIN_COLORS[name] ?? '#4a5a78',
+      fill: CHAIN_COLORS[name] ?? 'rgba(232,230,255,0.25)',
     }))
     .sort((a, b) => b.value - a.value);
 
@@ -64,20 +64,20 @@ export default function Charts({ displayPools, allPools }: Props) {
           >
             <CartesianGrid
               strokeDasharray="3 3"
-              stroke="rgba(26, 37, 64, 0.9)"
+              stroke="rgba(107,79,255,0.15)"
               horizontal={false}
             />
             <XAxis
               type="number"
               tickFormatter={v => `${v}%`}
-              tick={{ fill: '#4a5a78', fontFamily: 'Mulish, sans-serif', fontSize: 11 }}
+              tick={{ fill: 'rgba(232,230,255,0.25)', fontFamily: 'Space Grotesk, sans-serif', fontSize: 11 }}
               tickLine={false}
               axisLine={false}
             />
             <YAxis
               type="category"
               dataKey="name"
-              tick={{ fill: '#8892a4', fontFamily: 'Mulish, sans-serif', fontSize: 11 }}
+              tick={{ fill: 'rgba(232,230,255,0.45)', fontFamily: 'Space Grotesk, sans-serif', fontSize: 11 }}
               tickLine={false}
               axisLine={false}
               width={140}
@@ -86,7 +86,7 @@ export default function Charts({ displayPools, allPools }: Props) {
               {...TOOLTIP_STYLE}
               formatter={(value) => [`${value}%`, 'APY']}
             />
-            <Bar dataKey="apy" fill="#3B9EFF" radius={[0, 3, 3, 0]} maxBarSize={18} />
+            <Bar dataKey="apy" fill="#8B73FF" radius={[0, 3, 3, 0]} maxBarSize={18} />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -117,7 +117,7 @@ export default function Charts({ displayPools, allPools }: Props) {
               iconType="circle"
               iconSize={8}
               formatter={(value: string) => (
-                <span style={{ color: '#8892a4', fontFamily: 'Mulish, sans-serif', fontSize: 11 }}>
+                <span style={{ color: 'rgba(232,230,255,0.45)', fontFamily: 'Space Grotesk, sans-serif', fontSize: 11 }}>
                   {value}
                 </span>
               )}

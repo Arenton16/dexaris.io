@@ -42,7 +42,7 @@ export default function PoolDetail({ pool, onClose }: Props) {
         {pool && (() => {
           const apy = pool.apy ?? 0;
           const risk = getRisk(apy);
-          const chain = CHAIN_COLORS[pool.chain] ?? { bg: '#1a2540', text: '#4a5a78' };
+          const chain = CHAIN_COLORS[pool.chain] ?? { bg: 'rgba(107,79,255,0.1)', text: 'rgba(232,230,255,0.45)' };
           return (
             <div className="detail-content">
               <div className="detail-header">

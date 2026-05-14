@@ -160,8 +160,8 @@ export default function YieldTable({ selectedChains, minApy, sortKey, sortDir, o
                 <span
                   className="chain-badge"
                   style={{
-                    backgroundColor: CHAIN_COLORS[pool.chain]?.bg ?? '#1a2540',
-                    color: CHAIN_COLORS[pool.chain]?.text ?? '#4a5a78',
+                    backgroundColor: CHAIN_COLORS[pool.chain]?.bg ?? 'rgba(107,79,255,0.1)',
+                    color: CHAIN_COLORS[pool.chain]?.text ?? 'rgba(232,230,255,0.45)',
                   }}
                 >
                   {pool.chain}

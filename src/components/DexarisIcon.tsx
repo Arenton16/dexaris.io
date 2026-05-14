@@ -1,0 +1,19 @@
+interface DexarisIconProps {
+  size?: number;
+}
+
+export default function DexarisIcon({ size = 32 }: DexarisIconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 44 44"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <polygon points="4,42 10,26 16,26 10,42" fill="rgba(107,79,255,0.3)" />
+      <polygon points="16,42 22,16 28,16 22,42" fill="rgba(107,79,255,0.6)" />
+      <polygon points="28,42 34,5 40,5 34,42" fill="#6B4FFF" />
+    </svg>
+  );
+}
