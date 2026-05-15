@@ -1,28 +1,35 @@
+import { useState } from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, Cell, PieChart, Pie, Legend,
+  ResponsiveContainer, Cell,
+  ScatterChart, Scatter, ZAxis,
 } from 'recharts';
 import type { Pool } from '../types';
 
 interface Props {
   displayPools: Pool[];
-  allPools: Pool[];
 }
 
-const CHAIN_COLORS: Record<string, string> = {
-  Ethereum: '#3B9EFF',
-  Base:     '#6B7FFF',
-  Solana:   '#9945FF',
-  Arbitrum: '#2D9CDB',
-  Avalanche:'#E84142',
-  Polygon:  '#8247E5',
+const SCATTER_CHAIN_COLORS: Record<string, string> = {
+  Ethereum: '#6B4FFF',
+  Solana:   '#4ECDA4',
+  Arbitrum: '#3B9EFF',
+  Base:     '#6AABFF',
+  Avalanche:'#FF6B6B',
+  Polygon:  '#A855F7',
 };
+
+const AXIS_TICK = {
+  fill: 'rgba(232,230,255,0.3)',
+  fontFamily: 'Space Grotesk, sans-serif',
+  fontSize: 9,
+} as const;
 
 const TOOLTIP_STYLE = {
   contentStyle: {
-    background: '#0C0B1A',
-    border: '1px solid rgba(107,79,255,0.15)',
-    borderRadius: 4,
+    background: '#111028',
+    border: '0.5px solid rgba(107,79,255,0.25)',
+    borderRadius: 6,
     fontFamily: 'Space Grotesk, sans-serif',
     fontSize: 12,
   },
@@ -31,23 +38,71 @@ const TOOLTIP_STYLE = {
   cursor:      { fill: 'rgba(107,79,255,0.06)' },
 };
 
-export default function Charts({ displayPools, allPools }: Props) {
+interface ScatterPoint extends Pool {
+  tvlM: number;
+}
+
+function ScatterTooltip({ active, payload }: { active?: boolean; payload?: Array<{ payload: ScatterPoint }> }) {
+  if (!active || !payload?.[0]) return null;
+  const d = payload[0].payload;
+  const tvl = d.tvlM >= 1000
+    ? `$${(d.tvlM / 1000).toFixed(1)}B`
+    : `$${d.tvlM.toFixed(1)}M`;
+  return (
+    <div style={{
+      background: '#111028',
+      border: '0.5px solid rgba(107,79,255,0.25)',
+      borderRadius: 6,
+      padding: '10px 12px',
+      fontFamily: 'Space Grotesk, sans-serif',
+      fontSize: 12,
+      color: '#E8E6FF',
+      lineHeight: 1.7,
+    }}>
+      <p style={{ fontWeight: 500 }}>{d.project}</p>
+      <p style={{ color: 'rgba(232,230,255,0.5)', fontSize: 11 }}>{d.symbol}</p>
+      <p style={{ color: 'rgba(232,230,255,0.6)' }}>{d.chain}</p>
+      <p style={{ color: '#8B73FF' }}>{(d.apy ?? 0).toFixed(2)}% APY</p>
+      <p style={{ color: 'rgba(232,230,255,0.5)' }}>{tvl} TVL</p>
+    </div>
+  );
+}
+
+function ScatterDot({ cx, cy, fill }: { cx?: number; cy?: number; fill?: string }) {
+  return (
+    <circle
+      cx={cx ?? 0}
+      cy={cy ?? 0}
+      r={4}
+      fill={fill ?? 'rgba(232,230,255,0.3)'}
+      fillOpacity={0.75}
+    />
+  );
+}
+
+function formatTvlLog(v: number) {
+  if (v >= 1000) return `$${(v / 1000).toFixed(0)}B`;
+  if (v >= 1)    return `$${v.toFixed(0)}M`;
+  return `$${v.toFixed(1)}M`;
+}
+
+export default function Charts({ displayPools }: Props) {
+  const [hoveredBar, setHoveredBar] = useState<number | null>(null);
+
   const topByApy = [...displayPools]
     .sort((a, b) => (b.apy ?? 0) - (a.apy ?? 0))
     .slice(0, 10)
     .map(p => ({ name: p.project, apy: parseFloat((p.apy ?? 0).toFixed(2)) }));
 
-  const chainCounts = allPools.reduce<Record<string, number>>((acc, p) => {
-    acc[p.chain] = (acc[p.chain] ?? 0) + 1;
+  const scatterData = displayPools.map(p => ({ ...p, tvlM: p.tvlUsd / 1_000_000 }));
+
+  const chainGroups = scatterData.reduce<Record<string, ScatterPoint[]>>((acc, p) => {
+    if (!acc[p.chain]) acc[p.chain] = [];
+    acc[p.chain].push(p);
     return acc;
   }, {});
-  const donutData = Object.entries(chainCounts)
-    .map(([name, value]) => ({
-      name,
-      value,
-      fill: CHAIN_COLORS[name] ?? 'rgba(232,230,255,0.25)',
-    }))
-    .sort((a, b) => b.value - a.value);
+
+  const legendChains = Object.keys(chainGroups).sort();
 
   if (topByApy.length === 0) return null;
 
@@ -64,20 +119,20 @@ export default function Charts({ displayPools, allPools }: Props) {
           >
             <CartesianGrid
               strokeDasharray="3 3"
-              stroke="rgba(107,79,255,0.15)"
+              stroke="rgba(107,79,255,0.08)"
               horizontal={false}
             />
             <XAxis
               type="number"
               tickFormatter={v => `${v}%`}
-              tick={{ fill: 'rgba(232,230,255,0.25)', fontFamily: 'Space Grotesk, sans-serif', fontSize: 11 }}
+              tick={AXIS_TICK}
               tickLine={false}
               axisLine={false}
             />
             <YAxis
               type="category"
               dataKey="name"
-              tick={{ fill: 'rgba(232,230,255,0.45)', fontFamily: 'Space Grotesk, sans-serif', fontSize: 11 }}
+              tick={AXIS_TICK}
               tickLine={false}
               axisLine={false}
               width={140}
@@ -86,51 +141,94 @@ export default function Charts({ displayPools, allPools }: Props) {
               {...TOOLTIP_STYLE}
               formatter={(value) => [`${value}%`, 'APY']}
             />
-            <Bar dataKey="apy" radius={[0, 3, 3, 0]} maxBarSize={18}>
-              {topByApy.map((_, index) => (
-                <Cell
-                  key={`bar-${index}`}
-                  fill={index === 0 ? '#6B4FFF' : 'rgba(107,79,255,0.35)'}
-                />
-              ))}
+            <Bar
+              dataKey="apy"
+              radius={[0, 3, 3, 0]}
+              maxBarSize={18}
+              onMouseEnter={(_: unknown, index: number) => setHoveredBar(index)}
+              onMouseLeave={() => setHoveredBar(null)}
+            >
+              {topByApy.map((_, index) => {
+                const isFirst = index === 0;
+                const isHovered = hoveredBar === index;
+                const fill = isFirst
+                  ? (isHovered ? '#8B73FF' : '#6B4FFF')
+                  : (isHovered ? 'rgba(107,79,255,0.6)' : 'rgba(107,79,255,0.35)');
+                return <Cell key={`bar-${index}`} fill={fill} />;
+              })}
             </Bar>
           </BarChart>
         </ResponsiveContainer>
       </div>
 
-      {/* Donut chart — pools by chain */}
+      {/* Scatter chart — risk vs reward */}
       <div className="chart-card">
-        <h3 className="chart-title">Pools by Chain</h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <PieChart>
-            <Pie
-              data={donutData}
-              cx="50%"
-              cy="45%"
-              innerRadius={70}
-              outerRadius={110}
-              dataKey="value"
-              paddingAngle={2}
-            >
-              {donutData.map((entry, index) => (
-                <Cell key={`${entry.name}-${index}`} fill={entry.fill} />
-              ))}
-            </Pie>
-            <Tooltip
-              {...TOOLTIP_STYLE}
-              formatter={(value, name) => [`${value} pools`, String(name)]}
+        <h3 className="chart-title">Risk vs Reward</h3>
+        <ResponsiveContainer width="100%" height={248}>
+          <ScatterChart margin={{ top: 4, right: 16, bottom: 24, left: 8 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(107,79,255,0.08)" />
+            <XAxis
+              type="number"
+              dataKey="tvlM"
+              name="TVL"
+              scale="log"
+              domain={['auto', 'auto']}
+              ticks={[1, 10, 100, 1000, 10000]}
+              tickFormatter={formatTvlLog}
+              tick={AXIS_TICK}
+              tickLine={false}
+              axisLine={false}
+              label={{
+                value: 'TVL',
+                position: 'insideBottom',
+                offset: -14,
+                fill: 'rgba(232,230,255,0.3)',
+                fontSize: 9,
+                fontFamily: 'Space Grotesk, sans-serif',
+              }}
             />
-            <Legend
-              iconType="circle"
-              iconSize={8}
-              formatter={(value: string) => (
-                <span style={{ color: 'rgba(232,230,255,0.45)', fontFamily: 'Space Grotesk, sans-serif', fontSize: 11 }}>
-                  {value}
-                </span>
-              )}
+            <YAxis
+              type="number"
+              dataKey="apy"
+              name="APY"
+              tickFormatter={v => `${v}%`}
+              tick={AXIS_TICK}
+              tickLine={false}
+              axisLine={false}
+              label={{
+                value: 'APY %',
+                angle: -90,
+                position: 'insideLeft',
+                offset: 10,
+                fill: 'rgba(232,230,255,0.3)',
+                fontSize: 9,
+                fontFamily: 'Space Grotesk, sans-serif',
+              }}
             />
-          </PieChart>
+            <ZAxis range={[1, 1]} />
+            <Tooltip content={<ScatterTooltip />} />
+            {Object.entries(chainGroups).map(([chain, points]) => (
+              <Scatter
+                key={chain}
+                name={chain}
+                data={points}
+                fill={SCATTER_CHAIN_COLORS[chain] ?? 'rgba(232,230,255,0.3)'}
+                shape={ScatterDot}
+              />
+            ))}
+          </ScatterChart>
         </ResponsiveContainer>
+        <div className="scatter-legend">
+          {legendChains.map(chain => (
+            <span key={chain} className="scatter-legend-item">
+              <span
+                className="scatter-legend-dot"
+                style={{ background: SCATTER_CHAIN_COLORS[chain] ?? 'rgba(232,230,255,0.3)' }}
+              />
+              {chain}
+            </span>
+          ))}
+        </div>
       </div>
     </div>
   );

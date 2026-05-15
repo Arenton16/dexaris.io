@@ -49,8 +49,8 @@ export default function Sidebar({
               <img
                 src={logo}
                 alt={chainName}
-                width={14}
-                height={14}
+                width={12}
+                height={12}
                 className="chain-logo"
                 onError={e => { e.currentTarget.style.display = 'none'; }}
               />

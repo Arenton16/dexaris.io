@@ -136,7 +136,7 @@ export default function YieldTable({ selectedChains, minApy, sortKey, sortDir, o
       apyDelta={apyDelta}
     />
     <div className="table-wrap">
-      <Charts displayPools={displayPools} allPools={allPools} />
+      <Charts displayPools={displayPools} />
       <h2 className="table-title">Top Yields</h2>
       <div className="search-wrap">
         <input
