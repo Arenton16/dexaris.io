@@ -612,39 +612,44 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 10px;
   padding: 52px 20px;
 }
 
-.empty-state-msg {
+.empty-state-main {
   font-family: 'Space Grotesk', sans-serif;
   font-size: 14px;
-  font-weight: 300;
-  color: rgba(232,230,255,0.45);
+  font-weight: 400;
+  color: #E8E6FF;
   text-align: center;
-  max-width: 400px;
-  line-height: 1.6;
+}
+
+.empty-state-sub {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12px;
+  font-weight: 300;
+  color: rgba(232,230,255,0.4);
+  text-align: center;
+  margin-bottom: 6px;
 }
 
 .clear-search-btn {
   -webkit-appearance: none;
   appearance: none;
-  padding: 7px 20px;
-  background: none;
-  border: 1px solid #6B4FFF;
+  padding: 5px 14px;
+  background: #6B4FFF;
+  border: none;
   border-radius: 20px;
-  color: #6B4FFF;
+  color: #fff;
   font-family: 'Space Grotesk', sans-serif;
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  letter-spacing: 0.02em;
   transition: all 0.15s ease;
 }
 
 .clear-search-btn:hover {
-  background: #6B4FFF;
-  color: #fff;
+  background: #5A3FE8;
 }
 
 /* Clickable table rows */

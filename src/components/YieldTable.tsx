@@ -149,9 +149,8 @@ export default function YieldTable({ selectedChains, minApy, sortKey, sortDir, o
       </div>
       {displayPools.length === 0 ? (
         <div className="empty-state">
-          <p className="empty-state-msg">
-            No pools match your search — try a different term or adjust your filters
-          </p>
+          <p className="empty-state-main">No pools match your search</p>
+          <p className="empty-state-sub">Try a different term or adjust your filters</p>
           {search.trim() && (
             <button className="clear-search-btn" onClick={() => setSearch('')}>
               Clear search
