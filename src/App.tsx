@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import NavSidebar from './components/NavSidebar';
 import Navbar from './components/Navbar';
 import NewsBanner from './components/NewsBanner';
 import Sidebar from './components/Sidebar';
@@ -15,6 +16,7 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [countdown, setCountdown] = useState(60);
   const [refreshTick, setRefreshTick] = useState(0);
+  const [isNavOpen, setIsNavOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [bannerVisible, setBannerVisible] = useState(true);
 
@@ -41,42 +43,56 @@ export default function App() {
     }
   };
 
+  const toggleNav = () => {
+    setIsNavOpen(o => !o);
+    setIsSidebarOpen(false);
+  };
+
+  const toggleFilters = () => {
+    setIsSidebarOpen(o => !o);
+    setIsNavOpen(false);
+  };
+
   return (
     <div className="app">
-      {isSidebarOpen && (
-        <div
-          className="sidebar-backdrop"
-          onClick={() => setIsSidebarOpen(false)}
-        />
-      )}
-      <Navbar
-        isLoading={isLoading}
-        onToggleSidebar={() => setIsSidebarOpen(o => !o)}
-      />
-      {bannerVisible && <NewsBanner onDismiss={() => setBannerVisible(false)} />}
-      <div className="layout">
-        <Sidebar
-          selected={selectedChains}
-          onChange={setSelectedChains}
-          minApy={minApy}
-          onMinApyChange={setMinApy}
-          sortKey={sortKey}
-          onSortKeyChange={key => { setSortKey(key); setSortDir('desc'); }}
+      <NavSidebar isOpen={isNavOpen} onClose={() => setIsNavOpen(false)} />
+
+      <div className="main-wrapper">
+        <Navbar
           countdown={countdown}
+          isLoading={isLoading}
           onManualRefresh={triggerRefresh}
-          isOpen={isSidebarOpen}
+          onToggleNav={toggleNav}
+          onToggleFilters={toggleFilters}
         />
-        <main className="content">
-          <YieldTable
-            selectedChains={selectedChains}
+
+        {bannerVisible && <NewsBanner onDismiss={() => setBannerVisible(false)} />}
+
+        <div className="layout">
+          {isSidebarOpen && (
+            <div className="sidebar-backdrop" onClick={() => setIsSidebarOpen(false)} />
+          )}
+          <Sidebar
+            selected={selectedChains}
+            onChange={setSelectedChains}
             minApy={minApy}
+            onMinApyChange={setMinApy}
             sortKey={sortKey}
-            sortDir={sortDir}
-            onSortChange={handleSortChange}
-            onLoadingChange={setIsLoading}
-            refreshTick={refreshTick}
+            onSortKeyChange={key => { setSortKey(key); setSortDir('desc'); }}
+            isOpen={isSidebarOpen}
           />
-        </main>
+          <main className="content">
+            <YieldTable
+              selectedChains={selectedChains}
+              minApy={minApy}
+              sortKey={sortKey}
+              sortDir={sortDir}
+              onSortChange={handleSortChange}
+              onLoadingChange={setIsLoading}
+              refreshTick={refreshTick}
+            />
+          </main>
+        </div>
       </div>
     </div>
   );

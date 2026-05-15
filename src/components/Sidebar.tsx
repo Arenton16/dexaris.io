@@ -7,8 +7,6 @@ interface Props {
   onMinApyChange: (val: number) => void;
   sortKey: 'apy' | 'tvlUsd';
   onSortKeyChange: (key: 'apy' | 'tvlUsd') => void;
-  countdown: number;
-  onManualRefresh: () => void;
   isOpen: boolean;
 }
 
@@ -16,7 +14,6 @@ export default function Sidebar({
   selected, onChange,
   minApy, onMinApyChange,
   sortKey, onSortKeyChange,
-  countdown, onManualRefresh,
   isOpen,
 }: Props) {
   const chains = Object.keys(CHAIN_LABELS) as ChainKey[];
@@ -94,21 +91,6 @@ export default function Sidebar({
       >
         Highest TVL
       </button>
-
-      <div className="sidebar-divider" />
-
-      <div className="refresh-section">
-        <span className="refresh-countdown">
-          Refreshing in {Math.max(countdown, 1)}s
-        </span>
-        <button
-          className="refresh-icon-btn"
-          onClick={onManualRefresh}
-          title="Refresh now"
-        >
-          ↻
-        </button>
-      </div>
     </aside>
   );
 }

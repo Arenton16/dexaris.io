@@ -1,25 +1,47 @@
-import DexarisLogo from './DexarisLogo';
-
 interface Props {
+  countdown: number;
   isLoading: boolean;
-  onToggleSidebar: () => void;
+  onManualRefresh: () => void;
+  onToggleNav: () => void;
+  onToggleFilters: () => void;
 }
 
-export default function Navbar({ isLoading, onToggleSidebar }: Props) {
+export default function TopBar({
+  countdown,
+  isLoading,
+  onManualRefresh,
+  onToggleNav,
+  onToggleFilters,
+}: Props) {
   return (
-    <header className="navbar">
-      <button
-        className="hamburger"
-        onClick={onToggleSidebar}
-        aria-label="Toggle menu"
-      >
-        <span />
-        <span />
-        <span />
+    <div className="topbar">
+      <button className="topbar-hamburger" onClick={onToggleNav} aria-label="Toggle menu">
+        <span /><span /><span />
       </button>
-      <DexarisLogo iconSize={28} fontSize={18} />
-      <span className="navbar-tagline">DeFi Yield Intelligence</span>
-      {isLoading && <span className="nav-spinner" />}
-    </header>
+
+      <h1 className="topbar-title">Yield Explorer</h1>
+
+      <div className="topbar-right">
+        <button className="topbar-filter-btn" onClick={onToggleFilters} aria-label="Toggle filters">
+          ⊟ Filters
+        </button>
+
+        <div
+          className="topbar-refresh"
+          onClick={onManualRefresh}
+          title="Refresh now"
+          role="button"
+          tabIndex={0}
+          onKeyDown={e => e.key === 'Enter' && onManualRefresh()}
+        >
+          {isLoading
+            ? <span className="nav-spinner" />
+            : <span className="topbar-countdown">↻ {Math.max(countdown, 1)}s</span>
+          }
+        </div>
+
+        <button className="connect-wallet-btn">Connect Wallet</button>
+      </div>
+    </div>
   );
 }
