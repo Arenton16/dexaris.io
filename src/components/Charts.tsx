@@ -86,7 +86,14 @@ export default function Charts({ displayPools, allPools }: Props) {
               {...TOOLTIP_STYLE}
               formatter={(value) => [`${value}%`, 'APY']}
             />
-            <Bar dataKey="apy" fill="#8B73FF" radius={[0, 3, 3, 0]} maxBarSize={18} />
+            <Bar dataKey="apy" radius={[0, 3, 3, 0]} maxBarSize={18}>
+              {topByApy.map((_, index) => (
+                <Cell
+                  key={`bar-${index}`}
+                  fill={index === 0 ? '#6B4FFF' : 'rgba(107,79,255,0.35)'}
+                />
+              ))}
+            </Bar>
           </BarChart>
         </ResponsiveContainer>
       </div>
