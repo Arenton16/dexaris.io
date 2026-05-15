@@ -126,9 +126,6 @@ export default function YieldTable({ selectedChains, minApy, sortKey, sortDir, o
       </button>
     </div>
   );
-  if (displayPools.length === 0)
-    return <div className="state-msg">No pools found for selected filters.</div>;
-
   return (
     <>
     <StatsBar
@@ -150,80 +147,95 @@ export default function YieldTable({ selectedChains, minApy, sortKey, sortDir, o
           onChange={e => setSearch(e.target.value)}
         />
       </div>
-      <table className="yield-table">
-        <thead>
-          <tr>
-            <th className="hide-mobile">#</th>
-            <th>Protocol</th>
-            <th>Asset</th>
-            <th>Chain</th>
-            <th
-              className={`th-sortable hide-mobile${sortKey === 'apy' ? ' th-sort-active' : ''}`}
-              onClick={() => onSortChange('apy')}
-            >
-              APY {sortKey === 'apy' ? (sortDir === 'desc' ? '▼' : '▲') : ''}
-            </th>
-            <th
-              className={`th-sortable hide-mobile${sortKey === 'tvlUsd' ? ' th-sort-active' : ''}`}
-              onClick={() => onSortChange('tvlUsd')}
-            >
-              TVL {sortKey === 'tvlUsd' ? (sortDir === 'desc' ? '▼' : '▲') : ''}
-            </th>
-            <th className="show-mobile">APY / TVL</th>
-          </tr>
-        </thead>
-        <tbody>
-          {displayPools.map((pool, i) => (
-            <tr
-              key={pool.pool}
-              className="tr-clickable"
-              onClick={() => setSelectedPool(pool)}
-            >
-              <td className="dim hide-mobile">{i + 1}</td>
-              <td className="protocol">
-                <div className="protocol-cell">
-                  <ProtocolLogo logo={pool.logo} name={pool.project} />
-                  {pool.project}
-                </div>
-              </td>
-              <td>{pool.symbol}</td>
-              <td>
-                <span
-                  className="chain-badge"
-                  style={{
-                    backgroundColor: CHAIN_COLORS[pool.chain]?.bg ?? 'rgba(107,79,255,0.1)',
-                    color: CHAIN_COLORS[pool.chain]?.text ?? 'rgba(232,230,255,0.45)',
-                  }}
+      {displayPools.length === 0 ? (
+        <div className="empty-state">
+          <p className="empty-state-msg">
+            No pools match your search — try a different term or adjust your filters
+          </p>
+          {search.trim() && (
+            <button className="clear-search-btn" onClick={() => setSearch('')}>
+              Clear search
+            </button>
+          )}
+        </div>
+      ) : (
+        <>
+          <table className="yield-table">
+            <thead>
+              <tr>
+                <th className="hide-mobile">#</th>
+                <th>Protocol</th>
+                <th>Asset</th>
+                <th>Chain</th>
+                <th
+                  className={`th-sortable hide-mobile${sortKey === 'apy' ? ' th-sort-active' : ''}`}
+                  onClick={() => onSortChange('apy')}
                 >
-                  {CHAIN_LOGOS[pool.chain] && (
-                    <img
-                      src={CHAIN_LOGOS[pool.chain]}
-                      alt={pool.chain}
-                      width={16}
-                      height={16}
-                      className="chain-logo"
-                      onError={e => { e.currentTarget.style.display = 'none'; }}
-                    />
-                  )}
-                  {pool.chain}
-                </span>
-              </td>
-              <td className="apy hide-mobile">{pool.apy!.toFixed(2)}%</td>
-              <td className="tvl hide-mobile">${formatTvl(pool.tvlUsd)}</td>
-              <td className="show-mobile">
-                <div className="mobile-apy-tvl">
-                  <span className="mobile-apy">{pool.apy!.toFixed(2)}%</span>
-                  <span className="mobile-tvl">${formatTvl(pool.tvlUsd)}</span>
-                </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {fetchedAt && (
-        <p className={`last-updated${isFlashing ? ' flashing' : ''}`}>
-          Last updated: {fetchedAt.toLocaleTimeString()}
-        </p>
+                  APY {sortKey === 'apy' ? (sortDir === 'desc' ? '▼' : '▲') : ''}
+                </th>
+                <th
+                  className={`th-sortable hide-mobile${sortKey === 'tvlUsd' ? ' th-sort-active' : ''}`}
+                  onClick={() => onSortChange('tvlUsd')}
+                >
+                  TVL {sortKey === 'tvlUsd' ? (sortDir === 'desc' ? '▼' : '▲') : ''}
+                </th>
+                <th className="show-mobile">APY / TVL</th>
+              </tr>
+            </thead>
+            <tbody>
+              {displayPools.map((pool, i) => (
+                <tr
+                  key={pool.pool}
+                  className="tr-clickable"
+                  onClick={() => setSelectedPool(pool)}
+                >
+                  <td className="dim hide-mobile">{i + 1}</td>
+                  <td className="protocol">
+                    <div className="protocol-cell">
+                      <ProtocolLogo logo={pool.logo} name={pool.project} />
+                      {pool.project}
+                    </div>
+                  </td>
+                  <td>{pool.symbol}</td>
+                  <td>
+                    <span
+                      className="chain-badge"
+                      style={{
+                        backgroundColor: CHAIN_COLORS[pool.chain]?.bg ?? 'rgba(107,79,255,0.1)',
+                        color: CHAIN_COLORS[pool.chain]?.text ?? 'rgba(232,230,255,0.45)',
+                      }}
+                    >
+                      {CHAIN_LOGOS[pool.chain] && (
+                        <img
+                          src={CHAIN_LOGOS[pool.chain]}
+                          alt={pool.chain}
+                          width={16}
+                          height={16}
+                          className="chain-logo"
+                          onError={e => { e.currentTarget.style.display = 'none'; }}
+                        />
+                      )}
+                      {pool.chain}
+                    </span>
+                  </td>
+                  <td className="apy hide-mobile">{pool.apy!.toFixed(2)}%</td>
+                  <td className="tvl hide-mobile">${formatTvl(pool.tvlUsd)}</td>
+                  <td className="show-mobile">
+                    <div className="mobile-apy-tvl">
+                      <span className="mobile-apy">{pool.apy!.toFixed(2)}%</span>
+                      <span className="mobile-tvl">${formatTvl(pool.tvlUsd)}</span>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {fetchedAt && (
+            <p className={`last-updated${isFlashing ? ' flashing' : ''}`}>
+              Last updated: {fetchedAt.toLocaleTimeString()}
+            </p>
+          )}
+        </>
       )}
       <PoolDetail pool={selectedPool} onClose={() => setSelectedPool(null)} />
     </div>
