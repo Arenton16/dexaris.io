@@ -3,7 +3,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Cell,
   ScatterChart, Scatter, ZAxis,
-  usePlotArea, useXAxisScale, useYAxisScale,
+  usePlotArea, useXAxisDomain, useYAxisDomain,
 } from 'recharts';
 import type { Pool } from '../types';
 
@@ -99,19 +99,26 @@ function ScatterDot({ cx, cy, fill }: { cx?: number; cy?: number; fill?: string 
 }
 
 function QuadrantOverlay() {
-  const plot   = usePlotArea();
-  const xScale = useXAxisScale();
-  const yScale = useYAxisScale();
+  const plot      = usePlotArea();
+  const xDomain   = useXAxisDomain();   // [xMin, xMax] in tvlM (millions)
+  const yDomain   = useYAxisDomain();   // [yMin, yMax] in APY %
 
-  if (!plot || !xScale || !yScale) return null;
+  if (!plot || !xDomain || !yDomain) return null;
 
   const { x: left, y: top, width: w, height: h } = plot;
+  const [xMin, xMax] = xDomain as [number, number];
+  const [yMin, yMax] = yDomain as [number, number];
 
-  // Convert fixed data thresholds to pixel positions using the live axis scales
-  const thresholdX = xScale(TVL_THRESHOLD);   // pixel X for $50M TVL
-  const thresholdY = yScale(APY_THRESHOLD);   // pixel Y for 15% APY
+  // X axis uses log scale; TVL_THRESHOLD = 50 = $50M in tvlM units
+  const thresholdX = left + (
+    (Math.log10(TVL_THRESHOLD) - Math.log10(xMin)) /
+    (Math.log10(xMax) - Math.log10(xMin))
+  ) * w;
 
-  if (thresholdX === undefined || thresholdY === undefined) return null;
+  // Y axis is linear; APY_THRESHOLD = 15%
+  const thresholdY = top + h - (
+    (APY_THRESHOLD - yMin) / (yMax - yMin)
+  ) * h;
 
   const labelProps = {
     fontSize: 9,
@@ -128,12 +135,12 @@ function QuadrantOverlay() {
   return (
     <g>
       {/* Fixed threshold dividers */}
-      <line x1={thresholdX} y1={top}      x2={thresholdX} y2={top + h} stroke="rgba(107,79,255,0.15)" strokeDasharray="4 4" strokeWidth={1} />
-      <line x1={left}       y1={thresholdY} x2={left + w} y2={thresholdY} stroke="rgba(107,79,255,0.15)" strokeDasharray="4 4" strokeWidth={1} />
+      <line x1={thresholdX} y1={top}        x2={thresholdX} y2={top + h}   stroke="rgba(107,79,255,0.15)" strokeDasharray="4 4" strokeWidth={1} />
+      <line x1={left}       y1={thresholdY} x2={left + w}   y2={thresholdY} stroke="rgba(107,79,255,0.15)" strokeDasharray="4 4" strokeWidth={1} />
 
       {/* Axis threshold labels */}
-      <text x={left + 4}      y={thresholdY - 3} textAnchor="start" {...axisLabelProps}>15% APY</text>
-      <text x={thresholdX + 3} y={top + h - 4}   textAnchor="start" {...axisLabelProps}>$50M TVL</text>
+      <text x={left + 3}    y={thresholdY - 3} textAnchor="start" {...axisLabelProps}>15% APY</text>
+      <text x={thresholdX}  y={top + h - 4}    textAnchor="middle" {...axisLabelProps}>$50M TVL</text>
 
       {/* Quadrant corner labels */}
       <text x={left + 12}     y={top + 20}     fill="rgba(255,107,107,0.6)"  textAnchor="start" {...labelProps}>HIGH RISK</text>
