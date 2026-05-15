@@ -3,13 +3,17 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Cell,
   ScatterChart, Scatter, ZAxis,
-  usePlotArea,
+  usePlotArea, useXAxisScale, useYAxisScale,
 } from 'recharts';
 import type { Pool } from '../types';
 
 interface Props {
   displayPools: Pool[];
 }
+
+// Fixed DeFi thresholds
+const APY_THRESHOLD = 15;  // 15% APY
+const TVL_THRESHOLD = 50;  // $50M TVL (in tvlM units)
 
 const SCATTER_CHAIN_COLORS: Record<string, string> = {
   Ethereum: '#6B4FFF',
@@ -43,12 +47,22 @@ interface ScatterPoint extends Pool {
   tvlM: number;
 }
 
+function getQuadrant(apy: number, tvlM: number): { label: string; color: string; icon: string } {
+  const highApy = apy > APY_THRESHOLD;
+  const highTvl = tvlM > TVL_THRESHOLD;
+  if (highApy && !highTvl)  return { label: 'High Risk',  color: 'rgba(255,107,107,0.8)', icon: '⚠' };
+  if (highApy && highTvl)   return { label: 'Sweet Spot', color: 'rgba(78,205,164,0.8)',  icon: '✦' };
+  if (!highApy && !highTvl) return { label: 'Avoid',      color: 'rgba(232,230,255,0.4)', icon: '✕' };
+  return                           { label: 'Safe Haven', color: 'rgba(107,79,255,0.8)',  icon: '◈' };
+}
+
 function ScatterTooltip({ active, payload }: { active?: boolean; payload?: Array<{ payload: ScatterPoint }> }) {
   if (!active || !payload?.[0]) return null;
   const d = payload[0].payload;
   const tvl = d.tvlM >= 1000
     ? `$${(d.tvlM / 1000).toFixed(1)}B`
     : `$${d.tvlM.toFixed(1)}M`;
+  const q = getQuadrant(d.apy ?? 0, d.tvlM);
   return (
     <div style={{
       background: '#111028',
@@ -65,6 +79,9 @@ function ScatterTooltip({ active, payload }: { active?: boolean; payload?: Array
       <p style={{ color: 'rgba(232,230,255,0.6)' }}>{d.chain}</p>
       <p style={{ color: '#8B73FF' }}>{(d.apy ?? 0).toFixed(2)}% APY</p>
       <p style={{ color: 'rgba(232,230,255,0.5)' }}>{tvl} TVL</p>
+      <div style={{ borderTop: '0.5px solid rgba(107,79,255,0.15)', marginTop: 6, paddingTop: 6 }}>
+        <p style={{ color: q.color, fontSize: 11 }}>{q.icon} {q.label}</p>
+      </div>
     </div>
   );
 }
@@ -82,12 +99,19 @@ function ScatterDot({ cx, cy, fill }: { cx?: number; cy?: number; fill?: string 
 }
 
 function QuadrantOverlay() {
-  const plot = usePlotArea();
-  if (!plot) return null;
+  const plot   = usePlotArea();
+  const xScale = useXAxisScale();
+  const yScale = useYAxisScale();
+
+  if (!plot || !xScale || !yScale) return null;
 
   const { x: left, y: top, width: w, height: h } = plot;
-  const midX = left + w / 2;
-  const midY = top  + h / 2;
+
+  // Convert fixed data thresholds to pixel positions using the live axis scales
+  const thresholdX = xScale(TVL_THRESHOLD);   // pixel X for $50M TVL
+  const thresholdY = yScale(APY_THRESHOLD);   // pixel Y for 15% APY
+
+  if (thresholdX === undefined || thresholdY === undefined) return null;
 
   const labelProps = {
     fontSize: 9,
@@ -95,13 +119,23 @@ function QuadrantOverlay() {
     letterSpacing: '0.08em',
   } as const;
 
+  const axisLabelProps = {
+    fontSize: 8,
+    fontFamily: 'Space Grotesk, sans-serif',
+    fill: 'rgba(232,230,255,0.25)',
+  } as const;
+
   return (
     <g>
-      {/* Crosshair dividers */}
-      <line x1={midX} y1={top}      x2={midX}     y2={top + h} stroke="rgba(107,79,255,0.15)" strokeDasharray="4 4" strokeWidth={1} />
-      <line x1={left} y1={midY}     x2={left + w} y2={midY}    stroke="rgba(107,79,255,0.15)" strokeDasharray="4 4" strokeWidth={1} />
+      {/* Fixed threshold dividers */}
+      <line x1={thresholdX} y1={top}      x2={thresholdX} y2={top + h} stroke="rgba(107,79,255,0.15)" strokeDasharray="4 4" strokeWidth={1} />
+      <line x1={left}       y1={thresholdY} x2={left + w} y2={thresholdY} stroke="rgba(107,79,255,0.15)" strokeDasharray="4 4" strokeWidth={1} />
 
-      {/* Quadrant labels */}
+      {/* Axis threshold labels */}
+      <text x={left + 4}      y={thresholdY - 3} textAnchor="start" {...axisLabelProps}>15% APY</text>
+      <text x={thresholdX + 3} y={top + h - 4}   textAnchor="start" {...axisLabelProps}>$50M TVL</text>
+
+      {/* Quadrant corner labels */}
       <text x={left + 12}     y={top + 20}     fill="rgba(255,107,107,0.6)"  textAnchor="start" {...labelProps}>HIGH RISK</text>
       <text x={left + w - 12} y={top + 20}     fill="rgba(78,205,164,0.6)"   textAnchor="end"   {...labelProps}>SWEET SPOT</text>
       <text x={left + 12}     y={top + h - 12} fill="rgba(232,230,255,0.25)" textAnchor="start" {...labelProps}>AVOID</text>
