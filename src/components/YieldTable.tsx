@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { CHAIN_LABELS, CHAIN_LOGOS, type ChainKey, type Pool } from '../types';
 import Charts from './Charts';
 import PoolDetail from './PoolDetail';
+import StatsBar from './StatsBar';
 
 const CHAIN_COLORS: Record<string, { bg: string; text: string }> = {
   Ethereum: { bg: '#1a3a5c', text: '#3B9EFF' },
@@ -35,7 +36,9 @@ export default function YieldTable({ selectedChains, minApy, sortKey, sortDir, o
   const [selectedPool, setSelectedPool] = useState<Pool | null>(null);
   const [retryCount, setRetryCount] = useState(0);
   const [isFlashing, setIsFlashing] = useState(false);
+  const [apyDelta, setApyDelta] = useState<number | null>(null);
   const hasLoadedOnce = useRef(false);
+  const prevApyRef = useRef<number | null>(null);
 
   useEffect(() => {
     const supportedChains = new Set(Object.values(CHAIN_LABELS));
@@ -78,6 +81,16 @@ export default function YieldTable({ selectedChains, minApy, sortKey, sortDir, o
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [retryCount, refreshTick]);
 
+  useEffect(() => {
+    if (allPools.length === 0) return;
+    const current = allPools.reduce((max, p) => Math.max(max, p.apy ?? 0), 0);
+    if (prevApyRef.current !== null) {
+      const d = parseFloat((current - prevApyRef.current).toFixed(2));
+      setApyDelta(d !== 0 ? d : null);
+    }
+    prevApyRef.current = current;
+  }, [allPools]);
+
   const displayPools = useMemo(() => {
     const allowed = new Set(selectedChains.map(c => CHAIN_LABELS[c]));
     const q = search.toLowerCase().trim();
@@ -96,6 +109,11 @@ export default function YieldTable({ selectedChains, minApy, sortKey, sortDir, o
       .slice(0, 30);
   }, [allPools, selectedChains, minApy, search, sortKey, sortDir]);
 
+  const highestApy = displayPools.length > 0 ? Math.max(...displayPools.map(p => p.apy ?? 0)) : 0;
+  const totalTvl = displayPools.reduce((sum, p) => sum + p.tvlUsd, 0);
+  const protocolCount = new Set(displayPools.map(p => p.project)).size;
+  const chainCount = new Set(displayPools.map(p => p.chain)).size;
+
   if (loading) return <TableSkeleton />;
   if (error) return (
     <div className="error-state">
@@ -112,6 +130,14 @@ export default function YieldTable({ selectedChains, minApy, sortKey, sortDir, o
     return <div className="state-msg">No pools found for selected filters.</div>;
 
   return (
+    <>
+    <StatsBar
+      highestApy={highestApy}
+      totalTvl={totalTvl}
+      protocolCount={protocolCount}
+      chainCount={chainCount}
+      apyDelta={apyDelta}
+    />
     <div className="table-wrap">
       <Charts displayPools={displayPools} allPools={allPools} />
       <h2 className="table-title">Top Yields</h2>
@@ -201,6 +227,7 @@ export default function YieldTable({ selectedChains, minApy, sortKey, sortDir, o
       )}
       <PoolDetail pool={selectedPool} onClose={() => setSelectedPool(null)} />
     </div>
+    </>
   );
 }
 
