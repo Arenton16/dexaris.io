@@ -1,0 +1,63 @@
+<svg
+  width="1200"
+  height="630"
+  viewBox="0 0 1200 630"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <defs>
+    <!-- Violet glow behind icon -->
+    <radialGradient id="iconGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#6B4FFF" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#6B4FFF" stop-opacity="0"    />
+    </radialGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#0C0B1A" />
+
+  <!-- Border -->
+  <rect
+    x="1" y="1" width="1198" height="628"
+    fill="none"
+    stroke="rgba(107,79,255,0.3)"
+    stroke-width="1"
+  />
+
+  <!-- Glow ellipse centred on the icon -->
+  <ellipse cx="420" cy="300" rx="220" ry="200" fill="url(#iconGlow)" />
+
+  <!--
+    D4 Rising Prism icon
+    Source viewBox: 0 0 44 44 → scaled to 120 px (factor = 120/44 ≈ 2.7273)
+    Placed with top-left at (360, 240) so centre lands at (420, 300)
+  -->
+  <g transform="translate(360,240) scale(2.7273)">
+    <polygon points="4,42 10,26 16,26 10,42" fill="rgba(107,79,255,0.3)" />
+    <polygon points="16,42 22,16 28,16 22,42" fill="rgba(107,79,255,0.6)" />
+    <polygon points="28,42 34,5 40,5 34,42"  fill="#6B4FFF"              />
+  </g>
+
+  <!-- DEXARIS wordmark — vertically centred alongside the icon -->
+  <text
+    x="522"
+    y="275"
+    font-family="'Space Grotesk', -apple-system, Arial, sans-serif"
+    font-size="64"
+    font-weight="500"
+    fill="#E8E6FF"
+    dominant-baseline="central"
+    letter-spacing="0.12em"
+  >DEXARIS</text>
+
+  <!-- Tagline -->
+  <text
+    x="526"
+    y="348"
+    font-family="'Space Grotesk', -apple-system, Arial, sans-serif"
+    font-size="28"
+    font-weight="400"
+    fill="#8B73FF"
+    dominant-baseline="central"
+    letter-spacing="0.04em"
+  >DeFi Yield Intelligence</text>
+</svg>
