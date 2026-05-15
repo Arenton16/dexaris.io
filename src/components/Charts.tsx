@@ -3,7 +3,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Cell,
   ScatterChart, Scatter, ZAxis,
-  usePlotArea, useXAxisDomain, useYAxisDomain,
+  usePlotArea, useXAxisTicks, useYAxisTicks,
 } from 'recharts';
 import type { Pool } from '../types';
 
@@ -98,27 +98,45 @@ function ScatterDot({ cx, cy, fill }: { cx?: number; cy?: number; fill?: string 
   );
 }
 
-function QuadrantOverlay() {
-  const plot      = usePlotArea();
-  const xDomain   = useXAxisDomain();   // [xMin, xMax] in tvlM (millions)
-  const yDomain   = useYAxisDomain();   // [yMin, yMax] in APY %
+// Interpolate a pixel coordinate for `target` value between two adjacent ticks.
+// logScale=true uses log-linear interpolation (for the TVL log axis).
+function interpolateTick(
+  ticks: ReadonlyArray<{ value: unknown; coordinate: number }>,
+  target: number,
+  logScale: boolean,
+): number | null {
+  const sorted = [...ticks]
+    .map(t => ({ v: Number(t.value), px: t.coordinate }))
+    .sort((a, b) => a.v - b.v);
 
-  if (!plot || !xDomain || !yDomain) return null;
+  for (let i = 0; i < sorted.length - 1; i++) {
+    const lo = sorted[i];
+    const hi = sorted[i + 1];
+    if (target >= lo.v && target <= hi.v) {
+      const t = logScale
+        ? (Math.log10(target) - Math.log10(lo.v)) / (Math.log10(hi.v) - Math.log10(lo.v))
+        : (target - lo.v) / (hi.v - lo.v);
+      return lo.px + t * (hi.px - lo.px);
+    }
+  }
+  return null;
+}
+
+function QuadrantOverlay() {
+  const plot   = usePlotArea();
+  const xTicks = useXAxisTicks();
+  const yTicks = useYAxisTicks();
+
+  if (!plot || !xTicks?.length || !yTicks?.length) return null;
 
   const { x: left, y: top, width: w, height: h } = plot;
-  const [xMin, xMax] = xDomain as [number, number];
-  const [yMin, yMax] = yDomain as [number, number];
 
-  // X axis uses log scale; TVL_THRESHOLD = 50 = $50M in tvlM units
-  const thresholdX = left + (
-    (Math.log10(TVL_THRESHOLD) - Math.log10(xMin)) /
-    (Math.log10(xMax) - Math.log10(xMin))
-  ) * w;
+  // X axis: log scale, tvlM units. TVL_THRESHOLD = 50 = $50M.
+  const thresholdX = interpolateTick(xTicks, TVL_THRESHOLD, true);
+  // Y axis: linear scale. APY_THRESHOLD = 15%.
+  const thresholdY = interpolateTick(yTicks, APY_THRESHOLD, false);
 
-  // Y axis is linear; APY_THRESHOLD = 15%
-  const thresholdY = top + h - (
-    (APY_THRESHOLD - yMin) / (yMax - yMin)
-  ) * h;
+  if (thresholdX === null || thresholdY === null) return null;
 
   const labelProps = {
     fontSize: 9,
@@ -135,18 +153,18 @@ function QuadrantOverlay() {
   return (
     <g>
       {/* Fixed threshold dividers */}
-      <line x1={thresholdX} y1={top}        x2={thresholdX} y2={top + h}   stroke="rgba(107,79,255,0.15)" strokeDasharray="4 4" strokeWidth={1} />
+      <line x1={thresholdX} y1={top}        x2={thresholdX} y2={top + h}    stroke="rgba(107,79,255,0.15)" strokeDasharray="4 4" strokeWidth={1} />
       <line x1={left}       y1={thresholdY} x2={left + w}   y2={thresholdY} stroke="rgba(107,79,255,0.15)" strokeDasharray="4 4" strokeWidth={1} />
 
       {/* Axis threshold labels */}
-      <text x={left + 3}    y={thresholdY - 3} textAnchor="start" {...axisLabelProps}>15% APY</text>
+      <text x={left + 3}    y={thresholdY - 3} textAnchor="start"  {...axisLabelProps}>15% APY</text>
       <text x={thresholdX}  y={top + h - 4}    textAnchor="middle" {...axisLabelProps}>$50M TVL</text>
 
-      {/* Quadrant corner labels */}
-      <text x={left + 12}     y={top + 20}     fill="rgba(255,107,107,0.6)"  textAnchor="start" {...labelProps}>HIGH RISK</text>
-      <text x={left + w - 12} y={top + 20}     fill="rgba(78,205,164,0.6)"   textAnchor="end"   {...labelProps}>SWEET SPOT</text>
-      <text x={left + 12}     y={top + h - 12} fill="rgba(232,230,255,0.25)" textAnchor="start" {...labelProps}>AVOID</text>
-      <text x={left + w - 12} y={top + h - 12} fill="rgba(107,79,255,0.5)"   textAnchor="end"   {...labelProps}>SAFE HAVEN</text>
+      {/* Quadrant corner labels — AVOID and SAFE HAVEN anchor to the horizontal threshold */}
+      <text x={left + 12}     y={top + 20}         fill="rgba(255,107,107,0.6)"  textAnchor="start" {...labelProps}>HIGH RISK</text>
+      <text x={left + w - 12} y={top + 20}         fill="rgba(78,205,164,0.6)"   textAnchor="end"   {...labelProps}>SWEET SPOT</text>
+      <text x={left + 12}     y={thresholdY - 12}  fill="rgba(232,230,255,0.25)" textAnchor="start" {...labelProps}>AVOID</text>
+      <text x={left + w - 12} y={thresholdY - 12}  fill="rgba(107,79,255,0.5)"   textAnchor="end"   {...labelProps}>SAFE HAVEN</text>
     </g>
   );
 }
