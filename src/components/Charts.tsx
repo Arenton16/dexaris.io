@@ -2,7 +2,7 @@ import { useState } from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Cell,
-  ScatterChart, Scatter, ZAxis,
+  ScatterChart, Scatter, ZAxis, Customized,
 } from 'recharts';
 import type { Pool } from '../types';
 
@@ -77,6 +77,39 @@ function ScatterDot({ cx, cy, fill }: { cx?: number; cy?: number; fill?: string 
       fill={fill ?? 'rgba(232,230,255,0.3)'}
       fillOpacity={0.75}
     />
+  );
+}
+
+function QuadrantOverlay({ xAxisMap, yAxisMap }: { xAxisMap?: Record<number, { x: number; width: number }>; yAxisMap?: Record<number, { y: number; height: number }> }) {
+  const xAxis = xAxisMap?.[0];
+  const yAxis = yAxisMap?.[0];
+  if (!xAxis || !yAxis) return null;
+
+  const left = xAxis.x;
+  const top  = yAxis.y;
+  const w    = xAxis.width;
+  const h    = yAxis.height;
+  const midX = left + w / 2;
+  const midY = top  + h / 2;
+
+  const labelProps = {
+    fontSize: 9,
+    fontFamily: 'Space Grotesk, sans-serif',
+    letterSpacing: '0.08em',
+  } as const;
+
+  return (
+    <g>
+      {/* Crosshair dividers */}
+      <line x1={midX} y1={top}      x2={midX}      y2={top + h} stroke="rgba(107,79,255,0.12)" strokeDasharray="4 4" strokeWidth={1} />
+      <line x1={left} y1={midY}     x2={left + w}  y2={midY}    stroke="rgba(107,79,255,0.12)" strokeDasharray="4 4" strokeWidth={1} />
+
+      {/* Quadrant labels */}
+      <text x={left + 8}     y={top + 14}     fill="rgba(255,107,107,0.5)"  textAnchor="start" {...labelProps}>HIGH RISK</text>
+      <text x={left + w - 8} y={top + 14}     fill="rgba(78,205,164,0.5)"   textAnchor="end"   {...labelProps}>SWEET SPOT</text>
+      <text x={left + 8}     y={top + h - 8}  fill="rgba(232,230,255,0.2)"  textAnchor="start" {...labelProps}>AVOID</text>
+      <text x={left + w - 8} y={top + h - 8}  fill="rgba(107,79,255,0.4)"   textAnchor="end"   {...labelProps}>SAFE HAVEN</text>
+    </g>
   );
 }
 
@@ -206,6 +239,7 @@ export default function Charts({ displayPools }: Props) {
               }}
             />
             <ZAxis range={[1, 1]} />
+            <Customized component={QuadrantOverlay} />
             <Tooltip content={<ScatterTooltip />} />
             {Object.entries(chainGroups).map(([chain, points]) => (
               <Scatter
