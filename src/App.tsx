@@ -18,6 +18,7 @@ export default function App() {
   const [refreshTick, setRefreshTick] = useState(0);
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [navCollapsed, setNavCollapsed] = useState(true);
   const [bannerVisible, setBannerVisible] = useState(true);
 
   const triggerRefresh = useCallback(() => {
@@ -55,9 +56,14 @@ export default function App() {
 
   return (
     <div className="app">
-      <NavSidebar isOpen={isNavOpen} onClose={() => setIsNavOpen(false)} />
+      <NavSidebar
+          isOpen={isNavOpen}
+          onClose={() => setIsNavOpen(false)}
+          isCollapsed={navCollapsed}
+          onToggleCollapse={() => setNavCollapsed(c => !c)}
+        />
 
-      <div className="main-wrapper">
+      <div className={`main-wrapper${navCollapsed ? ' nav-collapsed' : ''}`}>
         <Navbar
           countdown={countdown}
           isLoading={isLoading}
