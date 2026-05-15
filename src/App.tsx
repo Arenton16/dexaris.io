@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import Navbar from './components/Navbar';
+import NewsBanner from './components/NewsBanner';
 import Sidebar from './components/Sidebar';
 import YieldTable from './components/YieldTable';
 import { CHAIN_LABELS, type ChainKey } from './types';
@@ -15,6 +16,7 @@ export default function App() {
   const [countdown, setCountdown] = useState(60);
   const [refreshTick, setRefreshTick] = useState(0);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [bannerVisible, setBannerVisible] = useState(true);
 
   const triggerRefresh = useCallback(() => {
     setRefreshTick(t => t + 1);
@@ -51,6 +53,7 @@ export default function App() {
         isLoading={isLoading}
         onToggleSidebar={() => setIsSidebarOpen(o => !o)}
       />
+      {bannerVisible && <NewsBanner onDismiss={() => setBannerVisible(false)} />}
       <div className="layout">
         <Sidebar
           selected={selectedChains}
