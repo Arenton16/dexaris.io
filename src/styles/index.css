@@ -228,7 +228,8 @@ body {
   }
 
   .nav-sidebar.nav-collapsed .nav-item-label,
-  .nav-sidebar.nav-collapsed .nav-soon {
+  .nav-sidebar.nav-collapsed .nav-soon,
+  .nav-sidebar.nav-collapsed .nav-badge {
     display: none;
   }
 
@@ -1239,4 +1240,127 @@ body {
   .content {
     padding: 16px;
   }
+}
+
+/* ─── Star / watchlist button ───────────────────────────────── */
+
+.star-btn {
+  -webkit-appearance: none;
+  appearance: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: rgba(232,230,255,0.2);
+  padding: 4px;
+  transition: all 0.15s ease;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.star-btn:hover {
+  color: rgba(232,230,255,0.5);
+}
+
+.star-btn.starred {
+  color: #6B4FFF;
+}
+
+.star-btn.starred:hover {
+  color: #8B73FF;
+}
+
+/* ─── Nav count badge ───────────────────────────────────────── */
+
+.nav-badge {
+  background: #6B4FFF;
+  color: #fff;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 9px;
+  font-weight: 500;
+  border-radius: 20px;
+  padding: 2px 6px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* ─── Watchlist page ─────────────────────────────────────────── */
+
+.watchlist-page {
+  max-width: 900px;
+}
+
+.watchlist-header {
+  margin-bottom: 24px;
+}
+
+.watchlist-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  color: #E8E6FF;
+  margin-bottom: 4px;
+}
+
+.watchlist-subtitle {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  color: rgba(232,230,255,0.4);
+}
+
+.watchlist-summary {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12px;
+  color: rgba(232,230,255,0.4);
+  margin-bottom: 16px;
+}
+
+.watchlist-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 64px 20px;
+  text-align: center;
+}
+
+.watchlist-empty-icon {
+  font-size: 48px;
+  color: rgba(107,79,255,0.3);
+  line-height: 1;
+}
+
+.watchlist-empty-main {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #E8E6FF;
+}
+
+.watchlist-empty-sub {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  color: rgba(232,230,255,0.4);
+}
+
+.watchlist-browse-btn {
+  -webkit-appearance: none;
+  appearance: none;
+  background: #6B4FFF;
+  border: none;
+  border-radius: 20px;
+  color: #fff;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 20px;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: background 0.15s ease;
+}
+
+.watchlist-browse-btn:hover {
+  background: #5A3FE8;
 }
