@@ -3,7 +3,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Cell,
   ScatterChart, Scatter, ZAxis,
-  usePlotArea, useXAxisTicks, useYAxisTicks,
+  usePlotArea, useXAxisScale, useYAxisScale,
 } from 'recharts';
 import type { Pool } from '../types';
 
@@ -98,45 +98,19 @@ function ScatterDot({ cx, cy, fill }: { cx?: number; cy?: number; fill?: string 
   );
 }
 
-// Interpolate a pixel coordinate for `target` value between two adjacent ticks.
-// logScale=true uses log-linear interpolation (for the TVL log axis).
-function interpolateTick(
-  ticks: ReadonlyArray<{ value: unknown; coordinate: number }>,
-  target: number,
-  logScale: boolean,
-): number | null {
-  const sorted = [...ticks]
-    .map(t => ({ v: Number(t.value), px: t.coordinate }))
-    .sort((a, b) => a.v - b.v);
-
-  for (let i = 0; i < sorted.length - 1; i++) {
-    const lo = sorted[i];
-    const hi = sorted[i + 1];
-    if (target >= lo.v && target <= hi.v) {
-      const t = logScale
-        ? (Math.log10(target) - Math.log10(lo.v)) / (Math.log10(hi.v) - Math.log10(lo.v))
-        : (target - lo.v) / (hi.v - lo.v);
-      return lo.px + t * (hi.px - lo.px);
-    }
-  }
-  return null;
-}
-
 function QuadrantOverlay() {
   const plot   = usePlotArea();
-  const xTicks = useXAxisTicks();
-  const yTicks = useYAxisTicks();
+  const xScale = useXAxisScale();
+  const yScale = useYAxisScale();
 
-  if (!plot || !xTicks?.length || !yTicks?.length) return null;
+  if (!plot || !xScale || !yScale) return null;
 
   const { x: left, y: top, width: w, height: h } = plot;
 
-  // X axis: log scale, tvlM units. TVL_THRESHOLD = 50 = $50M.
-  const thresholdX = interpolateTick(xTicks, TVL_THRESHOLD, true);
-  // Y axis: linear scale. APY_THRESHOLD = 15%.
-  const thresholdY = interpolateTick(yTicks, APY_THRESHOLD, false);
+  const thresholdX = xScale(TVL_THRESHOLD);
+  const thresholdY = yScale(APY_THRESHOLD);
 
-  if (thresholdX === null || thresholdY === null) return null;
+  if (thresholdX == null || thresholdY == null) return null;
 
   const labelProps = {
     fontSize: 9,
