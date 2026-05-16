@@ -31,11 +31,6 @@ export default function Watchlist({ allPools, watchlistedIds, onToggleWatchlist,
 
   return (
     <div className="watchlist-page">
-      <div className="watchlist-header">
-        <h2 className="watchlist-title">My Watchlist</h2>
-        <p className="watchlist-subtitle">Your saved pools — updated in real time</p>
-      </div>
-
       {watchlistPools.length === 0 ? (
         <div className="watchlist-empty">
           <span className="watchlist-empty-icon">☆</span>
@@ -47,6 +42,10 @@ export default function Watchlist({ allPools, watchlistedIds, onToggleWatchlist,
         </div>
       ) : (
         <>
+          <div className="watchlist-header">
+            <h2 className="watchlist-title">My Watchlist</h2>
+            <p className="watchlist-subtitle">Your saved pools — updated in real time</p>
+          </div>
           <p className="watchlist-summary">
             Tracking {watchlistPools.length} pool{watchlistPools.length !== 1 ? 's' : ''} — highest yield: {highestApy.toFixed(1)}%
           </p>
