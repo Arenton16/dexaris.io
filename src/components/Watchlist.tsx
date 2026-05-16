@@ -30,9 +30,18 @@ export default function Watchlist({ allPools, watchlistedIds, onToggleWatchlist,
     : 0;
 
   return (
-    <div className="watchlist-page">
+    <div className={`watchlist-page${watchlistPools.length === 0 ? ' watchlist-page--empty' : ''}`}>
       {watchlistPools.length === 0 ? (
-        <div className="watchlist-empty">
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '100%',
+          height: 'calc(100vh - 48px)',
+          textAlign: 'center',
+          padding: '24px',
+        }}>
           <span className="watchlist-empty-icon">☆</span>
           <p className="watchlist-empty-main">No pools saved yet</p>
           <p className="watchlist-empty-sub">Star any pool from the Yields page to track it here</p>
