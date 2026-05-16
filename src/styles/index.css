@@ -1,4 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&display=swap');
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/SpaceGrotesk-Medium.woff2') format('woff2');
+}
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -1321,8 +1327,9 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+  min-height: 60vh;
   gap: 12px;
-  padding: 64px 20px;
   text-align: center;
 }
 
@@ -1363,4 +1370,11 @@ body {
 
 .watchlist-browse-btn:hover {
   background: #5A3FE8;
+}
+
+/* ─── Force Space Grotesk on navbar logo area ───────────────── */
+
+.navbar-logo, .dexaris-wordmark {
+  font-family: 'Space Grotesk', sans-serif !important;
+  font-weight: 500 !important;
 }
