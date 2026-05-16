@@ -17,6 +17,7 @@ export default function DexarisLogo({ iconSize = 28, fontSize = 18 }: DexarisLog
           letterSpacing: '0.12em',
           color: '#E8E6FF',
           lineHeight: 1,
+          textTransform: 'uppercase',
         }}
       >
         DEXARIS
