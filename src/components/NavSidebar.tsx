@@ -48,6 +48,7 @@ export default function NavSidebar({
             ? <DexarisIcon size={24} />
             : <DexarisLogo iconSize={24} fontSize={16} />
           }
+          <button className="nav-close-btn" onClick={onClose} aria-label="Close menu">×</button>
         </div>
 
         <nav className="nav-menu">

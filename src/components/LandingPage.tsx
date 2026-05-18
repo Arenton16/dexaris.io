@@ -95,7 +95,7 @@ export default function LandingPage() {
     <div style={{ background: '#080714', minHeight: '100vh', fontFamily: "'Inter', sans-serif", color: '#E8E6FF' }}>
 
       {/* ─── Navbar ─────────────────────────────────────────────── */}
-      <nav style={{
+      <nav className="landing-nav" style={{
         height: '64px',
         background: 'rgba(8,7,20,0.9)',
         backdropFilter: 'blur(12px)',
@@ -106,11 +106,10 @@ export default function LandingPage() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '0 40px',
       }}>
         <DexarisLogo iconSize={24} fontSize={16} />
 
-        <div style={{ display: 'flex', gap: '32px' }}>
+        <div className="landing-nav-links" style={{ display: 'flex', gap: '32px' }}>
           {['Features', 'About', 'Newsletter'].map(label => (
             <a
               key={label}
@@ -141,13 +140,12 @@ export default function LandingPage() {
       </nav>
 
       {/* ─── Hero ───────────────────────────────────────────────── */}
-      <section style={{
+      <section className="hero-section" style={{
         minHeight: '100vh',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '60px 40px',
         position: 'relative',
         overflow: 'hidden',
         textAlign: 'center',
@@ -195,8 +193,7 @@ export default function LandingPage() {
           </div>
 
           {/* Headline */}
-          <h1 style={{
-            fontSize: 'clamp(36px, 6vw, 64px)',
+          <h1 className="hero-headline" style={{
             fontWeight: 500,
             color: '#E8E6FF',
             letterSpacing: '-0.02em',
@@ -208,8 +205,7 @@ export default function LandingPage() {
           </h1>
 
           {/* Subtitle */}
-          <p style={{
-            fontSize: '16px',
+          <p className="hero-subtitle" style={{
             color: 'rgba(232,230,255,0.45)',
             maxWidth: '480px',
             lineHeight: 1.6,
@@ -219,10 +215,10 @@ export default function LandingPage() {
           </p>
 
           {/* CTA buttons */}
-          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <div className="hero-cta-row">
             <button
               onClick={() => navigate('/app')}
-              className="btn-primary"
+              className="btn-primary hero-cta-btn"
               style={{
                 color: '#fff',
                 fontSize: '14px',
@@ -238,7 +234,7 @@ export default function LandingPage() {
             </button>
             <a
               href="#features"
-              className="btn-secondary"
+              className="btn-secondary hero-cta-btn"
               style={{
                 fontSize: '14px',
                 padding: '12px 28px',
@@ -256,8 +252,7 @@ export default function LandingPage() {
       </section>
 
       {/* ─── Features ───────────────────────────────────────────── */}
-      <section id="features" className="reveal" style={{
-        padding: '80px 40px',
+      <section id="features" className="features-section reveal" style={{
         borderTop: '0.5px solid rgba(107,79,255,0.1)',
         maxWidth: '1100px',
         margin: '0 auto',
@@ -274,7 +269,7 @@ export default function LandingPage() {
           Why Dexaris
         </p>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+        <div className="features-grid">
           {[
             {
               icon: <D4Icon />,
@@ -316,7 +311,7 @@ export default function LandingPage() {
       </section>
 
       {/* ─── Live data preview ──────────────────────────────────── */}
-      <section className="reveal" style={{ padding: '0 40px 80px', maxWidth: '1100px', margin: '0 auto', width: '100%' }}>
+      <section className="preview-section reveal" style={{ maxWidth: '1100px', margin: '0 auto', width: '100%' }}>
         <p style={{
           fontSize: '9px',
           textTransform: 'uppercase',
@@ -337,7 +332,7 @@ export default function LandingPage() {
             <thead>
               <tr style={{ borderBottom: '0.5px solid rgba(107,79,255,0.12)' }}>
                 {['Protocol', 'Chain', 'APY', 'TVL'].map(col => (
-                  <th key={col} style={{
+                  <th key={col} className={col === 'TVL' ? 'preview-tvl-col' : undefined} style={{
                     padding: '12px 16px',
                     textAlign: col === 'APY' || col === 'TVL' ? 'right' : 'left',
                     fontSize: '11px',
@@ -376,7 +371,7 @@ export default function LandingPage() {
                       <td style={{ padding: '14px 16px', fontSize: '13px', color: '#4ECDA4', textAlign: 'right', fontWeight: 500 }}>
                         {pool.apy.toFixed(2)}%
                       </td>
-                      <td style={{ padding: '14px 16px', fontSize: '13px', color: 'rgba(232,230,255,0.6)', textAlign: 'right' }}>
+                      <td className="preview-tvl-col" style={{ padding: '14px 16px', fontSize: '13px', color: 'rgba(232,230,255,0.6)', textAlign: 'right' }}>
                         {formatTvl(pool.tvlUsd)}
                       </td>
                     </tr>
@@ -404,18 +399,12 @@ export default function LandingPage() {
       </section>
 
       {/* ─── Newsletter ─────────────────────────────────────────── */}
-      <section id="newsletter" className="reveal" style={{
-        padding: '64px 40px',
+      <section id="newsletter" className="newsletter-section reveal" style={{
         borderTop: '0.5px solid rgba(107,79,255,0.1)',
       }}>
-        <div style={{
+        <div className="newsletter-inner" style={{
           maxWidth: '1100px',
           margin: '0 auto',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '40px',
-          flexWrap: 'wrap',
         }}>
           <div>
             <h2 style={{ fontSize: '18px', fontWeight: 500, color: '#E8E6FF', marginBottom: '8px' }}>
@@ -431,13 +420,14 @@ export default function LandingPage() {
               e.preventDefault();
               window.open(`https://dexaris-newsletter.beehiiv.com/subscribe?email=${encodeURIComponent(email)}`, '_blank');
             }}
-            style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}
+            className="newsletter-form"
           >
             <input
               type="email"
               placeholder="you@example.com"
               value={email}
               onChange={e => setEmail(e.target.value)}
+              className="newsletter-input"
               style={{
                 background: 'rgba(107,79,255,0.08)',
                 border: '0.5px solid rgba(107,79,255,0.2)',
@@ -445,7 +435,6 @@ export default function LandingPage() {
                 padding: '10px 18px',
                 fontSize: '13px',
                 color: '#E8E6FF',
-                width: '220px',
                 outline: 'none',
                 fontFamily: "'Inter', sans-serif",
               }}
@@ -493,14 +482,8 @@ export default function LandingPage() {
       </section>
 
       {/* ─── Footer ─────────────────────────────────────────────── */}
-      <footer className="reveal" style={{
-        padding: '24px 40px',
+      <footer className="landing-footer reveal" style={{
         borderTop: '0.5px solid rgba(107,79,255,0.1)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        flexWrap: 'wrap',
-        gap: '16px',
       }}>
         <DexarisLogo iconSize={20} fontSize={13} />
 

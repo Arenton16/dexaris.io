@@ -165,6 +165,7 @@ export default function App() {
                 sortKey={sortKey}
                 onSortKeyChange={key => { setSortKey(key); setSortDir('desc'); }}
                 isOpen={isSidebarOpen}
+                onClose={() => setIsSidebarOpen(false)}
               />
               <main className="content">
                 <YieldTable

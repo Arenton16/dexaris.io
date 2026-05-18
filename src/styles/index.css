@@ -1580,3 +1580,246 @@ body {
   color: rgba(232,230,255,0.7);
   cursor: pointer;
 }
+
+/* ===== RESPONSIVE STYLES ===== */
+
+/* ─── Landing page base layout classes ───────────────────────── */
+
+.landing-nav {
+  padding: 0 40px;
+}
+
+.hero-section {
+  padding: 60px 40px;
+}
+
+.hero-headline {
+  font-size: clamp(36px, 6vw, 64px);
+}
+
+.hero-subtitle {
+  font-size: 16px;
+}
+
+.hero-cta-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.features-section {
+  padding: 80px 40px;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.preview-section {
+  padding: 0 40px 80px;
+}
+
+.newsletter-section {
+  padding: 64px 40px;
+}
+
+.newsletter-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+.newsletter-form {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.newsletter-input {
+  width: 220px;
+}
+
+.landing-footer {
+  padding: 24px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+/* ─── Sidebar apply-filters button (mobile only) ─────────────── */
+
+.sidebar-apply-btn {
+  display: none;
+}
+
+/* ─── Nav sidebar close button (mobile only) ─────────────────── */
+
+.nav-close-btn {
+  display: none;
+}
+
+/* ─── Landing page — mobile (max-width: 767px) ───────────────── */
+
+@media (max-width: 767px) {
+  .landing-nav {
+    padding: 0 20px;
+  }
+  .landing-nav-links {
+    display: none;
+  }
+  .hero-section {
+    padding: 40px 24px;
+  }
+  .hero-headline {
+    font-size: clamp(32px, 8vw, 48px);
+  }
+  .hero-subtitle {
+    font-size: 14px;
+  }
+  .hero-cta-row {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+  .hero-cta-btn {
+    width: 100%;
+    text-align: center;
+  }
+  .features-section {
+    padding: 48px 24px;
+  }
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+  .preview-section {
+    padding: 0 24px 48px;
+  }
+  .preview-tvl-col {
+    display: none;
+  }
+  .newsletter-section {
+    padding: 48px 24px;
+  }
+  .newsletter-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
+  }
+  .newsletter-form {
+    width: 100%;
+    flex-direction: column;
+  }
+  .newsletter-input {
+    width: 100%;
+  }
+  .landing-footer {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 24px;
+  }
+}
+
+/* ─── Landing page — tablet (min-width: 768px, max-width: 1023px) */
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .newsletter-section {
+    padding: 48px 32px;
+  }
+}
+
+/* ─── Main platform — mobile (max-width: 767px) ──────────────── */
+
+@media (max-width: 767px) {
+  /* Nav sidebar: full-height overlay at 80% width */
+  .nav-sidebar,
+  .nav-sidebar.nav-collapsed {
+    width: 80%;
+    z-index: 200;
+  }
+
+  /* Close button visible inside mobile sidebar */
+  .nav-close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: rgba(232,230,255,0.45);
+    font-size: 22px;
+    line-height: 1;
+    padding: 0 4px;
+    cursor: pointer;
+    transition: color 0.15s ease;
+  }
+  .nav-close-btn:hover {
+    color: #E8E6FF;
+  }
+
+  /* Topbar: title centred between hamburger and wallet button */
+  .topbar-title {
+    flex: 1;
+    text-align: center;
+  }
+
+  /* Hide refresh countdown to save space */
+  .topbar-refresh {
+    display: none;
+  }
+
+  /* Compact Connect Wallet button */
+  .connect-wallet-btn {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+
+  /* Apply filters button visible on mobile only */
+  .sidebar-apply-btn {
+    display: block;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    margin-top: 16px;
+    padding: 10px;
+    background: #6B4FFF;
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .sidebar-apply-btn:hover {
+    background: #5A3FE8;
+  }
+}
+
+/* ─── Main platform — tablet (max-width: 1023px) ─────────────── */
+
+@media (max-width: 1023px) {
+  /* Charts stack to single column */
+  .charts-section {
+    grid-template-columns: 1fr;
+  }
+
+  /* Stats bar: slightly smaller text on tablet */
+  .stats-value {
+    font-size: 17px;
+  }
+  .stats-label {
+    font-size: 8px;
+  }
+}

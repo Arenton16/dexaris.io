@@ -8,13 +8,14 @@ interface Props {
   sortKey: 'apy' | 'tvlUsd';
   onSortKeyChange: (key: 'apy' | 'tvlUsd') => void;
   isOpen: boolean;
+  onClose?: () => void;
 }
 
 export default function Sidebar({
   selected, onChange,
   minApy, onMinApyChange,
   sortKey, onSortKeyChange,
-  isOpen,
+  isOpen, onClose,
 }: Props) {
   const chains = Object.keys(CHAIN_LABELS) as ChainKey[];
   const allSelected = selected.length === chains.length;
@@ -91,6 +92,12 @@ export default function Sidebar({
       >
         Highest TVL
       </button>
+
+      {onClose && (
+        <button className="sidebar-apply-btn" onClick={onClose}>
+          Apply filters
+        </button>
+      )}
     </aside>
   );
 }
