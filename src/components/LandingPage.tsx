@@ -85,7 +85,7 @@ export default function LandingPage() {
           }
         });
       },
-      { threshold: 0.15 }
+      { threshold: 0.2 }
     );
     document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
     return () => observer.disconnect();
@@ -115,7 +115,8 @@ export default function LandingPage() {
             <a
               key={label}
               href={`#${label.toLowerCase()}`}
-              style={{ color: 'rgba(232,230,255,0.45)', fontSize: '13px', textDecoration: 'none' }}
+              className="nav-link"
+              style={{ fontSize: '13px', textDecoration: 'none' }}
             >
               {label}
             </a>
@@ -124,8 +125,8 @@ export default function LandingPage() {
 
         <button
           onClick={() => navigate('/app')}
+          className="nav-cta"
           style={{
-            background: '#6B4FFF',
             color: '#fff',
             fontSize: '13px',
             padding: '8px 20px',
@@ -221,8 +222,8 @@ export default function LandingPage() {
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
             <button
               onClick={() => navigate('/app')}
+              className="btn-primary"
               style={{
-                background: '#6B4FFF',
                 color: '#fff',
                 fontSize: '14px',
                 padding: '12px 28px',
@@ -237,13 +238,11 @@ export default function LandingPage() {
             </button>
             <a
               href="#features"
+              className="btn-secondary"
               style={{
-                background: 'transparent',
-                color: 'rgba(232,230,255,0.6)',
                 fontSize: '14px',
                 padding: '12px 28px',
                 borderRadius: '24px',
-                border: '0.5px solid rgba(107,79,255,0.3)',
                 cursor: 'pointer',
                 fontWeight: 500,
                 textDecoration: 'none',
@@ -293,9 +292,7 @@ export default function LandingPage() {
               desc: 'Save pools you care about to your personal watchlist. Set APY targets and get notified when a yield hits your threshold.',
             },
           ].map(({ icon, title, desc }, idx) => (
-            <div key={title} className={`reveal reveal-delay-${idx + 1}`} style={{
-              background: 'rgba(107,79,255,0.06)',
-              border: '0.5px solid rgba(107,79,255,0.12)',
+            <div key={title} className={`reveal reveal-delay-${idx + 1} feature-card`} style={{
               borderRadius: '12px',
               padding: '24px',
             }}>
@@ -370,7 +367,7 @@ export default function LandingPage() {
                     </tr>
                   ))
                 : pools.map((pool, i) => (
-                    <tr key={i} style={{ borderBottom: i < pools.length - 1 ? '0.5px solid rgba(107,79,255,0.06)' : 'none' }}>
+                    <tr key={i} className="preview-row" style={{ borderBottom: i < pools.length - 1 ? '0.5px solid rgba(107,79,255,0.06)' : 'none' }}>
                       <td style={{ padding: '14px 16px', fontSize: '13px', color: '#E8E6FF' }}>
                         <span style={{ textTransform: 'capitalize' }}>{pool.project}</span>
                         <span style={{ fontSize: '11px', color: 'rgba(232,230,255,0.35)', marginLeft: '8px' }}>{pool.symbol}</span>
@@ -455,8 +452,8 @@ export default function LandingPage() {
             />
             <button
               type="submit"
+              className="newsletter-btn"
               style={{
-                background: '#6B4FFF',
                 color: '#fff',
                 border: 'none',
                 borderRadius: '20px',
@@ -522,7 +519,8 @@ export default function LandingPage() {
               href={href}
               target="_blank"
               rel="noopener noreferrer"
-              style={{ fontSize: '12px', color: 'rgba(232,230,255,0.3)', textDecoration: 'none' }}
+              className="footer-link"
+              style={{ fontSize: '12px', textDecoration: 'none' }}
             >
               {label}
             </a>
