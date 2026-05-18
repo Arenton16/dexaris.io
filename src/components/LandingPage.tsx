@@ -44,16 +44,16 @@ function D4Icon() {
 }
 
 const auroraColumns = [
-  { left: '5%',  width: '6%',  animation: 'aurora1',  duration: '8s',  color: 'rgba(107,79,255,0.25)' },
-  { left: '13%', width: '5%',  animation: 'aurora2',  duration: '11s', color: 'rgba(139,115,255,0.2)' },
-  { left: '21%', width: '7%',  animation: 'aurora3',  duration: '9s',  color: 'rgba(78,205,164,0.08)' },
-  { left: '30%', width: '5%',  animation: 'aurora4',  duration: '7s',  color: 'rgba(107,79,255,0.2)' },
-  { left: '38%', width: '8%',  animation: 'aurora5',  duration: '12s', color: 'rgba(139,115,255,0.18)' },
-  { left: '48%', width: '5%',  animation: 'aurora6',  duration: '10s', color: 'rgba(107,79,255,0.22)' },
-  { left: '56%', width: '7%',  animation: 'aurora7',  duration: '8s',  color: 'rgba(78,205,164,0.07)' },
-  { left: '65%', width: '6%',  animation: 'aurora8',  duration: '11s', color: 'rgba(107,79,255,0.25)' },
-  { left: '74%', width: '5%',  animation: 'aurora9',  duration: '9s',  color: 'rgba(139,115,255,0.2)' },
-  { left: '83%', width: '6%',  animation: 'aurora10', duration: '7s',  color: 'rgba(107,79,255,0.18)' },
+  { left: '5%',  width: '6%',  animation: 'aurora1',  duration: '8s',  delay: '0s',    color: 'rgba(107,79,255,0.25)' },
+  { left: '13%', width: '5%',  animation: 'aurora2',  duration: '11s', delay: '-2.3s', color: 'rgba(139,115,255,0.2)' },
+  { left: '21%', width: '7%',  animation: 'aurora3',  duration: '9s',  delay: '-4.1s', color: 'rgba(78,205,164,0.08)' },
+  { left: '30%', width: '5%',  animation: 'aurora4',  duration: '7s',  delay: '-1.7s', color: 'rgba(107,79,255,0.2)' },
+  { left: '38%', width: '8%',  animation: 'aurora5',  duration: '12s', delay: '-3.5s', color: 'rgba(139,115,255,0.18)' },
+  { left: '48%', width: '5%',  animation: 'aurora6',  duration: '10s', delay: '-5.2s', color: 'rgba(107,79,255,0.22)' },
+  { left: '56%', width: '7%',  animation: 'aurora7',  duration: '8s',  delay: '-0.8s', color: 'rgba(78,205,164,0.07)' },
+  { left: '65%', width: '6%',  animation: 'aurora8',  duration: '11s', delay: '-4.6s', color: 'rgba(107,79,255,0.25)' },
+  { left: '74%', width: '5%',  animation: 'aurora9',  duration: '9s',  delay: '-2.9s', color: 'rgba(139,115,255,0.2)' },
+  { left: '83%', width: '6%',  animation: 'aurora10', duration: '7s',  delay: '-1.4s', color: 'rgba(107,79,255,0.18)' },
 ];
 
 export default function LandingPage() {
@@ -74,6 +74,21 @@ export default function LandingPage() {
         setLoadingPools(false);
       })
       .catch(() => setLoadingPools(false));
+  }, []);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      },
+      { threshold: 0.15 }
+    );
+    document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
   }, []);
 
   return (
@@ -154,6 +169,7 @@ export default function LandingPage() {
                 borderRadius: '40px 40px 0 0',
                 background: `linear-gradient(to top, ${col.color}, transparent)`,
                 animation: `${col.animation} ${col.duration} ease-in-out infinite`,
+                animationDelay: col.delay,
               }}
             />
           ))}
@@ -241,7 +257,7 @@ export default function LandingPage() {
       </section>
 
       {/* ─── Features ───────────────────────────────────────────── */}
-      <section id="features" style={{
+      <section id="features" className="reveal" style={{
         padding: '80px 40px',
         borderTop: '0.5px solid rgba(107,79,255,0.1)',
         maxWidth: '1100px',
@@ -276,8 +292,8 @@ export default function LandingPage() {
               title: 'Watchlist and alerts',
               desc: 'Save pools you care about to your personal watchlist. Set APY targets and get notified when a yield hits your threshold.',
             },
-          ].map(({ icon, title, desc }) => (
-            <div key={title} style={{
+          ].map(({ icon, title, desc }, idx) => (
+            <div key={title} className={`reveal reveal-delay-${idx + 1}`} style={{
               background: 'rgba(107,79,255,0.06)',
               border: '0.5px solid rgba(107,79,255,0.12)',
               borderRadius: '12px',
@@ -303,7 +319,7 @@ export default function LandingPage() {
       </section>
 
       {/* ─── Live data preview ──────────────────────────────────── */}
-      <section style={{ padding: '0 40px 80px', maxWidth: '1100px', margin: '0 auto', width: '100%' }}>
+      <section className="reveal" style={{ padding: '0 40px 80px', maxWidth: '1100px', margin: '0 auto', width: '100%' }}>
         <p style={{
           fontSize: '9px',
           textTransform: 'uppercase',
@@ -391,7 +407,7 @@ export default function LandingPage() {
       </section>
 
       {/* ─── Newsletter ─────────────────────────────────────────── */}
-      <section id="newsletter" style={{
+      <section id="newsletter" className="reveal" style={{
         padding: '64px 40px',
         borderTop: '0.5px solid rgba(107,79,255,0.1)',
       }}>
@@ -480,7 +496,7 @@ export default function LandingPage() {
       </section>
 
       {/* ─── Footer ─────────────────────────────────────────────── */}
-      <footer style={{
+      <footer className="reveal" style={{
         padding: '24px 40px',
         borderTop: '0.5px solid rgba(107,79,255,0.1)',
         display: 'flex',
