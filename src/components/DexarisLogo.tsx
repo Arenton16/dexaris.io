@@ -10,6 +10,7 @@ export default function DexarisLogo({ iconSize = 28, fontSize = 18 }: DexarisLog
     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
       <DexarisIcon size={iconSize} />
       <span
+        className="dexaris-wordmark"
         style={{
           fontFamily: "'Space Grotesk', sans-serif",
           fontWeight: 500,

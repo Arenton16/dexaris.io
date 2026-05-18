@@ -88,7 +88,7 @@ body {
 
 .nav-section-label {
   display: block;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 9px;
   font-weight: 500;
   text-transform: uppercase;
@@ -104,7 +104,7 @@ body {
   gap: 10px;
   padding: 12px 16px;
   cursor: pointer;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 13px;
   font-weight: 400;
   color: rgba(232,230,255,0.45);
@@ -150,7 +150,7 @@ body {
 }
 
 .nav-soon {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 8px;
   font-weight: 500;
   text-transform: uppercase;
@@ -162,7 +162,7 @@ body {
 }
 
 .nav-credit {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 9px;
   color: rgba(232,230,255,0.2);
   padding: 0 16px 16px;
@@ -177,7 +177,7 @@ body {
   border: 0.5px solid rgba(107,79,255,0.15);
   border-radius: 6px;
   color: rgba(232,230,255,0.35);
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 14px;
   line-height: 1;
   padding: 6px 10px;
@@ -200,7 +200,7 @@ body {
   border: 0.5px solid rgba(107,79,255,0.25);
   border-radius: 6px;
   padding: 5px 10px;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 12px;
   font-weight: 400;
   color: var(--text);
@@ -306,7 +306,7 @@ body {
 }
 
 .topbar-title {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 14px;
   font-weight: 400;
   color: #E8E6FF;
@@ -328,7 +328,7 @@ body {
   border: 1px solid rgba(107,79,255,0.2);
   border-radius: 6px;
   color: rgba(232,230,255,0.6);
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 11px;
   padding: 4px 10px;
   cursor: pointer;
@@ -347,7 +347,7 @@ body {
 }
 
 .topbar-countdown {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 11px;
   color: rgba(232,230,255,0.4);
   white-space: nowrap;
@@ -365,7 +365,7 @@ body {
   border: none;
   border-radius: 20px;
   color: #fff;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 11px;
   font-weight: 500;
   padding: 5px 14px;
@@ -388,7 +388,7 @@ body {
   padding: 10px 28px;
   background: rgba(107,79,255,0.12);
   border-bottom: 0.5px solid rgba(107,79,255,0.25);
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   flex-shrink: 0;
 }
 
@@ -403,7 +403,7 @@ body {
   display: inline-block;
   background: #6B4FFF;
   color: #fff;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 12px;
   font-weight: 500;
   padding: 6px 16px;
@@ -456,7 +456,7 @@ body {
 }
 
 .sidebar-title {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 9px;
   font-weight: 500;
   letter-spacing: 0.08em;
@@ -486,7 +486,7 @@ body {
   border: 1px solid rgba(107,79,255,0.2);
   border-radius: 6px;
   color: var(--accent-text);
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 13px;
   font-weight: 400;
   outline: none;
@@ -505,7 +505,7 @@ body {
 
 .apy-input-suffix {
   color: var(--accent-text);
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 13px;
   flex-shrink: 0;
 }
@@ -522,7 +522,7 @@ body {
   border: 1px solid rgba(232,230,255,0.12);
   border-radius: 20px;
   color: rgba(232,230,255,0.45);
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 11px;
   font-weight: 400;
   cursor: pointer;
@@ -612,7 +612,7 @@ body {
 }
 
 .error-msg {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 14px;
   font-weight: 300;
   color: var(--text-muted);
@@ -627,7 +627,7 @@ body {
   border: 1px solid var(--accent);
   border-radius: 6px;
   color: var(--accent-text);
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -647,7 +647,7 @@ body {
   grid-template-columns: repeat(4, 1fr);
   border-bottom: 0.5px solid rgba(107,79,255,0.1);
   margin-bottom: 28px;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .stats-cell {
@@ -669,7 +669,7 @@ body {
   font-size: 20px;
   font-weight: 500;
   line-height: 1.2;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .stats-delta {
@@ -701,7 +701,7 @@ body {
 }
 
 .chart-title {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 10px;
   font-weight: 500;
   letter-spacing: 0.06em;
@@ -721,7 +721,7 @@ body {
   display: flex;
   align-items: center;
   gap: 5px;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 10px;
   color: rgba(232,230,255,0.4);
   white-space: nowrap;
@@ -741,7 +741,7 @@ body {
 }
 
 .detail-history-title {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 10px;
   font-weight: 500;
   text-transform: uppercase;
@@ -751,7 +751,7 @@ body {
 }
 
 .history-no-data {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 12px;
   color: rgba(232,230,255,0.3);
   text-align: center;
@@ -778,7 +778,7 @@ body {
   border: 0.5px solid rgba(107,79,255,0.2);
   border-radius: 6px;
   color: var(--text);
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 13px;
   font-weight: 300;
   outline: none;
@@ -801,7 +801,7 @@ body {
 }
 
 .table-title {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 17px;
   font-weight: 500;
   letter-spacing: 2px;
@@ -820,7 +820,7 @@ body {
 .yield-table th {
   text-align: left;
   padding: 10px 14px;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 9px;
   font-weight: 500;
   text-transform: uppercase;
@@ -897,7 +897,7 @@ body {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   text-transform: uppercase;
 }
 
@@ -921,7 +921,7 @@ body {
   border-radius: 4px;
   font-size: 10px;
   font-weight: 600;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   letter-spacing: 0.4px;
   text-transform: uppercase;
 }
@@ -954,7 +954,7 @@ body {
 }
 
 .empty-state-main {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 14px;
   font-weight: 400;
   color: #E8E6FF;
@@ -962,7 +962,7 @@ body {
 }
 
 .empty-state-sub {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 12px;
   font-weight: 300;
   color: rgba(232,230,255,0.4);
@@ -978,7 +978,7 @@ body {
   border: none;
   border-radius: 20px;
   color: #fff;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
@@ -1058,7 +1058,7 @@ body {
 }
 
 .detail-protocol {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 26px;
   font-weight: 500;
   color: var(--accent-text);
@@ -1068,7 +1068,7 @@ body {
 }
 
 .detail-asset {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 15px;
   font-weight: 300;
   color: var(--text);
@@ -1087,7 +1087,7 @@ body {
 }
 
 .detail-label {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 10px;
   font-weight: 500;
   letter-spacing: 2px;
@@ -1096,7 +1096,7 @@ body {
 }
 
 .detail-value {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 34px;
   font-weight: 500;
   line-height: 1;
@@ -1121,7 +1121,7 @@ body {
 
 .last-updated {
   margin-top: 20px;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 11px;
   font-weight: 300;
   color: var(--text-muted);
@@ -1299,7 +1299,7 @@ body {
 .nav-badge {
   background: #6B4FFF;
   color: #fff;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 9px;
   font-weight: 500;
   border-radius: 20px;
@@ -1325,7 +1325,7 @@ body {
 }
 
 .watchlist-title {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 20px;
   font-weight: 500;
   color: #E8E6FF;
@@ -1333,13 +1333,13 @@ body {
 }
 
 .watchlist-subtitle {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 13px;
   color: rgba(232,230,255,0.4);
 }
 
 .watchlist-summary {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 12px;
   color: rgba(232,230,255,0.4);
   margin-bottom: 16px;
@@ -1356,14 +1356,14 @@ body {
 }
 
 .watchlist-empty-main {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 16px;
   font-weight: 400;
   color: #E8E6FF;
 }
 
 .watchlist-empty-sub {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 13px;
   color: rgba(232,230,255,0.4);
 }
@@ -1375,7 +1375,7 @@ body {
   border: none;
   border-radius: 20px;
   color: #fff;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 13px;
   font-weight: 500;
   padding: 8px 20px;
@@ -1388,9 +1388,10 @@ body {
   background: #5A3FE8;
 }
 
-/* ─── Force Space Grotesk on navbar logo area ───────────────── */
+/* ─── Space Grotesk on wordmark only ────────────────────────── */
 
-.navbar-logo, .dexaris-wordmark {
+.dexaris-wordmark {
   font-family: 'Space Grotesk', sans-serif !important;
   font-weight: 500 !important;
+  letter-spacing: 0.12em !important;
 }
