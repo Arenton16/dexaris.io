@@ -1670,9 +1670,15 @@ body {
 @media (max-width: 767px) {
   .landing-nav {
     padding: 0 20px;
+    overflow: hidden;
+    justify-content: space-between;
   }
   .landing-nav-links {
-    display: none;
+    display: none !important;
+  }
+  .nav-cta {
+    white-space: nowrap;
+    flex-shrink: 0;
   }
   .hero-section {
     padding: 40px 24px;
