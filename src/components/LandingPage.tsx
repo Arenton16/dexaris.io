@@ -1,14 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DexarisLogo from './DexarisLogo';
-
-interface Pool {
-  project: string;
-  chain: string;
-  apy: number;
-  tvlUsd: number;
-  symbol: string;
-}
+import { usePools } from '../contexts/PoolsContext';
 
 function formatTvl(tvl: number): string {
   if (tvl >= 1_000_000_000) return `$${(tvl / 1_000_000_000).toFixed(1)}B`;
@@ -58,23 +51,13 @@ const auroraColumns = [
 
 export default function LandingPage() {
   const navigate = useNavigate();
-  const [pools, setPools] = useState<Pool[]>([]);
-  const [loadingPools, setLoadingPools] = useState(true);
   const [email, setEmail] = useState('');
 
-  useEffect(() => {
-    fetch('https://yields.llama.fi/pools')
-      .then(r => r.json())
-      .then(({ data }: { data: Pool[] }) => {
-        const filtered = data
-          .filter(p => p.apy > 0 && p.apy <= 200 && p.tvlUsd >= 1_000_000)
-          .sort((a, b) => b.apy - a.apy)
-          .slice(0, 5);
-        setPools(filtered);
-        setLoadingPools(false);
-      })
-      .catch(() => setLoadingPools(false));
-  }, []);
+  const { allPools, isLoading: loadingPools } = usePools();
+  const pools = allPools
+    .filter(p => (p.apy ?? 0) > 0)
+    .sort((a, b) => (b.apy ?? 0) - (a.apy ?? 0))
+    .slice(0, 5);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -369,7 +352,7 @@ export default function LandingPage() {
                       </td>
                       <td style={{ padding: '14px 16px', fontSize: '12px', color: 'rgba(232,230,255,0.5)' }}>{pool.chain}</td>
                       <td style={{ padding: '14px 16px', fontSize: '13px', color: '#4ECDA4', textAlign: 'right', fontWeight: 500 }}>
-                        {pool.apy.toFixed(2)}%
+                        {(pool.apy ?? 0).toFixed(2)}%
                       </td>
                       <td className="preview-tvl-col" style={{ padding: '14px 16px', fontSize: '13px', color: 'rgba(232,230,255,0.6)', textAlign: 'right' }}>
                         {formatTvl(pool.tvlUsd)}

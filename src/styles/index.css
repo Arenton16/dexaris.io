@@ -469,6 +469,51 @@ body {
   box-shadow: 0 4px 16px rgba(107,79,255,0.3);
 }
 
+.connect-wallet-btn:disabled {
+  background: var(--surface);
+  color: rgba(232,230,255,0.45);
+  border: 0.5px solid rgba(107,79,255,0.2);
+  cursor: default;
+}
+
+.connect-wallet-btn:disabled:hover {
+  background: var(--surface);
+  transform: none;
+  box-shadow: none;
+}
+
+/* ─── Coming-soon tooltip wrapper ───────────────────────────── */
+
+.coming-soon-wrap {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.coming-soon-wrap::after {
+  content: 'Coming soon';
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface);
+  border: 0.5px solid rgba(107,79,255,0.25);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  color: rgba(232,230,255,0.5);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 50;
+}
+
+.coming-soon-wrap:hover::after {
+  opacity: 1;
+}
+
 /* ─── Newsletter banner ─────────────────────────────────────── */
 
 .news-banner {
@@ -1082,6 +1127,31 @@ body {
   background: #5A3FE8;
 }
 
+/* ─── Load more button ──────────────────────────────────────── */
+
+.load-more-btn {
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--surface);
+  border: 1px solid rgba(107,79,255,0.35);
+  border-radius: 20px;
+  color: #E8E6FF;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  padding: 9px 28px;
+  cursor: pointer;
+  letter-spacing: 0.3px;
+  transition: all 0.15s ease;
+}
+
+.load-more-btn:hover {
+  background: rgba(107,79,255,0.12);
+  border-color: rgba(107,79,255,0.6);
+  box-shadow: 0 0 20px rgba(107,79,255,0.15);
+  transform: translateY(-1px);
+}
+
 /* ─── Pool detail panel ─────────────────────────────────────── */
 
 .detail-overlay {
@@ -1239,16 +1309,36 @@ body {
 /* ─── Mobile / Responsive ───────────────────────────────────── */
 
 @media (max-width: 767px) {
-  /* Nav sidebar: always full width, hidden off-screen, slides in */
+  /* Nav sidebar: full-height overlay at 80% width, slides in */
   .nav-sidebar,
   .nav-sidebar.nav-collapsed {
-    width: 220px;
+    width: 80%;
+    z-index: 200;
     transform: translateX(-100%);
     transition: transform 0.25s ease;
   }
 
   .nav-sidebar.nav-open {
     transform: translateX(0);
+  }
+
+  /* Close button visible inside mobile sidebar */
+  .nav-close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: rgba(232,230,255,0.45);
+    font-size: 22px;
+    line-height: 1;
+    padding: 0 4px;
+    cursor: pointer;
+    transition: color 0.15s ease;
+  }
+  .nav-close-btn:hover {
+    color: #E8E6FF;
   }
 
   /* Main wrapper takes full width on mobile */
@@ -1265,6 +1355,23 @@ body {
   /* Show filters button in top bar */
   .topbar-filter-btn {
     display: block;
+  }
+
+  /* Topbar: title centred between hamburger and wallet button */
+  .topbar-title {
+    flex: 1;
+    text-align: center;
+  }
+
+  /* Hide refresh countdown to save space */
+  .topbar-refresh {
+    display: none;
+  }
+
+  /* Compact Connect Wallet button */
+  .connect-wallet-btn {
+    padding: 5px 10px;
+    font-size: 11px;
   }
 
   /* Banner: stack text above button row */
@@ -1307,6 +1414,28 @@ body {
     inset: 0;
     background: rgba(12,11,26,0.8);
     z-index: 29;
+  }
+
+  /* Apply filters button visible on mobile only */
+  .sidebar-apply-btn {
+    display: block;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    margin-top: 16px;
+    padding: 10px;
+    background: #6B4FFF;
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .sidebar-apply-btn:hover {
+    background: #5A3FE8;
   }
 
   /* Table columns */
@@ -1480,14 +1609,6 @@ body {
 
 .watchlist-browse-btn:hover {
   background: #5A3FE8;
-}
-
-/* ─── Space Grotesk on wordmark only ────────────────────────── */
-
-.dexaris-wordmark {
-  font-family: 'Space Grotesk', sans-serif !important;
-  font-weight: 500 !important;
-  letter-spacing: 0.12em !important;
 }
 
 /* ─── Landing page interactive elements ─────────────────────── */
@@ -1741,75 +1862,6 @@ body {
   }
   .newsletter-section {
     padding: 48px 32px;
-  }
-}
-
-/* ─── Main platform — mobile (max-width: 767px) ──────────────── */
-
-@media (max-width: 767px) {
-  /* Nav sidebar: full-height overlay at 80% width */
-  .nav-sidebar,
-  .nav-sidebar.nav-collapsed {
-    width: 80%;
-    z-index: 200;
-  }
-
-  /* Close button visible inside mobile sidebar */
-  .nav-close-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-left: auto;
-    background: none;
-    border: none;
-    color: rgba(232,230,255,0.45);
-    font-size: 22px;
-    line-height: 1;
-    padding: 0 4px;
-    cursor: pointer;
-    transition: color 0.15s ease;
-  }
-  .nav-close-btn:hover {
-    color: #E8E6FF;
-  }
-
-  /* Topbar: title centred between hamburger and wallet button */
-  .topbar-title {
-    flex: 1;
-    text-align: center;
-  }
-
-  /* Hide refresh countdown to save space */
-  .topbar-refresh {
-    display: none;
-  }
-
-  /* Compact Connect Wallet button */
-  .connect-wallet-btn {
-    padding: 5px 10px;
-    font-size: 11px;
-  }
-
-  /* Apply filters button visible on mobile only */
-  .sidebar-apply-btn {
-    display: block;
-    -webkit-appearance: none;
-    appearance: none;
-    width: 100%;
-    margin-top: 16px;
-    padding: 10px;
-    background: #6B4FFF;
-    border: none;
-    border-radius: 8px;
-    color: #fff;
-    font-family: 'Inter', sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.15s ease;
-  }
-  .sidebar-apply-btn:hover {
-    background: #5A3FE8;
   }
 }
 

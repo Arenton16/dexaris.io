@@ -40,7 +40,9 @@ export default function TopBar({
           }
         </div>
 
-        <button className="connect-wallet-btn">Connect Wallet</button>
+        <span className="coming-soon-wrap">
+          <button className="connect-wallet-btn" disabled>Connect Wallet</button>
+        </span>
       </div>
     </div>
   );

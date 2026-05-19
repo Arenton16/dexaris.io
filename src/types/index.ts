@@ -9,12 +9,12 @@ export interface Pool {
 }
 
 export const CHAIN_LOGOS: Record<string, string> = {
-  Ethereum: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png',
-  Solana:   'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/solana/info/logo.png',
-  Arbitrum: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/arbitrum/info/logo.png',
-  Base:     'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/base/info/logo.png',
-  Avalanche:'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/avalanchec/info/logo.png',
-  Polygon:  'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/polygon/info/logo.png',
+  Ethereum: '/logos/chains/ethereum.png',
+  Solana:   '/logos/chains/solana.png',
+  Arbitrum: '/logos/chains/arbitrum.png',
+  Base:     '/logos/chains/base.png',
+  Avalanche:'/logos/chains/avalanche.png',
+  Polygon:  '/logos/chains/polygon.png',
 };
 
 export type ChainKey = 'ETH' | 'SOL' | 'ARB' | 'BASE' | 'AVAX' | 'POLY';

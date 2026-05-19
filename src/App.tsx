@@ -5,14 +5,11 @@ import NewsBanner from './components/NewsBanner';
 import Sidebar from './components/Sidebar';
 import YieldTable from './components/YieldTable';
 import Watchlist from './components/Watchlist';
+import { usePools } from './contexts/PoolsContext';
 import { useWatchlist } from './hooks/useWatchlist';
-import { CHAIN_LABELS, type ChainKey, type Pool } from './types';
+import { CHAIN_LABELS, type ChainKey } from './types';
 
 export type Page = 'yields' | 'watchlist';
-
-function isValidApy(apy: number | null | undefined): boolean {
-  return apy != null && Number.isFinite(apy) && apy >= 0.005;
-}
 
 export default function App() {
   const [selectedChains, setSelectedChains] = useState<ChainKey[]>(
@@ -22,63 +19,30 @@ export default function App() {
   const [sortKey, setSortKey] = useState<'apy' | 'tvlUsd'>('apy');
   const [sortDir, setSortDir] = useState<'desc' | 'asc'>('desc');
   const [countdown, setCountdown] = useState(60);
-  const [refreshTick, setRefreshTick] = useState(0);
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [navCollapsed, setNavCollapsed] = useState(true);
   const [bannerVisible, setBannerVisible] = useState(true);
   const [currentPage, setCurrentPage] = useState<Page>('yields');
-
-  // Pool data (lifted from YieldTable so Watchlist can share it)
-  const [allPools, setAllPools] = useState<Pool[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [fetchedAt, setFetchedAt] = useState<Date | null>(null);
   const [isFlashing, setIsFlashing] = useState(false);
   const [apyDelta, setApyDelta] = useState<number | null>(null);
-  const [retryCount, setRetryCount] = useState(0);
-  const hasLoadedOnce = useRef(false);
-  const prevApyRef = useRef<number | null>(null);
 
+  const { allPools, isLoading, error, fetchedAt, refresh } = usePools();
   const { ids: watchlistedIds, toggle: toggleWatchlist } = useWatchlist();
 
+  const prevFetchedAt = useRef<Date | null>(null);
+  const prevApyRef = useRef<number | null>(null);
+
+  // Flash timestamp on background refresh (not on the very first load)
   useEffect(() => {
-    const supportedChains = new Set(Object.values(CHAIN_LABELS));
-    const isBackground = hasLoadedOnce.current;
-    if (!isBackground) setIsLoading(true);
-    setError(null);
+    if (fetchedAt && prevFetchedAt.current) {
+      setIsFlashing(true);
+      setTimeout(() => setIsFlashing(false), 1800);
+    }
+    prevFetchedAt.current = fetchedAt;
+  }, [fetchedAt]);
 
-    fetch('https://yields.llama.fi/pools')
-      .then(res => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json() as Promise<{ data: Pool[] }>;
-      })
-      .then(({ data }) => {
-        const filtered = data
-          .filter(p =>
-            supportedChains.has(p.chain) &&
-            p.tvlUsd >= 1_000_000 &&
-            isValidApy(p.apy) &&
-            (p.apy ?? 0) <= 200
-          )
-          .sort((a, b) => b.tvlUsd - a.tvlUsd);
-        const wasLoaded = hasLoadedOnce.current;
-        hasLoadedOnce.current = true;
-        setAllPools(filtered);
-        setFetchedAt(new Date());
-        setIsLoading(false);
-        if (wasLoaded) {
-          setIsFlashing(true);
-          setTimeout(() => setIsFlashing(false), 1800);
-        }
-      })
-      .catch(() => {
-        if (!hasLoadedOnce.current) setError('fetch_failed');
-        setIsLoading(false);
-      });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [retryCount, refreshTick]);
-
+  // Track max-APY delta between refreshes
   useEffect(() => {
     if (allPools.length === 0) return;
     const current = allPools.reduce((max, p) => Math.max(max, p.apy ?? 0), 0);
@@ -90,9 +54,9 @@ export default function App() {
   }, [allPools]);
 
   const triggerRefresh = useCallback(() => {
-    setRefreshTick(t => t + 1);
+    refresh();
     setCountdown(60);
-  }, []);
+  }, [refresh]);
 
   useEffect(() => {
     const id = setInterval(() => setCountdown(c => c - 1), 1000);
@@ -175,7 +139,7 @@ export default function App() {
                   fetchedAt={fetchedAt}
                   isFlashing={isFlashing}
                   apyDelta={apyDelta}
-                  onRetry={() => setRetryCount(c => c + 1)}
+                  onRetry={triggerRefresh}
                   selectedChains={selectedChains}
                   minApy={minApy}
                   sortKey={sortKey}

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { CHAIN_LABELS, CHAIN_LOGOS, type ChainKey, type Pool } from '../types';
 import Charts from './Charts';
 import PoolDetail from './PoolDetail';
@@ -30,6 +30,8 @@ interface Props {
   onToggleWatchlist: (id: string) => void;
 }
 
+const PAGE_SIZE = 100;
+
 export default function YieldTable({
   allPools, loading, error, fetchedAt, isFlashing, apyDelta, onRetry,
   selectedChains, minApy, sortKey, sortDir, onSortChange,
@@ -37,8 +39,14 @@ export default function YieldTable({
 }: Props) {
   const [search, setSearch] = useState('');
   const [selectedPool, setSelectedPool] = useState<Pool | null>(null);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
-  const displayPools = useMemo(() => {
+  // Reset to first page whenever filters, sort, or search changes
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [search, selectedChains, minApy, sortKey, sortDir]);
+
+  const filteredSortedPools = useMemo(() => {
     const allowed = new Set(selectedChains.map(c => CHAIN_LABELS[c]));
     const q = search.toLowerCase().trim();
     return allPools
@@ -51,14 +59,17 @@ export default function YieldTable({
         const av = sortKey === 'apy' ? (a.apy ?? 0) : a.tvlUsd;
         const bv = sortKey === 'apy' ? (b.apy ?? 0) : b.tvlUsd;
         return sortDir === 'desc' ? bv - av : av - bv;
-      })
-      .slice(0, 30);
+      });
   }, [allPools, selectedChains, minApy, search, sortKey, sortDir]);
 
-  const highestApy = displayPools.length > 0 ? Math.max(...displayPools.map(p => p.apy ?? 0)) : 0;
-  const totalTvl = displayPools.reduce((sum, p) => sum + p.tvlUsd, 0);
-  const protocolCount = new Set(displayPools.map(p => p.project)).size;
-  const chainCount = new Set(displayPools.map(p => p.chain)).size;
+  const displayPools = filteredSortedPools.slice(0, visibleCount);
+  const hasMore = filteredSortedPools.length > visibleCount;
+
+  // Stats reflect the full filtered set, not just the visible page
+  const highestApy = filteredSortedPools.length > 0 ? Math.max(...filteredSortedPools.map(p => p.apy ?? 0)) : 0;
+  const totalTvl = filteredSortedPools.reduce((sum, p) => sum + p.tvlUsd, 0);
+  const protocolCount = new Set(filteredSortedPools.map(p => p.project)).size;
+  const chainCount = new Set(filteredSortedPools.map(p => p.chain)).size;
 
   if (loading) return <TableSkeleton />;
   if (error) return (
@@ -78,7 +89,7 @@ export default function YieldTable({
         apyDelta={apyDelta}
       />
       <div className="table-wrap">
-        <Charts displayPools={displayPools} />
+        <Charts displayPools={filteredSortedPools} />
         <h2 className="table-title">Top Yields</h2>
         <div className="search-wrap">
           <input
@@ -188,6 +199,16 @@ export default function YieldTable({
               <p className={`last-updated${isFlashing ? ' flashing' : ''}`}>
                 Last updated: {fetchedAt.toLocaleTimeString()}
               </p>
+            )}
+            {hasMore && (
+              <div style={{ textAlign: 'center', padding: '28px 0 8px' }}>
+                <button
+                  className="load-more-btn"
+                  onClick={() => setVisibleCount(c => c + PAGE_SIZE)}
+                >
+                  Load more — showing {displayPools.length} of {filteredSortedPools.length}
+                </button>
+              </div>
             )}
           </>
         )}
