@@ -13,11 +13,15 @@
     "react-router-dom": "^7.15.1",
     "recharts": "^3.8.1"
   },
+  "engines": {
+    "node": ">=18"
+  },
   "devDependencies": {
     "@fontsource/plus-jakarta-sans": "^5.2.8",
     "@resvg/resvg-js": "^2.6.2",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
+    "@vercel/node": "^5.8.3",
     "@vitejs/plugin-react": "^4.3.4",
     "typescript": "~5.9.2",
     "vite": "^6.3.5"
