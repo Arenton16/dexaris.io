@@ -535,23 +535,85 @@ body {
   color: #E8E6FF;
 }
 
+.news-banner-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.news-banner-input {
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(107,79,255,0.1);
+  border: 1px solid rgba(107,79,255,0.3);
+  border-radius: 20px;
+  color: #E8E6FF;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  padding: 5px 14px;
+  outline: none;
+  width: 190px;
+  transition: border-color 0.15s ease;
+}
+
+.news-banner-input::placeholder {
+  color: rgba(232,230,255,0.3);
+}
+
+.news-banner-input:focus {
+  border-color: rgba(107,79,255,0.65);
+}
+
+.news-banner-input:disabled {
+  opacity: 0.5;
+}
+
 .news-banner-btn {
+  -webkit-appearance: none;
+  appearance: none;
   display: inline-block;
   background: #6B4FFF;
   color: #fff;
+  border: none;
   font-family: 'Inter', sans-serif;
   font-size: 12px;
   font-weight: 500;
   padding: 6px 16px;
   border-radius: 20px;
-  text-decoration: none;
   white-space: nowrap;
   flex-shrink: 0;
-  transition: all 0.15s ease;
+  cursor: pointer;
+  transition: background 0.15s ease, opacity 0.15s ease;
 }
 
-.news-banner-btn:hover {
+.news-banner-btn:hover:not(:disabled) {
   background: #5A3FE8;
+}
+
+.news-banner-btn:disabled {
+  opacity: 0.65;
+  cursor: default;
+}
+
+.news-banner-error {
+  position: absolute;
+  bottom: -20px;
+  left: 0;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  color: #FF6B6B;
+  white-space: nowrap;
+}
+
+.news-banner-success {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #8B73FF;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .news-banner-close {
