@@ -41,13 +41,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     );
 
     const beehiivData = await beehiivRes.json();
-    console.log('Beehiiv status:', beehiivRes.status, 'body:', JSON.stringify(beehiivData));
 
     if (!beehiivRes.ok) {
-      return res.status(500).json({
-        error: 'Beehiiv API error',
-        detail: beehiivData,
-      });
+      console.error('Beehiiv error:', beehiivRes.status, JSON.stringify(beehiivData));
+      return res.status(500).json({ error: 'Beehiiv API error' });
     }
 
     return res.status(200).json({ success: true });
