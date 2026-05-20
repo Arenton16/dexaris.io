@@ -53,6 +53,7 @@ export default function LandingPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [subStatus, setSubStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [subError, setSubError] = useState('');
 
   const { allPools, isLoading: loadingPools } = usePools();
   const pools = allPools
@@ -413,14 +414,22 @@ export default function LandingPage() {
                   return;
                 }
                 setSubStatus('loading');
+                setSubError('');
                 try {
                   const res = await fetch('/api/subscribe', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: trimmed }),
                   });
-                  setSubStatus(res.ok ? 'success' : 'error');
-                } catch {
+                  const data = await res.json();
+                  if (!res.ok) {
+                    setSubError(JSON.stringify(data));
+                    setSubStatus('error');
+                    return;
+                  }
+                  setSubStatus('success');
+                } catch (err) {
+                  setSubError(String(err));
                   setSubStatus('error');
                 }
               }}
@@ -433,7 +442,7 @@ export default function LandingPage() {
                 value={email}
                 onChange={e => {
                   setEmail(e.target.value);
-                  if (subStatus === 'error') setSubStatus('idle');
+                  if (subStatus === 'error') { setSubStatus('idle'); setSubError(''); }
                 }}
                 disabled={subStatus === 'loading'}
                 className="newsletter-input"
@@ -469,7 +478,7 @@ export default function LandingPage() {
               </button>
               {subStatus === 'error' && (
                 <p style={{ fontSize: '11px', color: '#FF6B6B', margin: '6px 0 0', width: '100%' }}>
-                  Something went wrong, please try again
+                  {subError || 'Something went wrong, please try again'}
                 </p>
               )}
             </form>

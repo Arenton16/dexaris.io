@@ -11,22 +11,32 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export default function NewsBanner({ onDismiss }: Props) {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<Status>('idle');
+  const [errorDetail, setErrorDetail] = useState<string>('');
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!EMAIL_RE.test(email.trim())) {
       setStatus('error');
+      setErrorDetail('Invalid email address');
       return;
     }
     setStatus('loading');
+    setErrorDetail('');
     try {
       const res = await fetch('/api/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.trim() }),
       });
-      setStatus(res.ok ? 'success' : 'error');
-    } catch {
+      const data = await res.json();
+      if (!res.ok) {
+        setErrorDetail(JSON.stringify(data));
+        setStatus('error');
+        return;
+      }
+      setStatus('success');
+    } catch (err) {
+      setErrorDetail(String(err));
       setStatus('error');
     }
   }
@@ -47,7 +57,7 @@ export default function NewsBanner({ onDismiss }: Props) {
             value={email}
             onChange={e => {
               setEmail(e.target.value);
-              if (status === 'error') setStatus('idle');
+              if (status === 'error') { setStatus('idle'); setErrorDetail(''); }
             }}
             disabled={status === 'loading'}
             autoComplete="email"
@@ -60,7 +70,7 @@ export default function NewsBanner({ onDismiss }: Props) {
             {status === 'loading' ? 'Subscribing...' : 'Subscribe free'}
           </button>
           {status === 'error' && (
-            <span className="news-banner-error">Something went wrong, please try again</span>
+            <span className="news-banner-error">{errorDetail || 'Something went wrong, please try again'}</span>
           )}
         </form>
       )}
