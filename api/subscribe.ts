@@ -17,8 +17,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const pubId  = process.env.BEEHIIV_PUBLICATION_ID;
 
   if (!apiKey || !pubId) {
-    console.error('Missing env vars — BEEHIIV_API_KEY:', !!apiKey, 'BEEHIIV_PUBLICATION_ID:', !!pubId);
-    return res.status(500).json({ error: 'Server configuration error — missing environment variables' });
+    return res.status(500).json({ error: 'Missing environment variables' });
   }
 
   try {
@@ -31,28 +30,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           'Authorization': `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
-          email,
-          reactivate_existing: false,
+          email: email,
+          reactivate_existing: true,
           send_welcome_email: true,
+          utm_source: 'dexaris.io',
+          utm_medium: 'organic',
+          utm_campaign: 'website',
         }),
       }
     );
 
     const beehiivData = await beehiivRes.json();
-    console.log('Beehiiv response status:', beehiivRes.status);
-    console.log('Beehiiv response body:', JSON.stringify(beehiivData));
+    console.log('Beehiiv status:', beehiivRes.status, 'body:', JSON.stringify(beehiivData));
 
     if (!beehiivRes.ok) {
       return res.status(500).json({
         error: 'Beehiiv API error',
-        status: beehiivRes.status,
         detail: beehiivData,
       });
     }
 
     return res.status(200).json({ success: true });
   } catch (err) {
-    console.error('Fetch error:', err);
-    return res.status(500).json({ error: 'Network error calling Beehiiv', detail: String(err) });
+    console.error('Error:', err);
+    return res.status(500).json({ error: String(err) });
   }
 }
