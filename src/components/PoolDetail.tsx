@@ -5,6 +5,7 @@ import {
 } from 'recharts';
 import type { Pool } from '../types';
 import { CHAIN_LOGOS } from '../types';
+import { calculateDexarisScore, getDexarisScoreColour, getDexarisScoreTier } from '../utils/dexarisScore';
 
 interface Props {
   pool: Pool | null;
@@ -109,6 +110,9 @@ export default function PoolDetail({ pool, onClose }: Props) {
           const apy = pool.apy ?? 0;
           const risk = getRisk(apy);
           const chain = CHAIN_COLORS[pool.chain] ?? { bg: 'rgba(107,79,255,0.1)', text: 'rgba(232,230,255,0.45)' };
+          const score = calculateDexarisScore(pool);
+          const scoreColour = getDexarisScoreColour(score);
+          const scoreTier = getDexarisScoreTier(score);
           return (
             <div className="detail-content">
               <div className="detail-header">
@@ -149,6 +153,24 @@ export default function PoolDetail({ pool, onClose }: Props) {
                     <span className="detail-risk-dot">●</span>
                     {risk.label}
                   </span>
+                </div>
+              </div>
+
+              {/* Dexaris Score */}
+              <div className="detail-score-section">
+                <span className="detail-label">Dexaris Score</span>
+                <div className="detail-score-main">
+                  <span className="detail-score-num" style={{ color: scoreColour }}>{score}</span>
+                  <span className="score-badge" style={{
+                    background: `${scoreColour}1a`,
+                    color: scoreColour,
+                    border: `1px solid ${scoreColour}40`,
+                    fontSize: 12,
+                    padding: '2px 10px',
+                  }}>{scoreTier}</span>
+                </div>
+                <div className="score-bar-track">
+                  <div className="score-bar-fill" style={{ width: `${score}%`, background: scoreColour }} />
                 </div>
               </div>
 

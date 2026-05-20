@@ -5,6 +5,8 @@ export interface Pool {
   symbol: string;
   tvlUsd: number;
   apy: number | null;
+  apyMean30d?: number | null;
+  apyBase?: number | null;
   logo?: string;
 }
 

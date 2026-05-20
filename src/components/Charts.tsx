@@ -47,14 +47,6 @@ interface ScatterPoint extends Pool {
   tvlM: number;
 }
 
-function getQuadrant(apy: number, tvlM: number): { label: string; color: string; icon: string } {
-  const highApy = apy > APY_THRESHOLD;
-  const highTvl = tvlM > TVL_THRESHOLD;
-  if (highApy && !highTvl)  return { label: 'High Risk',  color: 'rgba(255,107,107,0.8)', icon: '⚠' };
-  if (highApy && highTvl)   return { label: 'Sweet Spot', color: 'rgba(78,205,164,0.8)',  icon: '✦' };
-  if (!highApy && !highTvl) return { label: 'Avoid',      color: 'rgba(232,230,255,0.4)', icon: '✕' };
-  return                           { label: 'Safe Haven', color: 'rgba(107,79,255,0.8)',  icon: '◈' };
-}
 
 function ScatterTooltip({ active, payload }: { active?: boolean; payload?: Array<{ payload: ScatterPoint }> }) {
   if (!active || !payload?.[0]) return null;
@@ -62,26 +54,29 @@ function ScatterTooltip({ active, payload }: { active?: boolean; payload?: Array
   const tvl = d.tvlM >= 1000
     ? `$${(d.tvlM / 1000).toFixed(1)}B`
     : `$${d.tvlM.toFixed(1)}M`;
-  const q = getQuadrant(d.apy ?? 0, d.tvlM);
+  const row = (label: string, value: string) => (
+    <p style={{ margin: 0, display: 'flex', gap: 6 }}>
+      <span style={{ color: '#8B73FF', minWidth: 40 }}>{label}</span>
+      <span>{value}</span>
+    </p>
+  );
   return (
     <div style={{
       background: '#111028',
-      border: '0.5px solid rgba(107,79,255,0.25)',
+      border: '1px solid rgba(107,79,255,0.3)',
       borderRadius: 6,
       padding: '10px 12px',
       fontFamily: 'Space Grotesk, sans-serif',
       fontSize: 12,
       color: '#E8E6FF',
-      lineHeight: 1.7,
+      lineHeight: 1.75,
+      minWidth: 148,
+      pointerEvents: 'none',
     }}>
-      <p style={{ fontWeight: 500 }}>{d.project}</p>
-      <p style={{ color: 'rgba(232,230,255,0.5)', fontSize: 11 }}>{d.symbol}</p>
-      <p style={{ color: 'rgba(232,230,255,0.6)' }}>{d.chain}</p>
-      <p style={{ color: '#8B73FF' }}>{(d.apy ?? 0).toFixed(2)}% APY</p>
-      <p style={{ color: 'rgba(232,230,255,0.5)' }}>{tvl} TVL</p>
-      <div style={{ borderTop: '0.5px solid rgba(107,79,255,0.15)', marginTop: 6, paddingTop: 6 }}>
-        <p style={{ color: q.color, fontSize: 11 }}>{q.icon} {q.label}</p>
-      </div>
+      <p style={{ margin: '0 0 5px', fontWeight: 600 }}>{d.project}</p>
+      {row('Chain', d.chain)}
+      {row('APY', `${(d.apy ?? 0).toFixed(2)}%`)}
+      {row('TVL', tvl)}
     </div>
   );
 }
@@ -151,6 +146,15 @@ function formatTvlLog(v: number) {
 
 export default function Charts({ displayPools }: Props) {
   const [hoveredBar, setHoveredBar] = useState<number | null>(null);
+  const [hiddenChains, setHiddenChains] = useState<Set<string>>(new Set());
+
+  const toggleChain = (chain: string) => {
+    setHiddenChains(prev => {
+      const next = new Set(prev);
+      if (next.has(chain)) next.delete(chain); else next.add(chain);
+      return next;
+    });
+  };
 
   const topByApy = [...displayPools]
     .sort((a, b) => (b.apy ?? 0) - (a.apy ?? 0))
@@ -270,28 +274,47 @@ export default function Charts({ displayPools }: Props) {
             />
             <ZAxis range={[1, 1]} />
             <QuadrantOverlay />
-            <Tooltip content={<ScatterTooltip />} />
-            {Object.entries(chainGroups).map(([chain, points]) => (
-              <Scatter
-                key={chain}
-                name={chain}
-                data={points}
-                fill={SCATTER_CHAIN_COLORS[chain] ?? 'rgba(232,230,255,0.3)'}
-                shape={ScatterDot}
-              />
-            ))}
+            <Tooltip
+              content={<ScatterTooltip />}
+              wrapperStyle={{ overflow: 'visible', zIndex: 100 }}
+            />
+            {Object.entries(chainGroups)
+              .filter(([chain]) => !hiddenChains.has(chain))
+              .map(([chain, points]) => (
+                <Scatter
+                  key={chain}
+                  name={chain}
+                  data={points}
+                  fill={SCATTER_CHAIN_COLORS[chain] ?? 'rgba(232,230,255,0.3)'}
+                  shape={ScatterDot}
+                />
+              ))}
           </ScatterChart>
         </ResponsiveContainer>
         <div className="scatter-legend">
-          {legendChains.map(chain => (
-            <span key={chain} className="scatter-legend-item">
+          {legendChains.map(chain => {
+            const active = !hiddenChains.has(chain);
+            return (
               <span
-                className="scatter-legend-dot"
-                style={{ background: SCATTER_CHAIN_COLORS[chain] ?? 'rgba(232,230,255,0.3)' }}
-              />
-              {chain}
-            </span>
-          ))}
+                key={chain}
+                className="scatter-legend-item"
+                onClick={() => toggleChain(chain)}
+                style={{
+                  cursor: 'pointer',
+                  opacity: active ? 1 : 0.3,
+                  textDecoration: active ? 'none' : 'line-through',
+                  transition: 'opacity 0.15s ease',
+                  userSelect: 'none',
+                }}
+              >
+                <span
+                  className="scatter-legend-dot"
+                  style={{ background: SCATTER_CHAIN_COLORS[chain] ?? 'rgba(232,230,255,0.3)' }}
+                />
+                {chain}
+              </span>
+            );
+          })}
         </div>
       </div>
     </div>

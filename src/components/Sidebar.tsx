@@ -5,8 +5,8 @@ interface Props {
   onChange: (chains: ChainKey[]) => void;
   minApy: number;
   onMinApyChange: (val: number) => void;
-  sortKey: 'apy' | 'tvlUsd';
-  onSortKeyChange: (key: 'apy' | 'tvlUsd') => void;
+  sortKey: 'apy' | 'tvlUsd' | 'score';
+  onSortKeyChange: (key: 'apy' | 'tvlUsd' | 'score') => void;
   isOpen: boolean;
   onClose?: () => void;
 }
@@ -91,6 +91,12 @@ export default function Sidebar({
         onClick={() => onSortKeyChange('tvlUsd')}
       >
         Highest TVL
+      </button>
+      <button
+        className={`chain-btn${sortKey === 'score' ? ' active' : ''}`}
+        onClick={() => onSortKeyChange('score')}
+      >
+        Dexaris Score
       </button>
 
       {onClose && (

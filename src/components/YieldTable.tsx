@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { CHAIN_LABELS, CHAIN_LOGOS, type ChainKey, type Pool } from '../types';
+import { calculateDexarisScore, getDexarisScoreColour, getDexarisScoreTier } from '../utils/dexarisScore';
 import Charts from './Charts';
 import PoolDetail from './PoolDetail';
 import StatsBar from './StatsBar';
@@ -23,9 +24,9 @@ interface Props {
   onRetry: () => void;
   selectedChains: ChainKey[];
   minApy: number;
-  sortKey: 'apy' | 'tvlUsd';
+  sortKey: 'apy' | 'tvlUsd' | 'score';
   sortDir: 'desc' | 'asc';
-  onSortChange: (key: 'apy' | 'tvlUsd') => void;
+  onSortChange: (key: 'apy' | 'tvlUsd' | 'score') => void;
   watchlistedIds: Set<string>;
   onToggleWatchlist: (id: string) => void;
 }
@@ -56,8 +57,10 @@ export default function YieldTable({
       )
       .filter(p => !q || p.project.toLowerCase().includes(q) || p.symbol.toLowerCase().includes(q))
       .sort((a, b) => {
-        const av = sortKey === 'apy' ? (a.apy ?? 0) : a.tvlUsd;
-        const bv = sortKey === 'apy' ? (b.apy ?? 0) : b.tvlUsd;
+        const av = sortKey === 'score' ? calculateDexarisScore(a)
+          : sortKey === 'apy' ? (a.apy ?? 0) : a.tvlUsd;
+        const bv = sortKey === 'score' ? calculateDexarisScore(b)
+          : sortKey === 'apy' ? (b.apy ?? 0) : b.tvlUsd;
         return sortDir === 'desc' ? bv - av : av - bv;
       });
   }, [allPools, selectedChains, minApy, search, sortKey, sortDir]);
@@ -132,12 +135,27 @@ export default function YieldTable({
                   >
                     TVL {sortKey === 'tvlUsd' ? (sortDir === 'desc' ? '▼' : '▲') : ''}
                   </th>
+                  <th
+                    className={`th-sortable hide-mobile${sortKey === 'score' ? ' th-sort-active' : ''}`}
+                    onClick={() => onSortChange('score')}
+                  >
+                    <span className="th-score-header">
+                      Score {sortKey === 'score' ? (sortDir === 'desc' ? '▼' : '▲') : ''}
+                      <span className="th-info-wrap" onClick={e => e.stopPropagation()}>
+                        <span className="th-info-icon">ⓘ</span>
+                        <span className="th-info-tooltip">The Dexaris Score rates each pool 0–100 based on TVL size, APY level, yield consistency, and organic yield ratio.</span>
+                      </span>
+                    </span>
+                  </th>
                   <th className="show-mobile">APY / TVL</th>
                 </tr>
               </thead>
               <tbody>
                 {displayPools.map((pool, i) => {
                   const starred = watchlistedIds.has(pool.pool);
+                  const score = calculateDexarisScore(pool);
+                  const scoreColour = getDexarisScoreColour(score);
+                  const scoreTier = getDexarisScoreTier(score);
                   return (
                     <tr
                       key={pool.pool}
@@ -184,10 +202,21 @@ export default function YieldTable({
                       </td>
                       <td className="apy hide-mobile">{pool.apy!.toFixed(2)}%</td>
                       <td className="tvl hide-mobile">${formatTvl(pool.tvlUsd)}</td>
+                      <td className="hide-mobile">
+                        <span className="score-cell">
+                          <span className="score-num" style={{ color: scoreColour }}>{score}</span>
+                          <span className="score-badge" style={{
+                            background: `${scoreColour}1a`,
+                            color: scoreColour,
+                            border: `1px solid ${scoreColour}40`,
+                          }}>{scoreTier}</span>
+                        </span>
+                      </td>
                       <td className="show-mobile">
                         <div className="mobile-apy-tvl">
                           <span className="mobile-apy">{pool.apy!.toFixed(2)}%</span>
                           <span className="mobile-tvl">${formatTvl(pool.tvlUsd)}</span>
+                          <span className="mobile-score" style={{ color: scoreColour }}>{score}</span>
                         </div>
                       </td>
                     </tr>
@@ -236,7 +265,7 @@ function ProtocolLogo({ logo, name }: { logo?: string; name: string }) {
 }
 
 function TableSkeleton() {
-  const cols = ['28px', '28px', '130px', '90px', '100px', '64px', '80px'];
+  const cols = ['28px', '28px', '130px', '90px', '100px', '64px', '80px', '90px'];
   return (
     <div className="skeleton-wrap">
       {Array.from({ length: 9 }).map((_, i) => (

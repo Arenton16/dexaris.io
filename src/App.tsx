@@ -16,7 +16,7 @@ export default function App() {
     Object.keys(CHAIN_LABELS) as ChainKey[]
   );
   const [minApy, setMinApy] = useState(1);
-  const [sortKey, setSortKey] = useState<'apy' | 'tvlUsd'>('apy');
+  const [sortKey, setSortKey] = useState<'apy' | 'tvlUsd' | 'score'>('apy');
   const [sortDir, setSortDir] = useState<'desc' | 'asc'>('desc');
   const [countdown, setCountdown] = useState(60);
   const [isNavOpen, setIsNavOpen] = useState(false);
@@ -67,7 +67,7 @@ export default function App() {
     if (countdown <= 0) triggerRefresh();
   }, [countdown, triggerRefresh]);
 
-  const handleSortChange = (key: 'apy' | 'tvlUsd') => {
+  const handleSortChange = (key: 'apy' | 'tvlUsd' | 'score') => {
     if (sortKey === key) {
       setSortDir(d => (d === 'desc' ? 'asc' : 'desc'));
     } else {

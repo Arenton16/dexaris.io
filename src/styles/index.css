@@ -1611,6 +1611,119 @@ body {
   background: #5A3FE8;
 }
 
+/* ─── Dexaris Score ──────────────────────────────────────────── */
+
+.score-cell {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.score-num {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  font-size: 13px;
+  min-width: 22px;
+}
+
+.score-badge {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.mobile-score {
+  font-size: 10px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Score bar (PoolDetail) ─────────────────────────────────── */
+
+.detail-score-section {
+  padding: 16px 20px;
+  border-top: 1px solid rgba(107,79,255,0.1);
+}
+
+.detail-score-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 6px 0 12px;
+}
+
+.detail-score-num {
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.score-bar-track {
+  height: 6px;
+  background: rgba(107,79,255,0.12);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.score-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+/* ─── Table header info tooltip ──────────────────────────────── */
+
+.th-score-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.th-info-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.th-info-icon {
+  font-size: 11px;
+  color: rgba(232,230,255,0.35);
+  cursor: default;
+  line-height: 1;
+}
+
+.th-info-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  width: 210px;
+  background: #111028;
+  border: 1px solid rgba(107,79,255,0.3);
+  border-radius: 6px;
+  color: #E8E6FF;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.5;
+  padding: 8px 10px;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  z-index: 50;
+  white-space: normal;
+  text-align: left;
+}
+
+.th-info-wrap:hover .th-info-tooltip {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 /* ─── Landing page interactive elements ─────────────────────── */
 
 .nav-link {
