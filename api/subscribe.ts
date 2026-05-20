@@ -7,6 +7,8 @@ export const config = {
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
+  console.log('Subscribe endpoint hit:', req.method);
+
   const origin = Array.isArray(req.headers.origin)
     ? req.headers.origin[0]
     : (req.headers.origin ?? '*');

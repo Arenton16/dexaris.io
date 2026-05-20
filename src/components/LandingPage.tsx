@@ -52,6 +52,7 @@ const auroraColumns = [
 export default function LandingPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
+  const [subStatus, setSubStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
   const { allPools, isLoading: loadingPools } = usePools();
   const pools = allPools
@@ -398,47 +399,81 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <form
-            onSubmit={e => {
-              e.preventDefault();
-              window.open(`https://dexaris-newsletter.beehiiv.com/subscribe?email=${encodeURIComponent(email)}`, '_blank');
-            }}
-            className="newsletter-form"
-          >
-            <input
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              className="newsletter-input"
-              style={{
-                background: 'rgba(107,79,255,0.08)',
-                border: '0.5px solid rgba(107,79,255,0.2)',
-                borderRadius: '20px',
-                padding: '10px 18px',
-                fontSize: '13px',
-                color: '#E8E6FF',
-                outline: 'none',
-                fontFamily: "'Inter', sans-serif",
+          {subStatus === 'success' ? (
+            <p style={{ fontSize: '13px', color: '#8B73FF', fontWeight: 500 }}>
+              You're in — welcome to the list! 🟣
+            </p>
+          ) : (
+            <form
+              onSubmit={async e => {
+                e.preventDefault();
+                const trimmed = email.trim();
+                if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+                  setSubStatus('error');
+                  return;
+                }
+                setSubStatus('loading');
+                try {
+                  const res = await fetch('/api/subscribe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: trimmed }),
+                  });
+                  setSubStatus(res.ok ? 'success' : 'error');
+                } catch {
+                  setSubStatus('error');
+                }
               }}
-            />
-            <button
-              type="submit"
-              className="newsletter-btn"
-              style={{
-                color: '#fff',
-                border: 'none',
-                borderRadius: '20px',
-                padding: '10px 20px',
-                fontSize: '13px',
-                fontWeight: 500,
-                cursor: 'pointer',
-                fontFamily: "'Inter', sans-serif",
-              }}
+              className="newsletter-form"
+              noValidate
             >
-              Subscribe
-            </button>
-          </form>
+              <input
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={e => {
+                  setEmail(e.target.value);
+                  if (subStatus === 'error') setSubStatus('idle');
+                }}
+                disabled={subStatus === 'loading'}
+                className="newsletter-input"
+                autoComplete="email"
+                style={{
+                  background: 'rgba(107,79,255,0.08)',
+                  border: '0.5px solid rgba(107,79,255,0.2)',
+                  borderRadius: '20px',
+                  padding: '10px 18px',
+                  fontSize: '13px',
+                  color: '#E8E6FF',
+                  outline: 'none',
+                  fontFamily: "'Inter', sans-serif",
+                }}
+              />
+              <button
+                type="submit"
+                disabled={subStatus === 'loading'}
+                className="newsletter-btn"
+                style={{
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '20px',
+                  padding: '10px 20px',
+                  fontSize: '13px',
+                  fontWeight: 500,
+                  cursor: subStatus === 'loading' ? 'default' : 'pointer',
+                  opacity: subStatus === 'loading' ? 0.65 : 1,
+                  fontFamily: "'Inter', sans-serif",
+                }}
+              >
+                {subStatus === 'loading' ? 'Subscribing...' : 'Subscribe'}
+              </button>
+              {subStatus === 'error' && (
+                <p style={{ fontSize: '11px', color: '#FF6B6B', margin: '6px 0 0', width: '100%' }}>
+                  Something went wrong, please try again
+                </p>
+              )}
+            </form>
+          )}
         </div>
       </section>
 
@@ -476,15 +511,14 @@ export default function LandingPage() {
 
         <div style={{ display: 'flex', gap: '20px' }}>
           {[
-            { label: 'Twitter', href: 'https://twitter.com/dexaris_io' },
-            { label: 'Newsletter', href: 'https://dexaris-newsletter.beehiiv.com/subscribe' },
-            { label: 'dexaris.io', href: 'https://dexaris.io' },
-          ].map(({ label, href }) => (
+            { label: 'Twitter',    href: 'https://twitter.com/dexaris_io', external: true },
+            { label: 'Newsletter', href: '#newsletter',                    external: false },
+            { label: 'dexaris.io', href: 'https://dexaris.io',             external: true },
+          ].map(({ label, href, external }) => (
             <a
               key={label}
               href={href}
-              target="_blank"
-              rel="noopener noreferrer"
+              {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
               className="footer-link"
               style={{ fontSize: '12px', textDecoration: 'none' }}
             >
