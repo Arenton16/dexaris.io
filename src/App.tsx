@@ -5,11 +5,12 @@ import NewsBanner from './components/NewsBanner';
 import Sidebar from './components/Sidebar';
 import YieldTable from './components/YieldTable';
 import Watchlist from './components/Watchlist';
+import Analytics from './components/Analytics';
 import { usePools } from './contexts/PoolsContext';
 import { useWatchlist } from './hooks/useWatchlist';
 import { CHAIN_LABELS, type ChainKey } from './types';
 
-export type Page = 'yields' | 'watchlist';
+export type Page = 'yields' | 'watchlist' | 'analytics';
 
 export default function App() {
   const [selectedChains, setSelectedChains] = useState<ChainKey[]>(
@@ -67,38 +68,50 @@ export default function App() {
     if (countdown <= 0) triggerRefresh();
   }, [countdown, triggerRefresh]);
 
-  const handleSortChange = (key: 'apy' | 'tvlUsd' | 'score') => {
+  const handleSortChange = useCallback((key: 'apy' | 'tvlUsd' | 'score') => {
     if (sortKey === key) {
       setSortDir(d => (d === 'desc' ? 'asc' : 'desc'));
     } else {
       setSortKey(key);
       setSortDir('desc');
     }
-  };
+  }, [sortKey]);
 
-  const handleNavigate = (page: Page) => {
+  const handleSortKeyChange = useCallback((key: 'apy' | 'tvlUsd' | 'score') => {
+    setSortKey(key);
+    setSortDir('desc');
+  }, []);
+
+  const handleNavigate = useCallback((page: Page) => {
     setCurrentPage(page);
     setIsNavOpen(false);
     if (page !== 'yields') setIsSidebarOpen(false);
-  };
+  }, []);
 
-  const toggleNav = () => {
+  const toggleNav = useCallback(() => {
     setIsNavOpen(o => !o);
     setIsSidebarOpen(false);
-  };
+  }, []);
 
-  const toggleFilters = () => {
+  const toggleFilters = useCallback(() => {
     setIsSidebarOpen(o => !o);
     setIsNavOpen(false);
-  };
+  }, []);
+
+  const closeNav = useCallback(() => setIsNavOpen(false), []);
+  const closeSidebar = useCallback(() => setIsSidebarOpen(false), []);
+  const toggleNavCollapse = useCallback(() => setNavCollapsed(c => !c), []);
+  const dismissBanner = useCallback(() => setBannerVisible(false), []);
+  const navigateToYields = useCallback(() => handleNavigate('yields'), [handleNavigate]);
+  const navigateToAnalytics = useCallback(() => handleNavigate('analytics'), [handleNavigate]);
 
   return (
     <div className="app">
       <NavSidebar
         isOpen={isNavOpen}
-        onClose={() => setIsNavOpen(false)}
+        onClose={closeNav}
         isCollapsed={navCollapsed}
-        onToggleCollapse={() => setNavCollapsed(c => !c)}
+        onToggleCollapse={toggleNavCollapse}
         currentPage={currentPage}
         onNavigate={handleNavigate}
         watchlistCount={watchlistedIds.size}
@@ -113,13 +126,17 @@ export default function App() {
           onToggleFilters={toggleFilters}
         />
 
-        {bannerVisible && <NewsBanner onDismiss={() => setBannerVisible(false)} />}
+        {bannerVisible && <NewsBanner onDismiss={dismissBanner} />}
 
         <div className="layout">
-          {currentPage === 'yields' ? (
+          {currentPage === 'analytics' ? (
+            <main className="content">
+              <Analytics displayPools={allPools} />
+            </main>
+          ) : currentPage === 'yields' ? (
             <>
               {isSidebarOpen && (
-                <div className="sidebar-backdrop" onClick={() => setIsSidebarOpen(false)} />
+                <div className="sidebar-backdrop" onClick={closeSidebar} />
               )}
               <Sidebar
                 selected={selectedChains}
@@ -127,9 +144,9 @@ export default function App() {
                 minApy={minApy}
                 onMinApyChange={setMinApy}
                 sortKey={sortKey}
-                onSortKeyChange={key => { setSortKey(key); setSortDir('desc'); }}
+                onSortKeyChange={handleSortKeyChange}
                 isOpen={isSidebarOpen}
-                onClose={() => setIsSidebarOpen(false)}
+                onClose={closeSidebar}
               />
               <main className="content">
                 <YieldTable
@@ -147,6 +164,7 @@ export default function App() {
                   onSortChange={handleSortChange}
                   watchlistedIds={watchlistedIds}
                   onToggleWatchlist={toggleWatchlist}
+                  onNavigateToAnalytics={navigateToAnalytics}
                 />
               </main>
             </>
@@ -156,7 +174,7 @@ export default function App() {
                 allPools={allPools}
                 watchlistedIds={watchlistedIds}
                 onToggleWatchlist={toggleWatchlist}
-                onNavigateToYields={() => handleNavigate('yields')}
+                onNavigateToYields={navigateToYields}
               />
             </main>
           )}

@@ -3,6 +3,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type ReactNode,
@@ -64,8 +65,13 @@ export function PoolsProvider({ children }: { children: ReactNode }) {
 
   const refresh = useCallback(() => setFetchTick(t => t + 1), []);
 
+  const value = useMemo(
+    () => ({ allPools, isLoading, error, fetchedAt, refresh }),
+    [allPools, isLoading, error, fetchedAt, refresh],
+  );
+
   return (
-    <PoolsContext.Provider value={{ allPools, isLoading, error, fetchedAt, refresh }}>
+    <PoolsContext.Provider value={value}>
       {children}
     </PoolsContext.Provider>
   );

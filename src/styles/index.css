@@ -339,6 +339,7 @@ body {
 
   .nav-sidebar.nav-collapsed .nav-item-label,
   .nav-sidebar.nav-collapsed .nav-soon,
+  .nav-sidebar.nav-collapsed .nav-new,
   .nav-sidebar.nav-collapsed .nav-badge {
     display: none;
   }
@@ -869,6 +870,81 @@ body {
   height: 7px;
   border-radius: 50%;
   flex-shrink: 0;
+}
+
+/* ─── Analytics page ────────────────────────────────────────── */
+
+.analytics-page {
+  width: 100%;
+}
+
+.analytics-header {
+  margin-bottom: 28px;
+}
+
+.analytics-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: #E8E6FF;
+  margin: 0 0 4px;
+}
+
+.analytics-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  color: rgba(232,230,255,0.4);
+  margin: 0;
+}
+
+.analytics-charts {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ─── Analytics teaser banner ────────────────────────────────── */
+
+.analytics-teaser {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  color: rgba(232,230,255,0.45);
+  padding: 6px 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.analytics-teaser-link {
+  -webkit-appearance: none;
+  appearance: none;
+  background: none;
+  border: none;
+  color: #8B73FF;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s ease;
+}
+
+.analytics-teaser-link:hover {
+  color: #A897FF;
+}
+
+/* ─── Nav "New" badge ────────────────────────────────────────── */
+
+.nav-new {
+  font-family: 'Inter', sans-serif;
+  font-size: 8px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #4ECDA4;
+  background: rgba(78,205,164,0.12);
+  padding: 2px 5px;
+  border-radius: 4px;
 }
 
 /* ─── Pool detail history chart ─────────────────────────────── */

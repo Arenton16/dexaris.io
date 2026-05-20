@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { CHAIN_LABELS, CHAIN_LOGOS, type ChainKey, type Pool } from '../types';
 import { calculateDexarisScore, getDexarisScoreColour, getDexarisScoreTier } from '../utils/dexarisScore';
-import Charts from './Charts';
 import PoolDetail from './PoolDetail';
 import StatsBar from './StatsBar';
 
@@ -29,6 +28,7 @@ interface Props {
   onSortChange: (key: 'apy' | 'tvlUsd' | 'score') => void;
   watchlistedIds: Set<string>;
   onToggleWatchlist: (id: string) => void;
+  onNavigateToAnalytics?: () => void;
 }
 
 const PAGE_SIZE = 100;
@@ -36,7 +36,7 @@ const PAGE_SIZE = 100;
 export default function YieldTable({
   allPools, loading, error, fetchedAt, isFlashing, apyDelta, onRetry,
   selectedChains, minApy, sortKey, sortDir, onSortChange,
-  watchlistedIds, onToggleWatchlist,
+  watchlistedIds, onToggleWatchlist, onNavigateToAnalytics,
 }: Props) {
   const [search, setSearch] = useState('');
   const [selectedPool, setSelectedPool] = useState<Pool | null>(null);
@@ -46,6 +46,12 @@ export default function YieldTable({
   useEffect(() => {
     setVisibleCount(PAGE_SIZE);
   }, [search, selectedChains, minApy, sortKey, sortDir]);
+
+  const scoreMap = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const pool of allPools) map.set(pool.pool, calculateDexarisScore(pool));
+    return map;
+  }, [allPools]);
 
   const filteredSortedPools = useMemo(() => {
     const allowed = new Set(selectedChains.map(c => CHAIN_LABELS[c]));
@@ -57,13 +63,13 @@ export default function YieldTable({
       )
       .filter(p => !q || p.project.toLowerCase().includes(q) || p.symbol.toLowerCase().includes(q))
       .sort((a, b) => {
-        const av = sortKey === 'score' ? calculateDexarisScore(a)
+        const av = sortKey === 'score' ? (scoreMap.get(a.pool) ?? 0)
           : sortKey === 'apy' ? (a.apy ?? 0) : a.tvlUsd;
-        const bv = sortKey === 'score' ? calculateDexarisScore(b)
+        const bv = sortKey === 'score' ? (scoreMap.get(b.pool) ?? 0)
           : sortKey === 'apy' ? (b.apy ?? 0) : b.tvlUsd;
         return sortDir === 'desc' ? bv - av : av - bv;
       });
-  }, [allPools, selectedChains, minApy, search, sortKey, sortDir]);
+  }, [allPools, selectedChains, minApy, search, sortKey, sortDir, scoreMap]);
 
   const displayPools = filteredSortedPools.slice(0, visibleCount);
   const hasMore = filteredSortedPools.length > visibleCount;
@@ -91,8 +97,15 @@ export default function YieldTable({
         chainCount={chainCount}
         apyDelta={apyDelta}
       />
+      {onNavigateToAnalytics && (
+        <div className="analytics-teaser">
+          Explore macro yield trends and protocol intelligence →{' '}
+          <button className="analytics-teaser-link" onClick={onNavigateToAnalytics}>
+            View Analytics ›
+          </button>
+        </div>
+      )}
       <div className="table-wrap">
-        <Charts displayPools={filteredSortedPools} />
         <h2 className="table-title">Top Yields</h2>
         <div className="search-wrap">
           <input
@@ -153,7 +166,7 @@ export default function YieldTable({
               <tbody>
                 {displayPools.map((pool, i) => {
                   const starred = watchlistedIds.has(pool.pool);
-                  const score = calculateDexarisScore(pool);
+                  const score = scoreMap.get(pool.pool) ?? 0;
                   const scoreColour = getDexarisScoreColour(score);
                   const scoreTier = getDexarisScoreTier(score);
                   return (

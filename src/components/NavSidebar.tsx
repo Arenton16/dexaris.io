@@ -8,6 +8,7 @@ interface NavItem {
   icon: string;
   label: string;
   comingSoon: boolean;
+  isNew?: boolean;
 }
 
 interface Props {
@@ -35,7 +36,7 @@ export default function NavSidebar({
     { id: 'yields',    icon: '◈', label: 'Yields',    comingSoon: false },
     { id: 'watchlist', icon: watchlistCount > 0 ? '★' : '☆', label: 'Watchlist', comingSoon: false },
     { id: null,        icon: '◉', label: 'Portfolio', comingSoon: true  },
-    { id: null,        icon: '◎', label: 'Analytics', comingSoon: true  },
+    { id: 'analytics', icon: '◎', label: 'Analytics', comingSoon: false, isNew: true },
     { id: null,        icon: '◇', label: 'Alerts',    comingSoon: true  },
   ];
 
@@ -72,6 +73,7 @@ export default function NavSidebar({
                   <span className="nav-badge">{watchlistCount}</span>
                 )}
                 {item.comingSoon && <span className="nav-soon">soon</span>}
+                {item.isNew && <span className="nav-new">New</span>}
               </div>
             );
           })}
