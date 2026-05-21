@@ -35,7 +35,7 @@ export default function NavSidebar({
   const navItems: NavItem[] = [
     { id: 'yields',    icon: '◈', label: 'Yields',    comingSoon: false },
     { id: 'watchlist', icon: watchlistCount > 0 ? '★' : '☆', label: 'Watchlist', comingSoon: false },
-    { id: null,        icon: '◉', label: 'Portfolio', comingSoon: true  },
+    { id: 'portfolio', icon: '◉', label: 'Portfolio', comingSoon: false },
     { id: 'analytics', icon: '◎', label: 'Analytics', comingSoon: false, isNew: true },
     { id: null,        icon: '◇', label: 'Alerts',    comingSoon: true  },
   ];
