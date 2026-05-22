@@ -185,7 +185,7 @@ function ScoreScatterTooltip({ active, payload }: { active?: boolean; payload?: 
 }
 
 function ScatterDot({ cx, cy, fill }: { cx?: number; cy?: number; fill?: string }) {
-  return <circle cx={cx ?? 0} cy={cy ?? 0} r={4} fill={fill ?? 'rgba(232,230,255,0.3)'} fillOpacity={0.75} />;
+  return <circle cx={cx ?? 0} cy={cy ?? 0} r={4} fill={fill ?? 'rgba(232,230,255,0.3)'} fillOpacity={0.65} />;
 }
 
 function QuadrantOverlay() {
@@ -197,7 +197,7 @@ function QuadrantOverlay() {
   const thresholdX = xScale(TVL_THRESHOLD);
   const thresholdY = yScale(APY_THRESHOLD);
   if (thresholdX == null || thresholdY == null) return null;
-  const lp = { fontSize: 9, fontFamily: 'Space Grotesk, sans-serif', letterSpacing: '0.08em' } as const;
+  const lp = { fontSize: 11, fontFamily: 'Space Grotesk, sans-serif', letterSpacing: '0.08em' } as const;
   const ap = { fontSize: 8, fontFamily: 'Space Grotesk, sans-serif', fill: 'rgba(232,230,255,0.25)' } as const;
   return (
     <g>
@@ -205,10 +205,10 @@ function QuadrantOverlay() {
       <line x1={left}       y1={thresholdY} x2={left + w}   y2={thresholdY} stroke="rgba(107,79,255,0.15)" strokeDasharray="4 4" strokeWidth={1} />
       <text x={left + 3}    y={thresholdY - 3} textAnchor="start"  {...ap}>15% APY</text>
       <text x={thresholdX}  y={top + h - 4}    textAnchor="middle" {...ap}>$50M TVL</text>
-      <text x={left + 12}     y={top + 20}        fill="rgba(255,107,107,0.6)"  textAnchor="start" {...lp}>HIGH RISK</text>
-      <text x={left + w - 12} y={top + 20}        fill="rgba(78,205,164,0.6)"   textAnchor="end"   {...lp}>SWEET SPOT</text>
-      <text x={left + 12}     y={thresholdY - 12} fill="rgba(232,230,255,0.25)" textAnchor="start" {...lp}>AVOID</text>
-      <text x={left + w - 12} y={thresholdY - 12} fill="rgba(107,79,255,0.5)"   textAnchor="end"   {...lp}>SAFE HAVEN</text>
+      <text x={left + 12}     y={top + 20}        fill="rgba(232,230,255,0.35)" textAnchor="start" {...lp}>HIGH RISK</text>
+      <text x={left + w - 12} y={top + 20}        fill="rgba(232,230,255,0.35)" textAnchor="end"   {...lp}>SWEET SPOT</text>
+      <text x={left + 12}     y={thresholdY - 12} fill="rgba(232,230,255,0.35)" textAnchor="start" {...lp}>AVOID</text>
+      <text x={left + w - 12} y={thresholdY - 12} fill="rgba(232,230,255,0.35)" textAnchor="end"   {...lp}>SAFE HAVEN</text>
     </g>
   );
 }
@@ -222,7 +222,7 @@ function ApyScoreQuadrant() {
   const thresholdX = xScale(SCORE_THRESHOLD);
   const thresholdY = yScale(APY_THRESHOLD);
   if (thresholdX == null || thresholdY == null) return null;
-  const lp = { fontSize: 9, fontFamily: 'Space Grotesk, sans-serif', letterSpacing: '0.08em' } as const;
+  const lp = { fontSize: 11, fontFamily: 'Space Grotesk, sans-serif', letterSpacing: '0.08em' } as const;
   const ap = { fontSize: 8, fontFamily: 'Space Grotesk, sans-serif', fill: 'rgba(232,230,255,0.25)' } as const;
   return (
     <g>
@@ -230,10 +230,10 @@ function ApyScoreQuadrant() {
       <line x1={left}       y1={thresholdY} x2={left + w}   y2={thresholdY} stroke="rgba(107,79,255,0.15)" strokeDasharray="4 4" strokeWidth={1} />
       <text x={left + 3}    y={thresholdY - 3} textAnchor="start"  {...ap}>15% APY</text>
       <text x={thresholdX}  y={top + h - 4}    textAnchor="middle" {...ap}>Score 50</text>
-      <text x={left + 12}     y={top + 20}        fill="rgba(255,107,107,0.6)"  textAnchor="start" {...lp}>LOW QUALITY</text>
-      <text x={left + w - 12} y={top + 20}        fill="rgba(78,205,164,0.6)"   textAnchor="end"   {...lp}>SWEET SPOT</text>
-      <text x={left + 12}     y={thresholdY - 12} fill="rgba(232,230,255,0.25)" textAnchor="start" {...lp}>UNDERPERFORM</text>
-      <text x={left + w - 12} y={thresholdY - 12} fill="rgba(107,79,255,0.5)"   textAnchor="end"   {...lp}>STRONG</text>
+      <text x={left + 12}     y={top + 20}        fill="rgba(232,230,255,0.35)" textAnchor="start" {...lp}>LOW QUALITY</text>
+      <text x={left + w - 12} y={top + 20}        fill="rgba(232,230,255,0.35)" textAnchor="end"   {...lp}>SWEET SPOT</text>
+      <text x={left + 12}     y={thresholdY - 12} fill="rgba(232,230,255,0.35)" textAnchor="start" {...lp}>UNDERPERFORM</text>
+      <text x={left + w - 12} y={thresholdY - 12} fill="rgba(232,230,255,0.35)" textAnchor="end"   {...lp}>STRONG</text>
     </g>
   );
 }
@@ -241,7 +241,7 @@ function ApyScoreQuadrant() {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function ScoreDistBar(props: any) {
   const { x, y, width, height, payload } = props;
-  return <rect x={x} y={y} width={width} height={height} rx={3} fill={payload?.colour ?? '#8B73FF'} fillOpacity={0.85} />;
+  return <rect x={x} y={y} width={width} height={height} rx={3} fill={payload?.colour ?? '#8B73FF'} />;
 }
 
 function ProtocolLogo({ logo, name }: { logo?: string; name: string }) {
@@ -266,7 +266,6 @@ function formatTvlLog(v: number) {
 // ── Main component ─────────────────────────────────────────────
 
 export default function Analytics({ displayPools }: Props) {
-  const [hoveredBar, setHoveredBar] = useState<number | null>(null);
   const [hiddenChains, setHiddenChains] = useState<Set<string>>(new Set());
   const [openInfo, setOpenInfo] = useState<string | null>(null);
 
@@ -379,10 +378,10 @@ export default function Analytics({ displayPools }: Props) {
       tiers[tier]++;
     }
     return [
-      { tier: 'Weak',     count: tiers.Weak,     colour: '#FF6B6B' },
-      { tier: 'Moderate', count: tiers.Moderate, colour: '#FFB347' },
-      { tier: 'Solid',    count: tiers.Solid,    colour: '#8B73FF' },
-      { tier: 'Strong',   count: tiers.Strong,   colour: '#4ECDA4' },
+      { tier: 'Weak',     count: tiers.Weak,     colour: 'rgba(107,79,255,0.25)' },
+      { tier: 'Moderate', count: tiers.Moderate, colour: 'rgba(107,79,255,0.45)' },
+      { tier: 'Solid',    count: tiers.Solid,    colour: 'rgba(107,79,255,0.7)'  },
+      { tier: 'Strong',   count: tiers.Strong,   colour: '#6B4FFF'               },
     ];
   }, [scoreMap]);
 
@@ -408,7 +407,9 @@ export default function Analytics({ displayPools }: Props) {
     const { x = 0, y = 0, width = 0, height = 0, index } = props;
     const entry = index != null ? topByApy[index] : null;
     if (!entry) return <g />;
-    const fill = hoveredBar === index ? entry.scoreColour : entry.scoreColour + 'B3';
+    const n = topByApy.length > 1 ? topByApy.length - 1 : 1;
+    const opacity = 1 - ((index ?? 0) / n) * 0.55;
+    const fill = `rgba(107,79,255,${opacity.toFixed(2)})`;
     const meanWidth = entry.mean30d != null && entry.apy > 0
       ? Math.max(0, (entry.mean30d / entry.apy) * width)
       : null;
@@ -419,26 +420,22 @@ export default function Analytics({ displayPools }: Props) {
             x={x} y={y + height * 0.15}
             width={meanWidth} height={height * 0.7}
             rx={3}
-            fill="rgba(232,230,255,0.06)"
-            stroke="rgba(232,230,255,0.2)"
-            strokeWidth={1}
-            strokeDasharray="3 2"
+            fill="rgba(255,255,255,0.08)"
           />
         )}
         <rect x={x} y={y} width={width} height={height} rx={3} fill={fill} />
         <text
           x={x + width + 6} y={y + height / 2}
           dominantBaseline="middle"
-          fill={entry.scoreColour}
+          fill="rgba(232,230,255,0.6)"
           fontSize={10}
           fontFamily="Space Grotesk, sans-serif"
-          fontWeight={500}
         >
-          {entry.score} {entry.scoreTier}
+          {entry.score}
         </text>
       </g>
     );
-  }, [topByApy, hoveredBar]);
+  }, [topByApy]);
 
   const header = (
     <div className="analytics-header">
@@ -535,8 +532,6 @@ export default function Analytics({ displayPools }: Props) {
                   maxBarSize={22}
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   shape={barShape as any}
-                  onMouseEnter={(_: unknown, index: number) => setHoveredBar(index)}
-                  onMouseLeave={() => setHoveredBar(null)}
                 />
               </BarChart>
             </ResponsiveContainer>
@@ -559,13 +554,13 @@ export default function Analytics({ displayPools }: Props) {
                     name,
                   ]}
                 />
-                <Bar yAxisId="left"  dataKey="avgApy"   name="Avg APY"   fill="#6B4FFF" maxBarSize={18} />
-                <Bar yAxisId="right" dataKey="avgScore" name="Avg Score" fill="#4ECDA4" maxBarSize={18} />
+                <Bar yAxisId="left"  dataKey="avgApy"   name="Avg APY"   fill="#6B4FFF"               maxBarSize={18} />
+                <Bar yAxisId="right" dataKey="avgScore" name="Avg Score" fill="rgba(107,79,255,0.35)" maxBarSize={18} />
               </BarChart>
             </ResponsiveContainer>
             <div className="chain-perf-legend">
               <span className="chain-perf-legend-item"><span className="chain-perf-dot" style={{ background: '#6B4FFF' }} />Avg APY</span>
-              <span className="chain-perf-legend-item"><span className="chain-perf-dot" style={{ background: '#4ECDA4' }} />Avg Score</span>
+              <span className="chain-perf-legend-item"><span className="chain-perf-dot" style={{ background: 'rgba(107,79,255,0.35)' }} />Avg Score</span>
             </div>
           </ChartCard>
 
@@ -631,7 +626,6 @@ export default function Analytics({ displayPools }: Props) {
             <div className="score-table">
               {topByScore.map((pool, i) => {
                 const score = scoreMap.get(pool.pool) ?? 0;
-                const scoreColour = getDexarisScoreColour(score);
                 const scoreTier = getDexarisScoreTier(score);
                 return (
                   <div key={pool.pool} className="score-table-row">
@@ -657,9 +651,8 @@ export default function Analytics({ displayPools }: Props) {
                     </span>
                     <span className="score-table-apy">{(pool.apy ?? 0).toFixed(2)}%</span>
                     <span className="score-table-tvl">${formatTvl(pool.tvlUsd)}</span>
-                    <span className="score-badge" style={{ background: `${scoreColour}1a`, color: scoreColour, border: `1px solid ${scoreColour}40` }}>
-                      {score} {scoreTier}
-                    </span>
+                    <span className="score-table-score-num">{score}</span>
+                    <span className="score-table-score-tier">{scoreTier}</span>
                   </div>
                 );
               })}
