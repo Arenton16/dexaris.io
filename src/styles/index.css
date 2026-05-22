@@ -3254,6 +3254,11 @@ body {
   color: rgba(232,230,255,0.22);
 }
 
+.pf-input:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .pf-amount-wrap {
   position: relative;
   display: flex;
@@ -3387,6 +3392,13 @@ body {
 .pf-chain-select-trigger--open {
   border-color: rgba(107,79,255,0.55);
   box-shadow: 0 0 0 2px rgba(107,79,255,0.2);
+}
+
+.pf-chain-select-trigger--readonly,
+.pf-chain-select-trigger:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 .pf-chain-sel-placeholder {

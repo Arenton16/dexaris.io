@@ -92,12 +92,18 @@ function HeroSparkline() {
 function ChainSelect({
   value,
   onChange,
+  availableChains,
+  disabled,
 }: {
   value: string;
   onChange: (chain: string) => void;
+  availableChains: string[];
+  disabled: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+
+  const canOpen = !disabled && availableChains.length > 1;
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -114,14 +120,21 @@ function ChainSelect({
     };
   }, []);
 
+  let triggerClass = 'pf-chain-select-trigger';
+  if (open)     triggerClass += ' pf-chain-select-trigger--open';
+  if (disabled || availableChains.length <= 1) triggerClass += ' pf-chain-select-trigger--readonly';
+
   return (
     <div className="pf-chain-select" ref={ref}>
       <button
         type="button"
-        className={`pf-chain-select-trigger${open ? ' pf-chain-select-trigger--open' : ''}`}
-        onClick={() => setOpen(o => !o)}
+        className={triggerClass}
+        onClick={() => canOpen && setOpen(o => !o)}
+        disabled={disabled}
       >
-        {value ? (
+        {disabled ? (
+          <span className="pf-chain-sel-placeholder">Select protocol first</span>
+        ) : value ? (
           <>
             {CHAIN_LOGOS[value] && (
               <img src={CHAIN_LOGOS[value]} alt="" width={16} height={16} className="pf-chain-sel-logo" />
@@ -131,11 +144,11 @@ function ChainSelect({
         ) : (
           <span className="pf-chain-sel-placeholder">Select chain</span>
         )}
-        <span className="pf-chain-sel-arrow">{open ? '▴' : '▾'}</span>
+        {canOpen && <span className="pf-chain-sel-arrow">{open ? '▴' : '▾'}</span>}
       </button>
-      {open && (
+      {open && canOpen && (
         <div className="pf-dropdown">
-          {CHAIN_NAMES.map(chain => (
+          {availableChains.map(chain => (
             <div
               key={chain}
               className={`pf-dd-item${value === chain ? ' pf-dd-item--active' : ''}`}
@@ -206,16 +219,49 @@ function AddPositionForm({
     return results;
   }, [form.protocol, allPools]);
 
+  // Chains where the selected protocol actually exists, normalised to CHAIN_NAMES
+  const availableChains = useMemo(() => {
+    const protQ = form.protocol.trim().toLowerCase();
+    if (!protQ) return [];
+    const seen = new Set<string>();
+    const chains: string[] = [];
+    for (const p of allPools) {
+      const matchProto = protocolFromList
+        ? p.project === form.protocol
+        : p.project?.toLowerCase().includes(protQ);
+      if (!matchProto) continue;
+      const normalised = CHAIN_NAMES.find(n => n.toLowerCase() === p.chain?.toLowerCase());
+      if (normalised && !seen.has(normalised)) {
+        seen.add(normalised);
+        chains.push(normalised);
+      }
+    }
+    return chains;
+  }, [form.protocol, protocolFromList, allPools]);
+
+  // Auto-select chain when protocol maps to exactly one chain
+  useEffect(() => {
+    if (availableChains.length === 1) {
+      setForm(f => {
+        if (f.chain === availableChains[0]) return f;
+        return { ...f, chain: availableChains[0], asset: '' };
+      });
+      setAssetFromList(false);
+    }
+  }, [availableChains]);
+
   const assetOptions = useMemo(() => {
     const protQ  = form.protocol.trim().toLowerCase();
-    if (!protQ) return [];
+    if (!protQ || !form.chain) return [];
     const assetQ = form.asset.trim().toLowerCase();
     const seen   = new Set<string>();
     const results: { symbol: string; tvl: number }[] = [];
     for (const p of allPools) {
-      const matchProto = p.project?.toLowerCase().includes(protQ);
-      const matchChain = !form.chain || p.chain === form.chain;
-      const matchAsset = !assetQ    || p.symbol.toLowerCase().includes(assetQ);
+      const matchProto = protocolFromList
+        ? p.project === form.protocol
+        : p.project?.toLowerCase().includes(protQ);
+      const matchChain = p.chain?.toLowerCase() === form.chain.toLowerCase();
+      const matchAsset = !assetQ || p.symbol.toLowerCase().includes(assetQ);
       if (matchProto && matchChain && matchAsset && !seen.has(p.symbol)) {
         seen.add(p.symbol);
         results.push({ symbol: p.symbol, tvl: p.tvlUsd });
@@ -223,7 +269,7 @@ function AddPositionForm({
       }
     }
     return results;
-  }, [form.protocol, form.chain, form.asset, allPools]);
+  }, [form.protocol, form.chain, form.asset, protocolFromList, allPools]);
 
   function selectProtocol(name: string, fromList: boolean) {
     setForm(f => ({ ...f, protocol: name, asset: '', chain: '' }));
@@ -243,10 +289,12 @@ function AddPositionForm({
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const amount = parseFloat(form.amount);
-    if (!form.protocol.trim())                        { setFormError('Protocol is required'); return; }
-    if (!form.asset.trim())                           { setFormError('Asset is required'); return; }
-    if (!form.chain)                                  { setFormError('Select a chain'); return; }
-    if (!form.amount || isNaN(amount) || amount <= 0) { setFormError('Enter a valid positive amount'); return; }
+    const valid =
+      form.protocol.trim() &&
+      form.chain &&
+      form.asset.trim() &&
+      form.amount && !isNaN(amount) && amount > 0;
+    if (!valid) { setFormError('Please fill in all fields'); return; }
     onAdd({ protocol: form.protocol.trim(), asset: form.asset.trim(), chain: form.chain, amountInvested: amount });
     setForm(EMPTY_FORM);
     setFormError('');
@@ -255,6 +303,7 @@ function AddPositionForm({
   }
 
   const isManualEntry = form.protocol.trim() !== '' && form.asset.trim() !== '' && (!protocolFromList || !assetFromList);
+  const assetDisabled = !form.protocol.trim() || !form.chain;
 
   return (
     <>
@@ -305,13 +354,25 @@ function AddPositionForm({
               )}
             </div>
 
-            {/* Asset combobox */}
+            {/* Chain select — only shows chains this protocol exists on */}
+            <ChainSelect
+              value={form.chain}
+              onChange={chain => {
+                setForm(f => ({ ...f, chain, asset: '' }));
+                setAssetFromList(false);
+                setFormError('');
+              }}
+              availableChains={availableChains}
+              disabled={!form.protocol.trim()}
+            />
+
+            {/* Asset combobox — enabled only once protocol + chain are set */}
             <div className="pf-combobox" ref={assetRef}>
               <input
                 className="pf-input"
-                placeholder={form.protocol.trim() ? 'Asset / symbol (e.g. ETH-USDC)' : 'Select a protocol first'}
+                placeholder={assetDisabled ? 'Select protocol and chain first' : 'Asset / symbol (e.g. ETH-USDC)'}
                 value={form.asset}
-                disabled={!form.protocol.trim()}
+                disabled={assetDisabled}
                 autoComplete="off"
                 onChange={e => {
                   setForm(f => ({ ...f, asset: e.target.value }));
@@ -320,10 +381,10 @@ function AddPositionForm({
                   setFormError('');
                 }}
                 onFocus={() => {
-                  if (form.protocol.trim()) setAssetOpen(true);
+                  if (!assetDisabled) setAssetOpen(true);
                 }}
               />
-              {assetOpen && form.protocol.trim() && (assetOptions.length > 0 || form.asset.trim()) && (
+              {assetOpen && !assetDisabled && (assetOptions.length > 0 || form.asset.trim()) && (
                 <div className="pf-dropdown">
                   {assetOptions.map(({ symbol, tvl }) => (
                     <div
@@ -349,16 +410,6 @@ function AddPositionForm({
                 </div>
               )}
             </div>
-
-            {/* Chain select */}
-            <ChainSelect
-              value={form.chain}
-              onChange={chain => {
-                setForm(f => ({ ...f, chain, asset: '' }));
-                setAssetFromList(false);
-                setFormError('');
-              }}
-            />
 
             {/* Amount */}
             <div className="pf-amount-wrap">
