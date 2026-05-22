@@ -1,4 +1,4 @@
-import { useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import { usePools } from '../contexts/PoolsContext';
 import DexarisIcon from './DexarisIcon';
@@ -62,11 +62,10 @@ function matchPool(position: Position, allPools: Pool[]): Pool | null {
 }
 
 function MiniSparkline({ from, to }: { from: number; to: number }) {
-  const max  = Math.max(from, to, 0.01);
-  const y1   = 16 - (from / max) * 12;
-  const y2   = 16 - (to   / max) * 12;
-  const up   = to >= from;
-  const color = up ? '#4ECDA4' : '#FF6B6B';
+  const max   = Math.max(from, to, 0.01);
+  const y1    = 16 - (from / max) * 12;
+  const y2    = 16 - (to   / max) * 12;
+  const color = to >= from ? '#4ECDA4' : '#FF6B6B';
   return (
     <svg width="40" height="20" viewBox="0 0 40 20" className="pf-stat-spark">
       <line x1="2" y1={y1} x2="38" y2={y2} stroke={color} strokeWidth="1.5" strokeLinecap="round" />
@@ -75,7 +74,6 @@ function MiniSparkline({ from, to }: { from: number; to: number }) {
   );
 }
 
-// Decorative upward curve for hero cards
 function HeroSparkline() {
   return (
     <svg className="pf-hero-sparkline" viewBox="0 0 160 48" preserveAspectRatio="none" aria-hidden>
@@ -89,11 +87,257 @@ function HeroSparkline() {
   );
 }
 
+// ── Add Position Form ──────────────────────────────────────────────────────
+
+function AddPositionForm({
+  allPools,
+  onAdd,
+}: {
+  allPools: Pool[];
+  onAdd: (data: Pick<Position, 'protocol' | 'asset' | 'chain' | 'amountInvested'>) => void;
+}) {
+  const [form, setForm]                         = useState(EMPTY_FORM);
+  const [formError, setFormError]               = useState('');
+  const [protocolFromList, setProtocolFromList] = useState(false);
+  const [assetFromList, setAssetFromList]       = useState(false);
+  const [protocolOpen, setProtocolOpen]         = useState(false);
+  const [assetOpen, setAssetOpen]               = useState(false);
+  const protocolRef = useRef<HTMLDivElement>(null);
+  const assetRef    = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (!protocolRef.current?.contains(e.target as Node)) setProtocolOpen(false);
+      if (!assetRef.current?.contains(e.target as Node))    setAssetOpen(false);
+    }
+    function handleEsc(e: KeyboardEvent) {
+      if (e.key === 'Escape') { setProtocolOpen(false); setAssetOpen(false); }
+    }
+    document.addEventListener('mousedown', handleClick);
+    document.addEventListener('keydown', handleEsc);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener('keydown', handleEsc);
+    };
+  }, []);
+
+  const protocolOptions = useMemo(() => {
+    const q = form.protocol.trim().toLowerCase();
+    if (!q) return [];
+    const seen = new Set<string>();
+    const results: string[] = [];
+    for (const p of allPools) {
+      if (p.project?.toLowerCase().includes(q) && !seen.has(p.project)) {
+        seen.add(p.project);
+        results.push(p.project);
+        if (results.length >= 8) break;
+      }
+    }
+    return results;
+  }, [form.protocol, allPools]);
+
+  const assetOptions = useMemo(() => {
+    const protQ  = form.protocol.trim().toLowerCase();
+    if (!protQ) return [];
+    const assetQ = form.asset.trim().toLowerCase();
+    const seen   = new Set<string>();
+    const results: { symbol: string; tvl: number }[] = [];
+    for (const p of allPools) {
+      const matchProto = p.project?.toLowerCase().includes(protQ);
+      const matchChain = !form.chain || p.chain === form.chain;
+      const matchAsset = !assetQ    || p.symbol.toLowerCase().includes(assetQ);
+      if (matchProto && matchChain && matchAsset && !seen.has(p.symbol)) {
+        seen.add(p.symbol);
+        results.push({ symbol: p.symbol, tvl: p.tvlUsd });
+        if (results.length >= 8) break;
+      }
+    }
+    return results;
+  }, [form.protocol, form.chain, form.asset, allPools]);
+
+  function selectProtocol(name: string, fromList: boolean) {
+    setForm(f => ({ ...f, protocol: name, asset: '' }));
+    setProtocolFromList(fromList);
+    setAssetFromList(false);
+    setProtocolOpen(false);
+    setFormError('');
+  }
+
+  function selectAsset(symbol: string, fromList: boolean) {
+    setForm(f => ({ ...f, asset: symbol }));
+    setAssetFromList(fromList);
+    setAssetOpen(false);
+    setFormError('');
+  }
+
+  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const amount = parseFloat(form.amount);
+    if (!form.protocol.trim())                        { setFormError('Protocol is required'); return; }
+    if (!form.asset.trim())                           { setFormError('Asset is required'); return; }
+    if (!form.chain)                                  { setFormError('Select a chain'); return; }
+    if (!form.amount || isNaN(amount) || amount <= 0) { setFormError('Enter a valid positive amount'); return; }
+    onAdd({ protocol: form.protocol.trim(), asset: form.asset.trim(), chain: form.chain, amountInvested: amount });
+    setForm(EMPTY_FORM);
+    setFormError('');
+    setProtocolFromList(false);
+    setAssetFromList(false);
+  }
+
+  const isManualEntry = form.protocol.trim() !== '' && form.asset.trim() !== '' && (!protocolFromList || !assetFromList);
+
+  return (
+    <>
+      <div className="pf-form-section-label">Add New Position</div>
+      <div className="pf-card pf-add-card">
+        <form className="pf-form" onSubmit={handleSubmit} noValidate>
+          <div className="pf-form-fields">
+
+            {/* Protocol combobox */}
+            <div className="pf-combobox" ref={protocolRef}>
+              <input
+                className="pf-input"
+                placeholder="Protocol (e.g. Uniswap-V4)"
+                value={form.protocol}
+                autoComplete="off"
+                onChange={e => {
+                  setForm(f => ({ ...f, protocol: e.target.value, asset: '' }));
+                  setProtocolFromList(false);
+                  setAssetFromList(false);
+                  setProtocolOpen(e.target.value.trim().length > 0);
+                  setFormError('');
+                }}
+                onFocus={() => {
+                  if (form.protocol.trim().length > 0) setProtocolOpen(true);
+                }}
+              />
+              {protocolOpen && (protocolOptions.length > 0 || form.protocol.trim()) && (
+                <div className="pf-dropdown">
+                  {protocolOptions.map(name => (
+                    <div
+                      key={name}
+                      className="pf-dd-item"
+                      onMouseDown={e => { e.preventDefault(); selectProtocol(name, true); }}
+                    >
+                      <span className="pf-dd-avatar">{name[0]?.toUpperCase()}</span>
+                      <span className="pf-dd-name">{name}</span>
+                    </div>
+                  ))}
+                  {form.protocol.trim() && (
+                    <div
+                      className="pf-dd-item pf-dd-item--manual"
+                      onMouseDown={e => { e.preventDefault(); selectProtocol(form.protocol.trim(), false); }}
+                    >
+                      + Add &ldquo;{form.protocol.trim()}&rdquo; manually
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Asset combobox */}
+            <div className="pf-combobox" ref={assetRef}>
+              <input
+                className="pf-input"
+                placeholder={form.protocol.trim() ? 'Asset / symbol (e.g. ETH-USDC)' : 'Select a protocol first'}
+                value={form.asset}
+                disabled={!form.protocol.trim()}
+                autoComplete="off"
+                onChange={e => {
+                  setForm(f => ({ ...f, asset: e.target.value }));
+                  setAssetFromList(false);
+                  setAssetOpen(true);
+                  setFormError('');
+                }}
+                onFocus={() => {
+                  if (form.protocol.trim()) setAssetOpen(true);
+                }}
+              />
+              {assetOpen && form.protocol.trim() && (assetOptions.length > 0 || form.asset.trim()) && (
+                <div className="pf-dropdown">
+                  {assetOptions.map(({ symbol, tvl }) => (
+                    <div
+                      key={symbol}
+                      className="pf-dd-item"
+                      onMouseDown={e => { e.preventDefault(); selectAsset(symbol, true); }}
+                    >
+                      <span className="pf-dd-avatar">{symbol[0]?.toUpperCase()}</span>
+                      <div className="pf-dd-asset">
+                        <span className="pf-dd-name">{symbol}</span>
+                        <span className="pf-dd-tvl">{fmtUsd(tvl)} TVL</span>
+                      </div>
+                    </div>
+                  ))}
+                  {form.asset.trim() && (
+                    <div
+                      className="pf-dd-item pf-dd-item--manual"
+                      onMouseDown={e => { e.preventDefault(); selectAsset(form.asset.trim(), false); }}
+                    >
+                      + Add &ldquo;{form.asset.trim()}&rdquo; manually
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Amount */}
+            <div className="pf-amount-wrap">
+              <span className="pf-amount-prefix">$</span>
+              <input
+                className="pf-input pf-amount-input"
+                placeholder="Amount invested"
+                type="number"
+                min="0"
+                step="any"
+                value={form.amount}
+                onChange={e => { setForm(f => ({ ...f, amount: e.target.value })); setFormError(''); }}
+              />
+            </div>
+          </div>
+
+          <div className="pf-chain-pills">
+            {CHAIN_NAMES.map(chain => (
+              <button
+                key={chain}
+                type="button"
+                className={`pf-chain-pill${form.chain === chain ? ' pf-chain-pill--active' : ''}`}
+                style={form.chain === chain
+                  ? { borderColor: CHAIN_PIE_COLORS[chain] ?? '#6B4FFF', color: CHAIN_PIE_COLORS[chain] ?? '#6B4FFF', background: `${CHAIN_PIE_COLORS[chain] ?? '#6B4FFF'}22` }
+                  : undefined}
+                onClick={() => {
+                  setForm(f => ({ ...f, chain, asset: f.protocol.trim() ? '' : f.asset }));
+                  setAssetFromList(false);
+                  setFormError('');
+                }}
+              >
+                {CHAIN_LOGOS[chain] && (
+                  <img src={CHAIN_LOGOS[chain]} alt="" width={14} height={14} className="pf-chain-pill-logo" />
+                )}
+                {chain}
+              </button>
+            ))}
+          </div>
+
+          {isManualEntry && (
+            <div className="pf-manual-warning">
+              <span className="pf-manual-warning-icon">⚠</span>
+              Live data matching may be limited for manual entries
+            </div>
+          )}
+
+          {formError && <span className="pf-form-error">{formError}</span>}
+          <button type="submit" className="pf-add-btn">Add Position</button>
+        </form>
+      </div>
+    </>
+  );
+}
+
+// ── Main component ─────────────────────────────────────────────────────────
+
 export default function Portfolio() {
   const { allPools } = usePools();
   const [positions, setPositions] = useState<Position[]>(loadPositions);
-  const [form, setForm]           = useState(EMPTY_FORM);
-  const [formError, setFormError] = useState('');
 
   const enriched = useMemo(() =>
     positions.map(pos => {
@@ -146,27 +390,15 @@ export default function Portfolio() {
     return Object.entries(byChain).map(([name, value]) => ({ name, value }));
   }, [positions]);
 
-  function addPosition(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const amount = parseFloat(form.amount);
-    if (!form.protocol.trim())                        { setFormError('Protocol is required'); return; }
-    if (!form.asset.trim())                           { setFormError('Asset is required'); return; }
-    if (!form.chain)                                  { setFormError('Select a chain'); return; }
-    if (!form.amount || isNaN(amount) || amount <= 0) { setFormError('Enter a valid positive amount'); return; }
-
+  function handleAdd(data: Pick<Position, 'protocol' | 'asset' | 'chain' | 'amountInvested'>) {
     const next: Position = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
-      protocol: form.protocol.trim(),
-      asset:    form.asset.trim(),
-      chain:    form.chain,
-      amountInvested: amount,
+      ...data,
       dateAdded: new Date().toISOString(),
     };
     const updated = [...positions, next];
     setPositions(updated);
     savePositions(updated);
-    setForm(EMPTY_FORM);
-    setFormError('');
   }
 
   function removePosition(id: string) {
@@ -174,62 +406,6 @@ export default function Portfolio() {
     setPositions(updated);
     savePositions(updated);
   }
-
-  const addForm = (
-    <>
-      <div className="pf-form-section-label">Add New Position</div>
-      <div className="pf-card pf-add-card">
-        <form className="pf-form" onSubmit={addPosition} noValidate>
-          <div className="pf-form-fields">
-            <input
-              className="pf-input"
-              placeholder="Protocol (e.g. Uniswap-V4)"
-              value={form.protocol}
-              onChange={e => { setForm(f => ({ ...f, protocol: e.target.value })); setFormError(''); }}
-            />
-            <input
-              className="pf-input"
-              placeholder="Asset (e.g. ETH-USDC)"
-              value={form.asset}
-              onChange={e => { setForm(f => ({ ...f, asset: e.target.value })); setFormError(''); }}
-            />
-            <div className="pf-amount-wrap">
-              <span className="pf-amount-prefix">$</span>
-              <input
-                className="pf-input pf-amount-input"
-                placeholder="Amount invested"
-                type="number"
-                min="0"
-                step="any"
-                value={form.amount}
-                onChange={e => { setForm(f => ({ ...f, amount: e.target.value })); setFormError(''); }}
-              />
-            </div>
-          </div>
-          <div className="pf-chain-pills">
-            {CHAIN_NAMES.map(chain => (
-              <button
-                key={chain}
-                type="button"
-                className={`pf-chain-pill${form.chain === chain ? ' pf-chain-pill--active' : ''}`}
-                style={form.chain === chain
-                  ? { borderColor: CHAIN_PIE_COLORS[chain] ?? '#6B4FFF', color: CHAIN_PIE_COLORS[chain] ?? '#6B4FFF', background: `${CHAIN_PIE_COLORS[chain] ?? '#6B4FFF'}22` }
-                  : undefined}
-                onClick={() => { setForm(f => ({ ...f, chain })); setFormError(''); }}
-              >
-                {CHAIN_LOGOS[chain] && (
-                  <img src={CHAIN_LOGOS[chain]} alt="" width={14} height={14} className="pf-chain-pill-logo" />
-                )}
-                {chain}
-              </button>
-            ))}
-          </div>
-          {formError && <span className="pf-form-error">{formError}</span>}
-          <button type="submit" className="pf-add-btn">Add Position</button>
-        </form>
-      </div>
-    </>
-  );
 
   if (positions.length === 0) {
     return (
@@ -245,7 +421,7 @@ export default function Portfolio() {
           <h2 className="pf-empty-heading">Your portfolio is empty</h2>
           <p className="pf-empty-sub">Add your first DeFi position below to start tracking live APY and Dexaris Scores</p>
         </div>
-        {addForm}
+        <AddPositionForm allPools={allPools} onAdd={handleAdd} />
       </div>
     );
   }
@@ -347,8 +523,9 @@ export default function Portfolio() {
                     innerRadius={75}
                     outerRadius={110}
                     dataKey="value"
-                    stroke="#111028"
-                    strokeWidth={2}
+                    stroke="none"
+                    strokeWidth={0}
+                    cornerRadius={4}
                   >
                     {pieData.map(entry => (
                       <Cell key={entry.name} fill={CHAIN_PIE_COLORS[entry.name] ?? '#6B4FFF'} />
@@ -424,10 +601,7 @@ export default function Portfolio() {
                           <span className="pf-proto-avatar">{pos.protocol[0]?.toUpperCase()}</span>
                           <span className="pf-proto-name">{pos.protocol}</span>
                           {!pool && (
-                            <span
-                              className="pf-unmatched-dot"
-                              title="Live data unavailable for this protocol"
-                            />
+                            <span className="pf-unmatched-dot" title="Live data unavailable for this protocol" />
                           )}
                         </div>
                       </td>
@@ -506,7 +680,7 @@ export default function Portfolio() {
       </div>
 
       {/* Row 4 — Add Position */}
-      {addForm}
+      <AddPositionForm allPools={allPools} onAdd={handleAdd} />
     </div>
   );
 }
