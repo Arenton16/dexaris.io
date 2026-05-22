@@ -87,6 +87,76 @@ function HeroSparkline() {
   );
 }
 
+// ── Chain Select ───────────────────────────────────────────────────────────
+
+function ChainSelect({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (chain: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (!ref.current?.contains(e.target as Node)) setOpen(false);
+    }
+    function handleEsc(e: KeyboardEvent) {
+      if (e.key === 'Escape') setOpen(false);
+    }
+    document.addEventListener('mousedown', handleClick);
+    document.addEventListener('keydown', handleEsc);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener('keydown', handleEsc);
+    };
+  }, []);
+
+  return (
+    <div className="pf-chain-select" ref={ref}>
+      <button
+        type="button"
+        className={`pf-chain-select-trigger${open ? ' pf-chain-select-trigger--open' : ''}`}
+        onClick={() => setOpen(o => !o)}
+      >
+        {value ? (
+          <>
+            {CHAIN_LOGOS[value] && (
+              <img src={CHAIN_LOGOS[value]} alt="" width={16} height={16} className="pf-chain-sel-logo" />
+            )}
+            <span className="pf-chain-sel-name">{value}</span>
+          </>
+        ) : (
+          <span className="pf-chain-sel-placeholder">Select chain</span>
+        )}
+        <span className="pf-chain-sel-arrow">{open ? '▴' : '▾'}</span>
+      </button>
+      {open && (
+        <div className="pf-dropdown">
+          {CHAIN_NAMES.map(chain => (
+            <div
+              key={chain}
+              className={`pf-dd-item${value === chain ? ' pf-dd-item--active' : ''}`}
+              onMouseDown={e => {
+                e.preventDefault();
+                onChange(chain);
+                setOpen(false);
+              }}
+            >
+              {CHAIN_LOGOS[chain] && (
+                <img src={CHAIN_LOGOS[chain]} alt="" width={16} height={16} className="pf-chain-sel-logo" />
+              )}
+              <span className="pf-dd-name">{chain}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Add Position Form ──────────────────────────────────────────────────────
 
 function AddPositionForm({
@@ -156,7 +226,7 @@ function AddPositionForm({
   }, [form.protocol, form.chain, form.asset, allPools]);
 
   function selectProtocol(name: string, fromList: boolean) {
-    setForm(f => ({ ...f, protocol: name, asset: '' }));
+    setForm(f => ({ ...f, protocol: name, asset: '', chain: '' }));
     setProtocolFromList(fromList);
     setAssetFromList(false);
     setProtocolOpen(false);
@@ -191,7 +261,7 @@ function AddPositionForm({
       <div className="pf-form-section-label">Add New Position</div>
       <div className="pf-card pf-add-card">
         <form className="pf-form" onSubmit={handleSubmit} noValidate>
-          <div className="pf-form-fields">
+          <div className="pf-form-row">
 
             {/* Protocol combobox */}
             <div className="pf-combobox" ref={protocolRef}>
@@ -201,7 +271,7 @@ function AddPositionForm({
                 value={form.protocol}
                 autoComplete="off"
                 onChange={e => {
-                  setForm(f => ({ ...f, protocol: e.target.value, asset: '' }));
+                  setForm(f => ({ ...f, protocol: e.target.value, asset: '', chain: '' }));
                   setProtocolFromList(false);
                   setAssetFromList(false);
                   setProtocolOpen(e.target.value.trim().length > 0);
@@ -280,6 +350,16 @@ function AddPositionForm({
               )}
             </div>
 
+            {/* Chain select */}
+            <ChainSelect
+              value={form.chain}
+              onChange={chain => {
+                setForm(f => ({ ...f, chain, asset: '' }));
+                setAssetFromList(false);
+                setFormError('');
+              }}
+            />
+
             {/* Amount */}
             <div className="pf-amount-wrap">
               <span className="pf-amount-prefix">$</span>
@@ -293,29 +373,8 @@ function AddPositionForm({
                 onChange={e => { setForm(f => ({ ...f, amount: e.target.value })); setFormError(''); }}
               />
             </div>
-          </div>
 
-          <div className="pf-chain-pills">
-            {CHAIN_NAMES.map(chain => (
-              <button
-                key={chain}
-                type="button"
-                className={`pf-chain-pill${form.chain === chain ? ' pf-chain-pill--active' : ''}`}
-                style={form.chain === chain
-                  ? { borderColor: CHAIN_PIE_COLORS[chain] ?? '#6B4FFF', color: CHAIN_PIE_COLORS[chain] ?? '#6B4FFF', background: `${CHAIN_PIE_COLORS[chain] ?? '#6B4FFF'}22` }
-                  : undefined}
-                onClick={() => {
-                  setForm(f => ({ ...f, chain, asset: f.protocol.trim() ? '' : f.asset }));
-                  setAssetFromList(false);
-                  setFormError('');
-                }}
-              >
-                {CHAIN_LOGOS[chain] && (
-                  <img src={CHAIN_LOGOS[chain]} alt="" width={14} height={14} className="pf-chain-pill-logo" />
-                )}
-                {chain}
-              </button>
-            ))}
+            <button type="submit" className="pf-add-btn">Add Position</button>
           </div>
 
           {isManualEntry && (
@@ -326,7 +385,6 @@ function AddPositionForm({
           )}
 
           {formError && <span className="pf-form-error">{formError}</span>}
-          <button type="submit" className="pf-add-btn">Add Position</button>
         </form>
       </div>
     </>
