@@ -3,7 +3,7 @@ import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer } 
 import { usePools } from '../contexts/PoolsContext';
 import DexarisIcon from './DexarisIcon';
 import type { Pool } from '../types';
-import { CHAIN_LABELS } from '../types';
+import { CHAIN_LABELS, CHAIN_LOGOS } from '../types';
 import {
   calculateDexarisScore,
   getDexarisScoreColour,
@@ -31,8 +31,7 @@ const CHAIN_PIE_COLORS: Record<string, string> = {
 };
 
 const CHAIN_NAMES = Object.values(CHAIN_LABELS);
-
-const EMPTY_FORM = { protocol: '', asset: '', chain: '', amount: '' };
+const EMPTY_FORM  = { protocol: '', asset: '', chain: '', amount: '' };
 
 function fmtUsd(val: number): string {
   if (val >= 1_000_000) return `$${(val / 1_000_000).toFixed(2)}M`;
@@ -62,6 +61,34 @@ function matchPool(position: Position, allPools: Pool[]): Pool | null {
   );
 }
 
+function MiniSparkline({ from, to }: { from: number; to: number }) {
+  const max  = Math.max(from, to, 0.01);
+  const y1   = 16 - (from / max) * 12;
+  const y2   = 16 - (to   / max) * 12;
+  const up   = to >= from;
+  const color = up ? '#4ECDA4' : '#FF6B6B';
+  return (
+    <svg width="40" height="20" viewBox="0 0 40 20" className="pf-stat-spark">
+      <line x1="2" y1={y1} x2="38" y2={y2} stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+      <circle cx="38" cy={y2} r="2.5" fill={color} />
+    </svg>
+  );
+}
+
+// Decorative upward curve for hero cards
+function HeroSparkline() {
+  return (
+    <svg className="pf-hero-sparkline" viewBox="0 0 160 48" preserveAspectRatio="none" aria-hidden>
+      <path
+        d="M0,44 C20,42 30,36 50,30 S80,18 100,12 S130,4 160,2"
+        fill="none"
+        stroke="rgba(107,79,255,0.1)"
+        strokeWidth="1.5"
+      />
+    </svg>
+  );
+}
+
 export default function Portfolio() {
   const { allPools } = usePools();
   const [positions, setPositions] = useState<Position[]>(loadPositions);
@@ -87,6 +114,9 @@ export default function Portfolio() {
     const avgApy = matched.length
       ? matched.reduce((s, e) => s + (e.pool!.apy ?? 0), 0) / matched.length
       : null;
+    const avgMean30d = matched.length
+      ? matched.reduce((s, e) => s + (e.pool!.apyMean30d ?? e.pool!.apy ?? 0), 0) / matched.length
+      : null;
 
     const matchedInvested = matched.reduce((s, e) => s + e.pos.amountInvested, 0);
     const portfolioScore = matched.length && matchedInvested > 0
@@ -99,7 +129,13 @@ export default function Portfolio() {
         )
       : null;
 
-    return { totalInvested, estYield, avgApy, portfolioScore, activePositions: positions.length, bestPosition };
+    const chainCount = new Set(positions.map(p => p.chain)).size;
+
+    return {
+      totalInvested, estYield, avgApy, avgMean30d,
+      portfolioScore, activePositions: positions.length,
+      bestPosition, chainCount,
+    };
   }, [enriched, positions]);
 
   const pieData = useMemo(() => {
@@ -113,9 +149,9 @@ export default function Portfolio() {
   function addPosition(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const amount = parseFloat(form.amount);
-    if (!form.protocol.trim())                  { setFormError('Protocol is required'); return; }
-    if (!form.asset.trim())                     { setFormError('Asset is required'); return; }
-    if (!form.chain)                            { setFormError('Select a chain'); return; }
+    if (!form.protocol.trim())                        { setFormError('Protocol is required'); return; }
+    if (!form.asset.trim())                           { setFormError('Asset is required'); return; }
+    if (!form.chain)                                  { setFormError('Select a chain'); return; }
     if (!form.amount || isNaN(amount) || amount <= 0) { setFormError('Enter a valid positive amount'); return; }
 
     const next: Position = {
@@ -140,54 +176,59 @@ export default function Portfolio() {
   }
 
   const addForm = (
-    <div className="pf-card pf-add-card">
-      <h3 className="pf-card-title">Add Position</h3>
-      <form className="pf-form" onSubmit={addPosition} noValidate>
-        <div className="pf-form-fields">
-          <input
-            className="pf-input"
-            placeholder="Protocol (e.g. Uniswap-V4)"
-            value={form.protocol}
-            onChange={e => { setForm(f => ({ ...f, protocol: e.target.value })); setFormError(''); }}
-          />
-          <input
-            className="pf-input"
-            placeholder="Asset (e.g. ETH-USDC)"
-            value={form.asset}
-            onChange={e => { setForm(f => ({ ...f, asset: e.target.value })); setFormError(''); }}
-          />
-          <div className="pf-amount-wrap">
-            <span className="pf-amount-prefix">$</span>
+    <>
+      <div className="pf-form-section-label">Add New Position</div>
+      <div className="pf-card pf-add-card">
+        <form className="pf-form" onSubmit={addPosition} noValidate>
+          <div className="pf-form-fields">
             <input
-              className="pf-input pf-amount-input"
-              placeholder="Amount invested"
-              type="number"
-              min="0"
-              step="any"
-              value={form.amount}
-              onChange={e => { setForm(f => ({ ...f, amount: e.target.value })); setFormError(''); }}
+              className="pf-input"
+              placeholder="Protocol (e.g. Uniswap-V4)"
+              value={form.protocol}
+              onChange={e => { setForm(f => ({ ...f, protocol: e.target.value })); setFormError(''); }}
             />
+            <input
+              className="pf-input"
+              placeholder="Asset (e.g. ETH-USDC)"
+              value={form.asset}
+              onChange={e => { setForm(f => ({ ...f, asset: e.target.value })); setFormError(''); }}
+            />
+            <div className="pf-amount-wrap">
+              <span className="pf-amount-prefix">$</span>
+              <input
+                className="pf-input pf-amount-input"
+                placeholder="Amount invested"
+                type="number"
+                min="0"
+                step="any"
+                value={form.amount}
+                onChange={e => { setForm(f => ({ ...f, amount: e.target.value })); setFormError(''); }}
+              />
+            </div>
           </div>
-        </div>
-        <div className="pf-chain-pills">
-          {CHAIN_NAMES.map(chain => (
-            <button
-              key={chain}
-              type="button"
-              className={`pf-chain-pill${form.chain === chain ? ' pf-chain-pill--active' : ''}`}
-              style={form.chain === chain
-                ? { borderColor: CHAIN_PIE_COLORS[chain] ?? '#6B4FFF', color: CHAIN_PIE_COLORS[chain] ?? '#6B4FFF', background: `${CHAIN_PIE_COLORS[chain] ?? '#6B4FFF'}22` }
-                : undefined}
-              onClick={() => { setForm(f => ({ ...f, chain })); setFormError(''); }}
-            >
-              {chain}
-            </button>
-          ))}
-        </div>
-        {formError && <span className="pf-form-error">{formError}</span>}
-        <button type="submit" className="pf-add-btn">Add Position</button>
-      </form>
-    </div>
+          <div className="pf-chain-pills">
+            {CHAIN_NAMES.map(chain => (
+              <button
+                key={chain}
+                type="button"
+                className={`pf-chain-pill${form.chain === chain ? ' pf-chain-pill--active' : ''}`}
+                style={form.chain === chain
+                  ? { borderColor: CHAIN_PIE_COLORS[chain] ?? '#6B4FFF', color: CHAIN_PIE_COLORS[chain] ?? '#6B4FFF', background: `${CHAIN_PIE_COLORS[chain] ?? '#6B4FFF'}22` }
+                  : undefined}
+                onClick={() => { setForm(f => ({ ...f, chain })); setFormError(''); }}
+              >
+                {CHAIN_LOGOS[chain] && (
+                  <img src={CHAIN_LOGOS[chain]} alt="" width={14} height={14} className="pf-chain-pill-logo" />
+                )}
+                {chain}
+              </button>
+            ))}
+          </div>
+          {formError && <span className="pf-form-error">{formError}</span>}
+          <button type="submit" className="pf-add-btn">Add Position</button>
+        </form>
+      </div>
+    </>
   );
 
   if (positions.length === 0) {
@@ -198,9 +239,11 @@ export default function Portfolio() {
           <p className="pf-page-subtitle">Track your DeFi positions with live Dexaris intelligence</p>
         </div>
         <div className="pf-empty-state">
-          <DexarisIcon size={48} />
+          <div className="pf-empty-icon-wrap">
+            <DexarisIcon size={64} />
+          </div>
           <h2 className="pf-empty-heading">Your portfolio is empty</h2>
-          <p className="pf-empty-sub">Add your first position to start tracking live APY and Dexaris Scores</p>
+          <p className="pf-empty-sub">Add your first DeFi position below to start tracking live APY and Dexaris Scores</p>
         </div>
         {addForm}
       </div>
@@ -214,13 +257,28 @@ export default function Portfolio() {
         <p className="pf-page-subtitle">Track your DeFi positions with live Dexaris intelligence</p>
       </div>
 
+      {/* Stats strip */}
+      <div className="pf-stats-strip">
+        <span>Tracking <strong>{stats.activePositions}</strong> position{stats.activePositions !== 1 ? 's' : ''} across <strong>{stats.chainCount}</strong> chain{stats.chainCount !== 1 ? 's' : ''}</span>
+        <span className="pf-strip-sep">·</span>
+        {stats.portfolioScore !== null && (
+          <>
+            <span>Portfolio Dexaris Score: <strong style={{ color: getDexarisScoreColour(stats.portfolioScore) }}>{stats.portfolioScore}</strong></span>
+            <span className="pf-strip-sep">·</span>
+          </>
+        )}
+        <span>Est. annual yield: <strong className="pf-strip-yield">{fmtUsd(stats.estYield)}</strong></span>
+      </div>
+
       {/* Row 1 — Hero cards */}
       <div className="pf-hero-row">
         <div className="pf-card pf-hero-card">
+          <HeroSparkline />
           <span className="pf-hero-label">Total Invested</span>
           <span className="pf-hero-value">{fmtUsd(stats.totalInvested)}</span>
         </div>
         <div className="pf-card pf-hero-card">
+          <HeroSparkline />
           <span className="pf-hero-label">Estimated Annual Yield</span>
           <span className="pf-hero-value pf-hero-value--green">
             {fmtUsd(stats.estYield)}<span className="pf-hero-suffix">/yr</span>
@@ -231,6 +289,9 @@ export default function Portfolio() {
       {/* Row 2 — Stat cards */}
       <div className="pf-stat-row">
         <div className="pf-card pf-stat-card">
+          {stats.avgApy !== null && stats.avgMean30d !== null && (
+            <MiniSparkline from={stats.avgMean30d} to={stats.avgApy} />
+          )}
           <span className="pf-stat-label">Average APY</span>
           <span className="pf-stat-value">
             {stats.avgApy !== null ? `${stats.avgApy.toFixed(2)}%` : '—'}
@@ -238,28 +299,33 @@ export default function Portfolio() {
         </div>
         <div className="pf-card pf-stat-card">
           <span className="pf-stat-label">Portfolio Score</span>
-          <span
-            className="pf-stat-value"
-            style={stats.portfolioScore !== null ? { color: getDexarisScoreColour(stats.portfolioScore) } : undefined}
-          >
-            {stats.portfolioScore !== null
-              ? `${stats.portfolioScore} ${getDexarisScoreTier(stats.portfolioScore)}`
-              : '—'}
-          </span>
+          {stats.portfolioScore !== null ? (
+            <>
+              <span className="pf-stat-value" style={{ color: getDexarisScoreColour(stats.portfolioScore) }}>
+                {stats.portfolioScore}
+              </span>
+              <span className="pf-stat-sub">{getDexarisScoreTier(stats.portfolioScore)}</span>
+            </>
+          ) : (
+            <span className="pf-stat-value pf-stat-na">—</span>
+          )}
         </div>
         <div className="pf-card pf-stat-card">
           <span className="pf-stat-label">Active Positions</span>
           <span className="pf-stat-value">{stats.activePositions}</span>
         </div>
         <div className="pf-card pf-stat-card">
+          {stats.bestPosition?.pool?.apyMean30d != null && stats.bestPosition.pool.apy != null && (
+            <MiniSparkline from={stats.bestPosition.pool.apyMean30d} to={stats.bestPosition.pool.apy} />
+          )}
           <span className="pf-stat-label">Best Position</span>
           {stats.bestPosition ? (
-            <span className="pf-stat-value pf-stat-best">
-              <span className="pf-stat-best-name">{stats.bestPosition.pos.protocol}</span>
-              <span className="pf-stat-best-apy">{(stats.bestPosition.pool!.apy ?? 0).toFixed(2)}%</span>
-            </span>
+            <>
+              <span className="pf-stat-value pf-stat-best-name">{stats.bestPosition.pos.protocol}</span>
+              <span className="pf-stat-sub pf-stat-sub--green">{(stats.bestPosition.pool!.apy ?? 0).toFixed(2)}%</span>
+            </>
           ) : (
-            <span className="pf-stat-value">—</span>
+            <span className="pf-stat-value pf-stat-na">—</span>
           )}
         </div>
       </div>
@@ -271,36 +337,38 @@ export default function Portfolio() {
         <div className="pf-card pf-chart-card">
           <h3 className="pf-card-title">Allocation by Chain</h3>
           <div className="pf-donut-wrap">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={pieData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={58}
-                  outerRadius={84}
-                  dataKey="value"
-                  stroke="#111028"
-                  strokeWidth={2}
-                >
-                  {pieData.map(entry => (
-                    <Cell key={entry.name} fill={CHAIN_PIE_COLORS[entry.name] ?? '#6B4FFF'} />
-                  ))}
-                </Pie>
-                <RechartsTooltip
-                  contentStyle={{
-                    background: '#111028',
-                    border: '0.5px solid rgba(107,79,255,0.25)',
-                    borderRadius: 6,
-                    fontFamily: 'Inter, sans-serif',
-                    fontSize: 12,
-                  }}
-                  formatter={(value) => [fmtUsd(Number(value)), 'Invested']}
-                  labelStyle={{ color: '#8B73FF' }}
-                  itemStyle={{ color: '#E8E6FF' }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+            <div className="pf-donut-chart-wrap">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={pieData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={75}
+                    outerRadius={110}
+                    dataKey="value"
+                    stroke="#111028"
+                    strokeWidth={2}
+                  >
+                    {pieData.map(entry => (
+                      <Cell key={entry.name} fill={CHAIN_PIE_COLORS[entry.name] ?? '#6B4FFF'} />
+                    ))}
+                  </Pie>
+                  <RechartsTooltip
+                    contentStyle={{
+                      background: 'rgba(15,14,34,0.95)',
+                      border: '0.5px solid rgba(107,79,255,0.25)',
+                      borderRadius: 6,
+                      fontFamily: 'Inter, sans-serif',
+                      fontSize: 12,
+                    }}
+                    formatter={(value) => [fmtUsd(Number(value)), 'Invested']}
+                    labelStyle={{ color: '#8B73FF' }}
+                    itemStyle={{ color: '#E8E6FF' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
             <div className="pf-donut-center" aria-hidden>
               <span className="pf-donut-label">Total Holdings</span>
               <span className="pf-donut-value">{fmtUsd(stats.totalInvested)}</span>
@@ -316,6 +384,7 @@ export default function Portfolio() {
                   <span className="pf-legend-dot" style={{ background: CHAIN_PIE_COLORS[entry.name] ?? '#6B4FFF' }} />
                   <span className="pf-legend-name">{entry.name}</span>
                   <span className="pf-legend-pct">{pct}%</span>
+                  <span className="pf-legend-usd">{fmtUsd(entry.value)}</span>
                 </div>
               );
             })}
@@ -342,11 +411,26 @@ export default function Portfolio() {
               <tbody>
                 {enriched.map(({ pos, pool, score }) => {
                   const apy      = pool?.apy ?? null;
+                  const mean     = pool?.apyMean30d ?? null;
                   const estYield = apy !== null ? pos.amountInvested * apy / 100 : null;
                   const colour   = score !== null ? getDexarisScoreColour(score) : null;
+                  const apyDir   = (apy !== null && mean !== null)
+                    ? (apy >= mean ? 'up' : 'down')
+                    : null;
                   return (
                     <tr key={pos.id} className="pf-tr">
-                      <td className="pf-td pf-td-protocol">{pos.protocol}</td>
+                      <td className="pf-td pf-td-protocol">
+                        <div className="pf-proto-cell">
+                          <span className="pf-proto-avatar">{pos.protocol[0]?.toUpperCase()}</span>
+                          <span className="pf-proto-name">{pos.protocol}</span>
+                          {!pool && (
+                            <span
+                              className="pf-unmatched-dot"
+                              title="Live data unavailable for this protocol"
+                            />
+                          )}
+                        </div>
+                      </td>
                       <td className="pf-td pf-td-muted">{pos.asset}</td>
                       <td className="pf-td">
                         <span
@@ -357,25 +441,50 @@ export default function Portfolio() {
                             background:  `${CHAIN_PIE_COLORS[pos.chain] ?? '#6B4FFF'}18`,
                           }}
                         >
+                          {CHAIN_LOGOS[pos.chain] && (
+                            <img
+                              src={CHAIN_LOGOS[pos.chain]}
+                              alt=""
+                              width={11}
+                              height={11}
+                              className="pf-badge-chain-logo"
+                              onError={e => { e.currentTarget.style.display = 'none'; }}
+                            />
+                          )}
                           {pos.chain}
                         </span>
                       </td>
                       <td className="pf-td pf-td-r">{fmtUsd(pos.amountInvested)}</td>
-                      <td className="pf-td pf-td-r pf-td-apy">
-                        {apy !== null ? `${apy.toFixed(2)}%` : <span className="pf-td-na">—</span>}
+                      <td className="pf-td pf-td-r">
+                        {apy !== null ? (
+                          <span className="pf-apy-cell">
+                            {apyDir && (
+                              <span className={`pf-apy-arrow pf-apy-arrow--${apyDir}`}>
+                                {apyDir === 'up' ? '↑' : '↓'}
+                              </span>
+                            )}
+                            <span className="pf-td-apy">{apy.toFixed(2)}%</span>
+                          </span>
+                        ) : (
+                          <span className="pf-td-na">—</span>
+                        )}
                       </td>
                       <td className="pf-td pf-td-r">
                         {colour && score !== null ? (
-                          <span
-                            className="pf-score-badge"
-                            style={{ color: colour, borderColor: `${colour}40`, background: `${colour}1a` }}
-                          >
-                            {score}
-                          </span>
-                        ) : <span className="pf-td-na">—</span>}
+                          <div className="pf-score-cell">
+                            <span style={{ color: colour, fontWeight: 600, fontSize: 13 }}>{score}</span>
+                            <span className="pf-score-tier">{getDexarisScoreTier(score)}</span>
+                          </div>
+                        ) : (
+                          <span className="pf-td-na">—</span>
+                        )}
                       </td>
-                      <td className="pf-td pf-td-r pf-td-green">
-                        {estYield !== null ? fmtUsd(estYield) : <span className="pf-td-na">—</span>}
+                      <td className="pf-td pf-td-r">
+                        {estYield !== null && estYield > 0 ? (
+                          <span className="pf-td-green">{fmtUsd(estYield)}</span>
+                        ) : (
+                          <span className="pf-td-na">—</span>
+                        )}
                       </td>
                       <td className="pf-td pf-td-remove">
                         <button
