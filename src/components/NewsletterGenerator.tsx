@@ -334,8 +334,9 @@ function XContentTab() {
       });
 
       if (!aiRes.ok) {
-        const body = await aiRes.json().catch(() => ({}));
-        throw new Error(`Generation failed: ${(body as { error?: string }).error ?? aiRes.status}`);
+        const errorText = await aiRes.text();
+        setError(`Generation failed: ${aiRes.status} — ${errorText}`);
+        return;
       }
 
       const aiData = await aiRes.json();
