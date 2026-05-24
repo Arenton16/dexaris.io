@@ -14,6 +14,10 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'ANTHROPIC_API_KEY is not configured' })
   }
 
+  const safeUserMessage = userMessage.length > 20000
+    ? userMessage.slice(0, 20000)
+    : userMessage
+
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -23,16 +27,16 @@ export default async function handler(req, res) {
     },
     body: JSON.stringify({
       model: 'claude-sonnet-4-20250514',
-      max_tokens: 1000,
+      max_tokens: 2000,
       system: systemPrompt,
-      messages: [{ role: 'user', content: userMessage }],
+      messages: [{ role: 'user', content: safeUserMessage }],
     }),
   })
 
   if (!response.ok) {
-    const error = await response.text()
-    console.error('Anthropic API error:', error)
-    return res.status(500).json({ error: `Anthropic API error: ${response.status}` })
+    const errorBody = await response.text()
+    console.error('Anthropic 400 error:', errorBody)
+    return res.status(500).json({ error: `Anthropic API error: ${response.status} — ${errorBody}` })
   }
 
   const data = await response.json()
