@@ -2553,6 +2553,10 @@ body {
   padding: 40px 0;
 }
 
+@keyframes nlgen-spin {
+  to { transform: rotate(360deg); }
+}
+
 .nlgen-card {
   background: rgba(107,79,255,0.04);
   border: 0.5px solid rgba(107,79,255,0.15);

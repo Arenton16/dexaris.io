@@ -34,6 +34,40 @@ interface NewsletterStats {
   biggestOpp: PoolEntry | null;
 }
 
+interface XPost {
+  slot: 'Morning' | 'Afternoon' | 'Evening';
+  time: string;
+  type: string;
+  text: string;
+  chars: number;
+}
+
+// ── Constants ──────────────────────────────────────────────────────────────
+
+const SESSION_KEY = 'nlgen_unlocked';
+const CORRECT     = 'DEXARIS2026';
+
+const X_SYSTEM_PROMPT = `You are a content strategist for Dexaris (@DexarisHQ), a DeFi yield intelligence platform. Brand voice: analytical, sharp, no hype, no financial advice. Think Bloomberg for DeFi.
+
+Generate three X posts from the live yield data provided:
+
+POST 1 — The Stat (8–9am): One surprising number from the data. Short setup, the number, one-line implication. Under 240 characters.
+POST 2 — The Insight (12–2pm): A pattern across multiple pools requiring the platform to spot. 2–3 sentences. Under 260 characters.
+POST 3 — The Find (6–8pm): One specific pool — name it, give the stats, explain the Dexaris Score verdict in plain English. Under 280 characters.
+
+Rules: never say "DYOR", end at least one post with "→ dexaris.io", no hashtag spam, no emojis.
+
+Return valid JSON only, no markdown, no backticks:
+{"posts":[{"slot":"Morning","time":"8–9am","type":"The Stat","text":"...","chars":0},{"slot":"Afternoon","time":"12–2pm","type":"The Insight","text":"...","chars":0},{"slot":"Evening","time":"6–8pm","type":"The Find","text":"...","chars":0}]}
+
+Set chars to the actual character count of each text field.`;
+
+const SLOT_STYLE: Record<string, { bg: string; border: string; color: string }> = {
+  Morning:   { bg: 'rgba(245,158,11,0.12)',  border: 'rgba(245,158,11,0.3)',  color: '#F59E0B' },
+  Afternoon: { bg: 'rgba(96,165,250,0.12)',   border: 'rgba(96,165,250,0.3)',  color: '#60A5FA' },
+  Evening:   { bg: 'rgba(52,211,153,0.12)',   border: 'rgba(52,211,153,0.3)',  color: '#34D399' },
+};
+
 // ── Pure helpers ──────────────────────────────────────────────────────────
 
 function getWeekStart(): string {
@@ -156,9 +190,6 @@ function buildNewsletterText(stats: NewsletterStats, weekStart: string, subjectL
 
 // ── Password gate ─────────────────────────────────────────────────────────
 
-const SESSION_KEY = 'nlgen_unlocked';
-const CORRECT = 'DEXARIS2026';
-
 function PasswordGate({ onUnlock }: { onUnlock: () => void }) {
   const [value, setValue] = useState('');
   const [error, setError]  = useState(false);
@@ -251,15 +282,336 @@ function PasswordGate({ onUnlock }: { onUnlock: () => void }) {
   );
 }
 
+// ── X Content tab ─────────────────────────────────────────────────────────
+
+function XContentTab() {
+  const [posts, setPosts]         = useState<XPost[]>([]);
+  const [loading, setLoading]     = useState(false);
+  const [error, setError]         = useState('');
+  const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
+  const [allCopied, setAllCopied] = useState(false);
+
+  async function handleGenerate() {
+    setLoading(true);
+    setError('');
+    setPosts([]);
+
+    try {
+      // 1. Fetch live pool data directly from DeFiLlama
+      const poolRes = await fetch('https://yields.llama.fi/pools');
+      if (!poolRes.ok) throw new Error(`DeFiLlama fetch failed: ${poolRes.status}`);
+      const poolJson = await poolRes.json();
+
+      // 2. Filter: TVL > $1M, APY > 0 — take top 30 by TVL
+      const filtered = (poolJson.data as Pool[])
+        .filter(p => p.tvlUsd > 1_000_000 && (p.apy ?? 0) > 0)
+        .sort((a, b) => b.tvlUsd - a.tvlUsd)
+        .slice(0, 30);
+
+      // 3. Enrich with Dexaris scores
+      const enriched = filtered.map(p => ({
+        project:   p.project ?? '—',
+        symbol:    p.symbol  ?? '—',
+        chain:     p.chain   ?? '—',
+        apy:       (p.apy ?? 0).toFixed(2),
+        tvlM:      (p.tvlUsd / 1e6).toFixed(1),
+        score:     calculateDexarisScore(p),
+        scoreTier: getDexarisScoreTier(calculateDexarisScore(p)),
+      }));
+
+      const poolSummary = enriched.map((p, i) =>
+        `${i + 1}. ${p.project} | ${p.symbol} | ${p.chain} | APY: ${p.apy}% | TVL: $${p.tvlM}M | DexarisScore: ${p.score} (${p.scoreTier})`
+      ).join('\n');
+
+      // 4. Call Anthropic API
+      const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
+      if (!apiKey) throw new Error('VITE_ANTHROPIC_API_KEY is not configured');
+
+      const aiRes = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true',
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1024,
+          system: X_SYSTEM_PROMPT,
+          messages: [{
+            role: 'user',
+            content: `Here is today's live DeFi yield data — top 30 pools by TVL (TVL > $1M, APY > 0):\n\n${poolSummary}\n\nGenerate the three X posts.`,
+          }],
+        }),
+      });
+
+      if (!aiRes.ok) {
+        const body = await aiRes.text().catch(() => '');
+        throw new Error(`Anthropic API error ${aiRes.status}${body ? ': ' + body.slice(0, 120) : ''}`);
+      }
+
+      const aiData = await aiRes.json();
+      const rawText: string = aiData.content?.[0]?.text ?? '';
+
+      // Extract JSON robustly — strip any surrounding markdown/prose
+      const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error('Could not parse JSON from AI response');
+      const parsed: { posts: XPost[] } = JSON.parse(jsonMatch[0]);
+      if (!Array.isArray(parsed.posts) || parsed.posts.length === 0) {
+        throw new Error('AI returned an unexpected response shape');
+      }
+
+      // Recompute chars from actual text
+      setPosts(parsed.posts.map(p => ({ ...p, chars: p.text.length })));
+
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Generation failed — please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function copyPost(idx: number) {
+    try {
+      await navigator.clipboard.writeText(posts[idx].text);
+      setCopiedIdx(idx);
+      setTimeout(() => setCopiedIdx(null), 2000);
+    } catch { /* clipboard unavailable */ }
+  }
+
+  async function copyAll() {
+    try {
+      const text = posts
+        .map(p => `[${p.slot} — ${p.type}, ${p.time}]\n${p.text}`)
+        .join('\n\n');
+      await navigator.clipboard.writeText(text);
+      setAllCopied(true);
+      setTimeout(() => setAllCopied(false), 2000);
+    } catch { /* clipboard unavailable */ }
+  }
+
+  const S: React.CSSProperties = {
+    fontFamily: "'Inter', sans-serif",
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+
+      {/* Generate button */}
+      <button
+        onClick={handleGenerate}
+        disabled={loading}
+        style={{
+          ...S,
+          alignSelf: 'flex-start',
+          background: loading ? 'rgba(107,79,255,0.4)' : '#6B4FFF',
+          border: 'none',
+          borderRadius: '10px',
+          padding: '12px 28px',
+          fontSize: '14px',
+          fontWeight: 600,
+          color: '#fff',
+          cursor: loading ? 'not-allowed' : 'pointer',
+          transition: 'background 0.15s',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+        }}
+      >
+        {loading ? (
+          <>
+            <span style={{ display: 'inline-block', width: 14, height: 14, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'nlgen-spin 0.7s linear infinite' }} />
+            Fetching data &amp; generating…
+          </>
+        ) : (
+          "Generate Today's Posts"
+        )}
+      </button>
+
+      {/* Error */}
+      {error && (
+        <div style={{
+          ...S,
+          background: 'rgba(255,107,107,0.08)',
+          border: '1px solid rgba(255,107,107,0.25)',
+          borderRadius: '10px',
+          padding: '12px 16px',
+          fontSize: '13px',
+          color: '#FF8A8A',
+          lineHeight: 1.5,
+        }}>
+          {error}
+        </div>
+      )}
+
+      {/* Scheduling note */}
+      {posts.length === 0 && !loading && !error && (
+        <div style={{
+          ...S,
+          background: 'rgba(107,79,255,0.06)',
+          border: '0.5px solid rgba(107,79,255,0.2)',
+          borderRadius: '10px',
+          padding: '14px 16px',
+          fontSize: '13px',
+          color: 'rgba(232,230,255,0.45)',
+          lineHeight: 1.6,
+        }}>
+          Posts are generated from live DeFi yield data and scored with the Dexaris algorithm.
+          Scheduling requires a third-party tool —{' '}
+          <a href="https://typefully.com" target="_blank" rel="noopener noreferrer" style={{ color: '#8B73FF', textDecoration: 'none' }}>Typefully</a>
+          {' '}or{' '}
+          <a href="https://buffer.com" target="_blank" rel="noopener noreferrer" style={{ color: '#8B73FF', textDecoration: 'none' }}>Buffer</a>
+          {' '}recommended.
+        </div>
+      )}
+
+      {/* Generated posts */}
+      {posts.length > 0 && (
+        <>
+          {/* Copy all */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+            <button
+              onClick={copyAll}
+              style={{
+                ...S,
+                background: 'rgba(107,79,255,0.15)',
+                border: '1px solid rgba(107,79,255,0.3)',
+                borderRadius: '8px',
+                padding: '8px 18px',
+                fontSize: '13px',
+                fontWeight: 500,
+                color: allCopied ? '#34D399' : '#8B73FF',
+                cursor: 'pointer',
+                transition: 'color 0.15s',
+              }}
+            >
+              {allCopied ? '✓ All 3 copied!' : 'Copy all 3'}
+            </button>
+            <span style={{ ...S, fontSize: '12px', color: 'rgba(232,230,255,0.3)' }}>
+              Click any post to edit before scheduling
+            </span>
+          </div>
+
+          {/* Post cards */}
+          {posts.map((post, idx) => {
+            const slotStyle = SLOT_STYLE[post.slot] ?? SLOT_STYLE.Morning;
+            const overLimit = post.chars > 280;
+            return (
+              <div key={post.slot} style={{
+                background: '#111028',
+                border: '1px solid rgba(107,79,255,0.18)',
+                borderRadius: '12px',
+                padding: '20px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px',
+              }}>
+                {/* Card header */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                  <span style={{
+                    ...S,
+                    background: slotStyle.bg,
+                    border: `1px solid ${slotStyle.border}`,
+                    borderRadius: '6px',
+                    padding: '3px 10px',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    color: slotStyle.color,
+                    letterSpacing: '0.04em',
+                    textTransform: 'uppercase' as const,
+                  }}>
+                    {post.slot}
+                  </span>
+                  <span style={{ ...S, fontSize: '13px', fontWeight: 500, color: '#E8E6FF' }}>
+                    {post.type}
+                  </span>
+                  <span style={{ ...S, fontSize: '12px', color: 'rgba(232,230,255,0.35)' }}>
+                    {post.time}
+                  </span>
+                  <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <span style={{
+                      ...S,
+                      fontSize: '12px',
+                      fontWeight: 500,
+                      color: overLimit ? '#FF6B6B' : 'rgba(232,230,255,0.35)',
+                      transition: 'color 0.15s',
+                    }}>
+                      {post.chars} / 280
+                    </span>
+                    <button
+                      onClick={() => copyPost(idx)}
+                      style={{
+                        ...S,
+                        background: copiedIdx === idx ? 'rgba(52,211,153,0.12)' : 'rgba(107,79,255,0.1)',
+                        border: `1px solid ${copiedIdx === idx ? 'rgba(52,211,153,0.3)' : 'rgba(107,79,255,0.25)'}`,
+                        borderRadius: '6px',
+                        padding: '4px 12px',
+                        fontSize: '12px',
+                        fontWeight: 500,
+                        color: copiedIdx === idx ? '#34D399' : '#8B73FF',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s',
+                      }}
+                    >
+                      {copiedIdx === idx ? '✓ Copied' : 'Copy'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Post text */}
+                <p style={{
+                  ...S,
+                  margin: 0,
+                  fontSize: '14px',
+                  lineHeight: 1.65,
+                  color: '#E8E6FF',
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-word',
+                }}>
+                  {post.text}
+                </p>
+              </div>
+            );
+          })}
+
+          {/* Scheduler CTA */}
+          <div style={{
+            ...S,
+            background: 'rgba(107,79,255,0.06)',
+            border: '0.5px solid rgba(107,79,255,0.2)',
+            borderRadius: '10px',
+            padding: '14px 16px',
+            fontSize: '13px',
+            color: 'rgba(232,230,255,0.45)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            flexWrap: 'wrap',
+          }}>
+            <span>Ready to schedule?</span>
+            <a href="https://typefully.com" target="_blank" rel="noopener noreferrer"
+              style={{ color: '#8B73FF', textDecoration: 'none', fontWeight: 500 }}>Typefully</a>
+            <span>or</span>
+            <a href="https://buffer.com" target="_blank" rel="noopener noreferrer"
+              style={{ color: '#8B73FF', textDecoration: 'none', fontWeight: 500 }}>Buffer</a>
+            <span>can schedule all three at the suggested times.</span>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 // ── Component ─────────────────────────────────────────────────────────────
 
 export default function NewsletterGenerator() {
+  // All hooks unconditionally at the top
   const [unlocked, setUnlocked] = useState(() => sessionStorage.getItem(SESSION_KEY) === '1');
+  const [activeTab, setActiveTab] = useState<'newsletter' | 'xcontent'>('newsletter');
   const { allPools, isLoading } = usePools();
   const [bodyCopied, setBodyCopied] = useState(false);
   const [subCopied, setSubCopied]  = useState(false);
-
-  if (!unlocked) return <PasswordGate onUnlock={() => setUnlocked(true)} />;
 
   const weekStart = useMemo(() => getWeekStart(), []);
 
@@ -301,7 +653,6 @@ export default function NewsletterGenerator() {
       .map(([chain, { sum, count }]) => ({ chain, avg: sum / count }))
       .sort((a, b) => b.avg - a.avg)[0] ?? { chain: '—', avg: 0 };
 
-    // Pool of the Week: score + capped APY bonus (favours quality over raw APY)
     const potWPool = [...allPools].sort((a, b) => {
       const sa = (scoreMap.get(a.pool) ?? 0) + Math.min(a.apy ?? 0, 30);
       const sb = (scoreMap.get(b.pool) ?? 0) + Math.min(b.apy ?? 0, 30);
@@ -309,7 +660,6 @@ export default function NewsletterGenerator() {
     })[0];
     if (!potWPool) return null;
 
-    // Biggest opportunity: highest APY among pools with score > 50
     const oppPool = [...allPools]
       .filter(p => (scoreMap.get(p.pool) ?? 0) > 50)
       .sort((a, b) => (b.apy ?? 0) - (a.apy ?? 0))[0] ?? null;
@@ -333,12 +683,15 @@ export default function NewsletterGenerator() {
 
   const newsletterText = stats ? buildNewsletterText(stats, weekStart, subjectLine) : '';
 
+  // Conditional returns after all hooks
+  if (!unlocked) return <PasswordGate onUnlock={() => setUnlocked(true)} />;
+
   async function copyBody() {
     try {
       await navigator.clipboard.writeText(newsletterText);
       setBodyCopied(true);
       setTimeout(() => setBodyCopied(false), 2000);
-    } catch { /* silent — clipboard unavailable */ }
+    } catch { /* silent */ }
   }
 
   async function copySub() {
@@ -349,21 +702,22 @@ export default function NewsletterGenerator() {
     } catch { /* silent */ }
   }
 
-  if (isLoading || !stats) {
-    return (
-      <div className="nlgen-page">
-        <div className="nlgen-header">
-          <h1 className="nlgen-title">Newsletter Generator</h1>
-          <p className="nlgen-subtitle">Internal tool — generate your weekly Beehiiv draft in one click.</p>
-        </div>
-        <div className="nlgen-loading">
-          {isLoading ? 'Loading yield data…' : 'No pool data available yet.'}
-        </div>
-      </div>
-    );
+  // Tab button style helper
+  function tabStyle(tab: 'newsletter' | 'xcontent'): React.CSSProperties {
+    const active = activeTab === tab;
+    return {
+      fontFamily: "'Inter', sans-serif",
+      background: active ? 'rgba(107,79,255,0.15)' : 'transparent',
+      border: active ? '1px solid rgba(107,79,255,0.35)' : '1px solid transparent',
+      borderRadius: '8px',
+      padding: '8px 20px',
+      fontSize: '13px',
+      fontWeight: active ? 600 : 400,
+      color: active ? '#8B73FF' : 'rgba(232,230,255,0.45)',
+      cursor: 'pointer',
+      transition: 'all 0.15s',
+    };
   }
-
-  const potWScore = stats.poolOfWeek.score;
 
   return (
     <div className="nlgen-page">
@@ -373,176 +727,211 @@ export default function NewsletterGenerator() {
         <p className="nlgen-subtitle">Internal tool — generate your weekly Beehiiv draft in one click.</p>
       </div>
 
-      {/* ── Subject line card ── */}
-      <div className="nlgen-card">
-        <div className="nlgen-card-header">
-          <span className="nlgen-card-label">Subject Line</span>
-          <button className="nlgen-copy-btn" onClick={copySub}>
-            {subCopied ? '✓ Copied!' : 'Copy subject'}
-          </button>
-        </div>
-        <p className="nlgen-subject-text">{subjectLine}</p>
+      {/* ── Tab bar ── */}
+      <div style={{
+        display: 'flex',
+        gap: '6px',
+        padding: '4px',
+        background: 'rgba(107,79,255,0.05)',
+        border: '1px solid rgba(107,79,255,0.12)',
+        borderRadius: '10px',
+        width: 'fit-content',
+        marginBottom: '4px',
+      }}>
+        <button style={tabStyle('newsletter')} onClick={() => setActiveTab('newsletter')}>
+          Newsletter
+        </button>
+        <button style={tabStyle('xcontent')} onClick={() => setActiveTab('xcontent')}>
+          X Content
+        </button>
       </div>
 
-      {/* ── Newsletter body card ── */}
-      <div className="nlgen-card">
-        <div className="nlgen-card-header">
-          <span className="nlgen-card-label">Newsletter Body</span>
-          <button className="nlgen-copy-btn nlgen-copy-btn--primary" onClick={copyBody}>
-            {bodyCopied ? '✓ Copied!' : 'Copy to clipboard'}
-          </button>
-        </div>
-
-        <div className="nlgen-preview">
-
-          {/* Masthead */}
-          <div className="nlgen-masthead">
-            <span className="nlgen-masthead-emoji">🟣</span>
-            <div>
-              <div className="nlgen-masthead-title">DEXARIS WEEKLY YIELD REPORT</div>
-              <div className="nlgen-masthead-week">Week of {weekStart}</div>
+      {/* ── Newsletter tab ── */}
+      {activeTab === 'newsletter' && (
+        <>
+          {(isLoading || !stats) ? (
+            <div className="nlgen-loading">
+              {isLoading ? 'Loading yield data…' : 'No pool data available yet.'}
             </div>
-          </div>
-
-          <div className="nlgen-divider" />
-
-          {/* This Week in DeFi */}
-          <div className="nlgen-section">
-            <div className="nlgen-section-title">This Week in DeFi</div>
-            <div className="nlgen-stat-grid">
-              <div className="nlgen-stat">
-                <span className="nlgen-stat-label">Avg APY ({stats.poolCount.toLocaleString()} pools)</span>
-                <span className="nlgen-stat-value">{stats.avgApy.toFixed(2)}%</span>
-              </div>
-              <div className="nlgen-stat">
-                <span className="nlgen-stat-label">Avg Dexaris Score</span>
-                <span className="nlgen-stat-value" style={{ color: getDexarisScoreColour(stats.avgScore) }}>
-                  {stats.avgScore}
-                  <span className="nlgen-tier"> {getDexarisScoreTier(stats.avgScore)}</span>
-                </span>
-              </div>
-              <div className="nlgen-stat">
-                <span className="nlgen-stat-label">Total TVL Tracked</span>
-                <span className="nlgen-stat-value">{fmtTvl(stats.totalTvl)}</span>
-              </div>
-              <div className="nlgen-stat">
-                <span className="nlgen-stat-label">Best Performing Chain</span>
-                <span className="nlgen-stat-value">
-                  {stats.bestChain.chain}
-                  <span className="nlgen-dim"> ({stats.bestChain.avg.toFixed(2)}%)</span>
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="nlgen-divider" />
-
-          {/* Pool of the Week */}
-          <div className="nlgen-section">
-            <div className="nlgen-section-title">Pool of the Week</div>
-            <div className="nlgen-potw">
-              <div className="nlgen-potw-name">
-                {stats.poolOfWeek.pool.project} — {stats.poolOfWeek.pool.symbol}
-                <span className="nlgen-dim"> on {stats.poolOfWeek.pool.chain}</span>
-              </div>
-              <div className="nlgen-potw-stats">
-                <span className="nlgen-apy">{fmtApy(stats.poolOfWeek.pool.apy)}</span>
-                <span className="nlgen-dim">TVL {fmtTvl(stats.poolOfWeek.pool.tvlUsd)}</span>
-                <span
-                  className="nlgen-score-badge"
-                  style={{ color: stats.poolOfWeek.colour, border: `1px solid ${stats.poolOfWeek.colour}40`, background: `${stats.poolOfWeek.colour}1a` }}
-                >
-                  {potWScore} {stats.poolOfWeek.tier}
-                </span>
-              </div>
-              <div className="nlgen-reason">
-                <span className="nlgen-reason-label">Why it stands out: </span>
-                {generatePotWReason(stats.poolOfWeek.pool, potWScore)}
-              </div>
-            </div>
-          </div>
-
-          <div className="nlgen-divider" />
-
-          {/* Top 5 by APY */}
-          <div className="nlgen-section">
-            <div className="nlgen-section-title">Top 5 by APY This Week</div>
-            {stats.topByApy.map((e, i) => (
-              <div key={e.pool.pool} className="nlgen-pool-row">
-                <span className="nlgen-rank">{i + 1}</span>
-                <div className="nlgen-pool-info">
-                  <span className="nlgen-pool-name">{e.pool.project}</span>
-                  <span className="nlgen-pool-meta">{e.pool.symbol} · {e.pool.chain}</span>
-                </div>
-                <span className="nlgen-apy">{fmtApy(e.pool.apy)}</span>
-                <span
-                  className="nlgen-score-badge"
-                  style={{ color: e.colour, border: `1px solid ${e.colour}40`, background: `${e.colour}1a` }}
-                >
-                  {e.score}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          <div className="nlgen-divider" />
-
-          {/* Top 5 by Score */}
-          <div className="nlgen-section">
-            <div className="nlgen-section-title">Top 5 by Dexaris Score</div>
-            {stats.topByScore.map((e, i) => (
-              <div key={e.pool.pool} className="nlgen-pool-row">
-                <span className="nlgen-rank">{i + 1}</span>
-                <div className="nlgen-pool-info">
-                  <span className="nlgen-pool-name">{e.pool.project}</span>
-                  <span className="nlgen-pool-meta">{e.pool.symbol} · {e.pool.chain}</span>
-                </div>
-                <span className="nlgen-apy">{fmtApy(e.pool.apy)}</span>
-                <span
-                  className="nlgen-score-badge"
-                  style={{ color: e.colour, border: `1px solid ${e.colour}40`, background: `${e.colour}1a` }}
-                >
-                  {e.score} {e.tier}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          {stats.biggestOpp && (
+          ) : (
             <>
-              <div className="nlgen-divider" />
-              <div className="nlgen-section">
-                <div className="nlgen-section-title">Best Opportunity This Week</div>
-                <div className="nlgen-potw">
-                  <div className="nlgen-potw-name">
-                    {stats.biggestOpp.pool.project} — {stats.biggestOpp.pool.symbol}
-                    <span className="nlgen-dim"> on {stats.biggestOpp.pool.chain}</span>
+              {/* Subject line card */}
+              <div className="nlgen-card">
+                <div className="nlgen-card-header">
+                  <span className="nlgen-card-label">Subject Line</span>
+                  <button className="nlgen-copy-btn" onClick={copySub}>
+                    {subCopied ? '✓ Copied!' : 'Copy subject'}
+                  </button>
+                </div>
+                <p className="nlgen-subject-text">{subjectLine}</p>
+              </div>
+
+              {/* Newsletter body card */}
+              <div className="nlgen-card">
+                <div className="nlgen-card-header">
+                  <span className="nlgen-card-label">Newsletter Body</span>
+                  <button className="nlgen-copy-btn nlgen-copy-btn--primary" onClick={copyBody}>
+                    {bodyCopied ? '✓ Copied!' : 'Copy to clipboard'}
+                  </button>
+                </div>
+
+                <div className="nlgen-preview">
+
+                  {/* Masthead */}
+                  <div className="nlgen-masthead">
+                    <span className="nlgen-masthead-emoji">🟣</span>
+                    <div>
+                      <div className="nlgen-masthead-title">DEXARIS WEEKLY YIELD REPORT</div>
+                      <div className="nlgen-masthead-week">Week of {weekStart}</div>
+                    </div>
                   </div>
-                  <div className="nlgen-potw-stats">
-                    <span className="nlgen-apy">{fmtApy(stats.biggestOpp.pool.apy)}</span>
-                    <span className="nlgen-dim">TVL {fmtTvl(stats.biggestOpp.pool.tvlUsd)}</span>
-                    <span
-                      className="nlgen-score-badge"
-                      style={{ color: stats.biggestOpp.colour, border: `1px solid ${stats.biggestOpp.colour}40`, background: `${stats.biggestOpp.colour}1a` }}
-                    >
-                      {stats.biggestOpp.score} {stats.biggestOpp.tier}
-                    </span>
+
+                  <div className="nlgen-divider" />
+
+                  {/* This Week in DeFi */}
+                  <div className="nlgen-section">
+                    <div className="nlgen-section-title">This Week in DeFi</div>
+                    <div className="nlgen-stat-grid">
+                      <div className="nlgen-stat">
+                        <span className="nlgen-stat-label">Avg APY ({stats.poolCount.toLocaleString()} pools)</span>
+                        <span className="nlgen-stat-value">{stats.avgApy.toFixed(2)}%</span>
+                      </div>
+                      <div className="nlgen-stat">
+                        <span className="nlgen-stat-label">Avg Dexaris Score</span>
+                        <span className="nlgen-stat-value" style={{ color: getDexarisScoreColour(stats.avgScore) }}>
+                          {stats.avgScore}
+                          <span className="nlgen-tier"> {getDexarisScoreTier(stats.avgScore)}</span>
+                        </span>
+                      </div>
+                      <div className="nlgen-stat">
+                        <span className="nlgen-stat-label">Total TVL Tracked</span>
+                        <span className="nlgen-stat-value">{fmtTvl(stats.totalTvl)}</span>
+                      </div>
+                      <div className="nlgen-stat">
+                        <span className="nlgen-stat-label">Best Performing Chain</span>
+                        <span className="nlgen-stat-value">
+                          {stats.bestChain.chain}
+                          <span className="nlgen-dim"> ({stats.bestChain.avg.toFixed(2)}%)</span>
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="nlgen-reason">
-                    {generateOppNote(stats.biggestOpp.pool, stats.biggestOpp.score)}
+
+                  <div className="nlgen-divider" />
+
+                  {/* Pool of the Week */}
+                  <div className="nlgen-section">
+                    <div className="nlgen-section-title">Pool of the Week</div>
+                    <div className="nlgen-potw">
+                      <div className="nlgen-potw-name">
+                        {stats.poolOfWeek.pool.project} — {stats.poolOfWeek.pool.symbol}
+                        <span className="nlgen-dim"> on {stats.poolOfWeek.pool.chain}</span>
+                      </div>
+                      <div className="nlgen-potw-stats">
+                        <span className="nlgen-apy">{fmtApy(stats.poolOfWeek.pool.apy)}</span>
+                        <span className="nlgen-dim">TVL {fmtTvl(stats.poolOfWeek.pool.tvlUsd)}</span>
+                        <span
+                          className="nlgen-score-badge"
+                          style={{ color: stats.poolOfWeek.colour, border: `1px solid ${stats.poolOfWeek.colour}40`, background: `${stats.poolOfWeek.colour}1a` }}
+                        >
+                          {stats.poolOfWeek.score} {stats.poolOfWeek.tier}
+                        </span>
+                      </div>
+                      <div className="nlgen-reason">
+                        <span className="nlgen-reason-label">Why it stands out: </span>
+                        {generatePotWReason(stats.poolOfWeek.pool, stats.poolOfWeek.score)}
+                      </div>
+                    </div>
                   </div>
+
+                  <div className="nlgen-divider" />
+
+                  {/* Top 5 by APY */}
+                  <div className="nlgen-section">
+                    <div className="nlgen-section-title">Top 5 by APY This Week</div>
+                    {stats.topByApy.map((e, i) => (
+                      <div key={e.pool.pool} className="nlgen-pool-row">
+                        <span className="nlgen-rank">{i + 1}</span>
+                        <div className="nlgen-pool-info">
+                          <span className="nlgen-pool-name">{e.pool.project}</span>
+                          <span className="nlgen-pool-meta">{e.pool.symbol} · {e.pool.chain}</span>
+                        </div>
+                        <span className="nlgen-apy">{fmtApy(e.pool.apy)}</span>
+                        <span
+                          className="nlgen-score-badge"
+                          style={{ color: e.colour, border: `1px solid ${e.colour}40`, background: `${e.colour}1a` }}
+                        >
+                          {e.score}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="nlgen-divider" />
+
+                  {/* Top 5 by Score */}
+                  <div className="nlgen-section">
+                    <div className="nlgen-section-title">Top 5 by Dexaris Score</div>
+                    {stats.topByScore.map((e, i) => (
+                      <div key={e.pool.pool} className="nlgen-pool-row">
+                        <span className="nlgen-rank">{i + 1}</span>
+                        <div className="nlgen-pool-info">
+                          <span className="nlgen-pool-name">{e.pool.project}</span>
+                          <span className="nlgen-pool-meta">{e.pool.symbol} · {e.pool.chain}</span>
+                        </div>
+                        <span className="nlgen-apy">{fmtApy(e.pool.apy)}</span>
+                        <span
+                          className="nlgen-score-badge"
+                          style={{ color: e.colour, border: `1px solid ${e.colour}40`, background: `${e.colour}1a` }}
+                        >
+                          {e.score} {e.tier}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {stats.biggestOpp && (
+                    <>
+                      <div className="nlgen-divider" />
+                      <div className="nlgen-section">
+                        <div className="nlgen-section-title">Best Opportunity This Week</div>
+                        <div className="nlgen-potw">
+                          <div className="nlgen-potw-name">
+                            {stats.biggestOpp.pool.project} — {stats.biggestOpp.pool.symbol}
+                            <span className="nlgen-dim"> on {stats.biggestOpp.pool.chain}</span>
+                          </div>
+                          <div className="nlgen-potw-stats">
+                            <span className="nlgen-apy">{fmtApy(stats.biggestOpp.pool.apy)}</span>
+                            <span className="nlgen-dim">TVL {fmtTvl(stats.biggestOpp.pool.tvlUsd)}</span>
+                            <span
+                              className="nlgen-score-badge"
+                              style={{ color: stats.biggestOpp.colour, border: `1px solid ${stats.biggestOpp.colour}40`, background: `${stats.biggestOpp.colour}1a` }}
+                            >
+                              {stats.biggestOpp.score} {stats.biggestOpp.tier}
+                            </span>
+                          </div>
+                          <div className="nlgen-reason">
+                            {generateOppNote(stats.biggestOpp.pool, stats.biggestOpp.score)}
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  <div className="nlgen-divider" />
+                  <div className="nlgen-footer-line">
+                    Track all of this live at <strong>dexaris.io</strong> — free, no signup required.
+                  </div>
+
                 </div>
               </div>
             </>
           )}
+        </>
+      )}
 
-          <div className="nlgen-divider" />
-          <div className="nlgen-footer-line">
-            Track all of this live at <strong>dexaris.io</strong> — free, no signup required.
-          </div>
-
-        </div>
-      </div>
+      {/* ── X Content tab ── */}
+      {activeTab === 'xcontent' && <XContentTab />}
     </div>
   );
 }
