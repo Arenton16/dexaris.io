@@ -499,6 +499,23 @@ export default function LandingPage() {
         </p>
       </section>
 
+      {/* ─── Legal disclaimer ───────────────────────────────────── */}
+      <div style={{
+        borderTop: '1px solid rgba(232,230,255,0.06)',
+        padding: '24px 20px',
+        textAlign: 'center',
+      }}>
+        <p style={{
+          fontSize: '12px',
+          color: 'rgba(232,230,255,0.35)',
+          maxWidth: '800px',
+          margin: '0 auto',
+          lineHeight: 1.7,
+        }}>
+          Dexaris is an informational platform only and does not constitute financial advice. The Dexaris Score is a proprietary data metric and should not be interpreted as a recommendation to invest. DeFi investments carry significant risk including the total loss of capital. Past yield performance does not guarantee future returns. Always conduct your own research before making any financial decisions. Dexaris is not regulated by the FCA or any other financial authority.
+        </p>
+      </div>
+
       {/* ─── Footer ─────────────────────────────────────────────── */}
       <footer className="landing-footer reveal" style={{
         borderTop: '0.5px solid rgba(107,79,255,0.1)',

@@ -26,6 +26,7 @@ export default function NavSidebar({
   currentPage, onNavigate, watchlistCount,
 }: Props) {
   const [tooltip, setTooltip] = useState<{ label: string; y: number } | null>(null);
+  const [disclaimerOpen, setDisclaimerOpen] = useState(false);
 
   const handleToggleCollapse = () => {
     setTooltip(null);
@@ -88,6 +89,21 @@ export default function NavSidebar({
         </button>
 
         <p className="nav-credit">Built on DeFiLlama data</p>
+        <button className="nav-disclaimer-btn" onClick={() => setDisclaimerOpen(true)}>
+          Disclaimer
+        </button>
+
+        {disclaimerOpen && (
+          <div className="nav-disclaimer-overlay" onClick={() => setDisclaimerOpen(false)}>
+            <div className="nav-disclaimer-modal" onClick={e => e.stopPropagation()}>
+              <button className="nav-disclaimer-close" onClick={() => setDisclaimerOpen(false)}>×</button>
+              <h3 className="nav-disclaimer-title">Legal Disclaimer</h3>
+              <p className="nav-disclaimer-text">
+                Dexaris is an informational platform only and does not constitute financial advice. The Dexaris Score is a proprietary data metric and should not be interpreted as a recommendation to invest. DeFi investments carry significant risk including the total loss of capital. Past yield performance does not guarantee future returns. Always conduct your own research before making any financial decisions. Dexaris is not regulated by the FCA or any other financial authority.
+              </p>
+            </div>
+          </div>
+        )}
 
         {tooltip && (
           <div className="nav-tooltip" style={{ top: tooltip.y, left: 76 }}>

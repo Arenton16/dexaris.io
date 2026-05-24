@@ -184,6 +184,9 @@ export default function App() {
             </main>
           )}
         </div>
+        <footer className="app-disclaimer-bar">
+          Dexaris is for informational purposes only and does not constitute financial advice. The Dexaris Score is a data metric, not an investment recommendation. DeFi investments carry significant risk. Always do your own research.
+        </footer>
       </div>
     </div>
   );
