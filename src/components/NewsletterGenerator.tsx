@@ -323,36 +323,23 @@ function XContentTab() {
         `${i + 1}. ${p.project} | ${p.symbol} | ${p.chain} | APY: ${p.apy}% | TVL: $${p.tvlM}M | DexarisScore: ${p.score} (${p.scoreTier})`
       ).join('\n');
 
-      // 4. Call Anthropic API
-      const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
-      if (!apiKey) throw new Error('VITE_ANTHROPIC_API_KEY is not configured');
-
-      const aiRes = await fetch('https://api.anthropic.com/v1/messages', {
+      // 4. Call Anthropic via serverless proxy
+      const aiRes = await fetch('/api/generate-content', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1024,
-          system: X_SYSTEM_PROMPT,
-          messages: [{
-            role: 'user',
-            content: `Here is today's live DeFi yield data — top 30 pools by TVL (TVL > $1M, APY > 0):\n\n${poolSummary}\n\nGenerate the three X posts.`,
-          }],
+          systemPrompt: X_SYSTEM_PROMPT,
+          userMessage: `Here is today's live DeFi yield data — top 30 pools by TVL (TVL > $1M, APY > 0):\n\n${poolSummary}\n\nGenerate the three X posts.`,
         }),
       });
 
       if (!aiRes.ok) {
-        const body = await aiRes.text().catch(() => '');
-        throw new Error(`Anthropic API error ${aiRes.status}${body ? ': ' + body.slice(0, 120) : ''}`);
+        const body = await aiRes.json().catch(() => ({}));
+        throw new Error(`Generation failed: ${(body as { error?: string }).error ?? aiRes.status}`);
       }
 
       const aiData = await aiRes.json();
-      const rawText: string = aiData.content?.[0]?.text ?? '';
+      const rawText: string = (aiData as { result: string }).result ?? '';
 
       // Extract JSON robustly — strip any surrounding markdown/prose
       const jsonMatch = rawText.match(/\{[\s\S]*\}/);
