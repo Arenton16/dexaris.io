@@ -1,4 +1,14 @@
-<svg
+import { readFileSync, writeFileSync, mkdirSync } from 'fs';
+import { Resvg } from '@resvg/resvg-js';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const root = join(__dirname, '..');
+
+const fontDir = join(root, 'node_modules/@fontsource/plus-jakarta-sans/files');
+
+const svg = `<svg
   width="1200"
   height="630"
   viewBox="0 0 1200 630"
@@ -63,4 +73,27 @@
     dominant-baseline="central"
     letter-spacing="1"
   >DeFi Yield Intelligence</text>
-</svg>
+</svg>`;
+
+// Write the canonical SVG source
+writeFileSync(join(root, 'public/og-image.svg'), svg, 'utf8');
+console.log('Wrote public/og-image.svg');
+
+// Render to PNG via resvg-js, loading Plus Jakarta Sans woff2 directly
+const resvg = new Resvg(svg, {
+  fitTo: { mode: 'original' },
+  font: {
+    loadSystemFonts: true,          // fallback for any missing glyphs
+    fontFiles: [
+      join(fontDir, 'plus-jakarta-sans-latin-800-normal.woff2'),
+      join(fontDir, 'plus-jakarta-sans-latin-400-normal.woff2'),
+      join(fontDir, 'plus-jakarta-sans-latin-ext-800-normal.woff2'),
+      join(fontDir, 'plus-jakarta-sans-latin-ext-400-normal.woff2'),
+    ],
+  },
+});
+
+const pngData = resvg.render();
+const png = pngData.asPng();
+writeFileSync(join(root, 'public/og-image.png'), png);
+console.log(`Wrote public/og-image.png  (${(png.length / 1024).toFixed(1)} KB)`);
