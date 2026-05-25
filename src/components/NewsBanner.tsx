@@ -32,9 +32,9 @@ export default function NewsBanner({ onDismiss }: Props) {
   }
 
   return (
-    <div className="news-banner">
-      <p className="news-banner-text">
-        Stay ahead of the market — get the best DeFi yields delivered to your inbox
+    <div className="news-banner" style={{ flexWrap: 'nowrap' }}>
+      <p className="news-banner-text" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        Stay ahead — get the best DeFi yields in your inbox
       </p>
       {status === 'success' ? (
         <span className="news-banner-success">You're in — welcome to the list! 🟣</span>
