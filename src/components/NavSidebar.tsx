@@ -95,7 +95,7 @@ export default function NavSidebar({
       {isOpen && <div className="nav-overlay" onClick={onClose} />}
       <aside className={`nav-sidebar${isOpen ? ' nav-open' : ''}${isCollapsed ? ' nav-collapsed' : ''}`}>
         <div className="nav-logo-wrap">
-          {isCollapsed
+          {isCollapsed && !isOpen
             ? <DexarisIcon size={24} />
             : <DexarisLogo iconSize={24} fontSize={16} />
           }
