@@ -1,4 +1,8 @@
-import { useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+} from 'recharts';
+import html2canvas from 'html2canvas';
 import { usePools } from '../contexts/PoolsContext';
 import DexarisLogo from './DexarisLogo';
 import type { Pool } from '../types';
@@ -40,6 +44,11 @@ interface XPost {
   type: string;
   text: string;
   chars: number;
+}
+
+interface HistoricalPoint {
+  timestamp: string;
+  apy: number;
 }
 
 // ── Constants ──────────────────────────────────────────────────────────────
@@ -282,10 +291,335 @@ function PasswordGate({ onUnlock }: { onUnlock: () => void }) {
   );
 }
 
+// ── Chart Export section ───────────────────────────────────────────────────
+
+function ChartExportSection({ pools }: { pools: Pool[] }) {
+  const [selectedIdx, setSelectedIdx]       = useState(0);
+  const [allChartData, setAllChartData]     = useState<HistoricalPoint[]>([]);
+  const [chartLoading, setChartLoading]     = useState(false);
+  const [chartError, setChartError]         = useState('');
+  const [timeRange, setTimeRange]           = useState<'30d' | '7d'>('30d');
+  const [exporting, setExporting]           = useState(false);
+  const chartRef = useRef<HTMLDivElement>(null);
+
+  const selectedPool = pools[selectedIdx];
+
+  useEffect(() => {
+    if (!selectedPool) return;
+    setChartLoading(true);
+    setChartError('');
+    setAllChartData([]);
+
+    fetch(`https://yields.llama.fi/chart/${selectedPool.pool}`)
+      .then(res => res.ok ? res.json() : Promise.reject(res.status))
+      .then(json => {
+        const raw = (json.data as Array<{ timestamp: string; apy: number }>)
+          .filter(d => d.apy != null);
+        setAllChartData(raw);
+      })
+      .catch(() => setChartError('Failed to load historical data — the pool may not have chart data.'))
+      .finally(() => setChartLoading(false));
+  }, [selectedPool?.pool]);
+
+  const displayData = useMemo(() => {
+    const days = timeRange === '7d' ? 7 : 30;
+    return allChartData.slice(-days).map(d => ({
+      date: new Date(d.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      apy: parseFloat((d.apy ?? 0).toFixed(2)),
+    }));
+  }, [allChartData, timeRange]);
+
+  async function exportPNG() {
+    if (!chartRef.current) return;
+    setExporting(true);
+    try {
+      const canvas = await html2canvas(chartRef.current, {
+        backgroundColor: '#0C0B1A',
+        scale: 2,
+        useCORS: true,
+      });
+      const link = document.createElement('a');
+      const date = new Date().toISOString().split('T')[0];
+      const name = selectedPool.project.replace(/\s+/g, '-').toLowerCase();
+      link.download = `dexaris-chart-${name}-${date}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch { /* silent */ } finally {
+      setExporting(false);
+    }
+  }
+
+  const S: React.CSSProperties = { fontFamily: "'Inter', sans-serif" };
+  const score = selectedPool ? calculateDexarisScore(selectedPool) : 0;
+  const colour = getDexarisScoreColour(score);
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+
+      {/* Section header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+        <div>
+          <p style={{ ...S, margin: 0, fontSize: '14px', fontWeight: 600, color: '#E8E6FF' }}>
+            Chart Export
+          </p>
+          <p style={{ ...S, margin: '2px 0 0', fontSize: '12px', color: 'rgba(232,230,255,0.4)' }}>
+            Export APY charts to attach to your X posts
+          </p>
+        </div>
+        <button
+          onClick={exportPNG}
+          disabled={exporting || chartLoading || displayData.length === 0}
+          style={{
+            ...S,
+            background: (exporting || chartLoading || displayData.length === 0)
+              ? 'rgba(107,79,255,0.2)'
+              : 'rgba(107,79,255,0.15)',
+            border: '1px solid rgba(107,79,255,0.3)',
+            borderRadius: '8px',
+            padding: '8px 18px',
+            fontSize: '13px',
+            fontWeight: 500,
+            color: (exporting || chartLoading || displayData.length === 0)
+              ? 'rgba(139,115,255,0.4)'
+              : '#8B73FF',
+            cursor: (exporting || chartLoading || displayData.length === 0) ? 'not-allowed' : 'pointer',
+            transition: 'all 0.15s',
+          }}
+        >
+          {exporting ? 'Exporting…' : '↓ Export PNG'}
+        </button>
+      </div>
+
+      {/* Pool selector cards */}
+      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+        {pools.map((pool, idx) => {
+          const s = calculateDexarisScore(pool);
+          const c = getDexarisScoreColour(s);
+          const selected = idx === selectedIdx;
+          return (
+            <button
+              key={pool.pool}
+              onClick={() => setSelectedIdx(idx)}
+              style={{
+                ...S,
+                flex: '1 1 160px',
+                background: selected ? 'rgba(107,79,255,0.12)' : '#111028',
+                border: `1px solid ${selected ? 'rgba(107,79,255,0.5)' : 'rgba(107,79,255,0.15)'}`,
+                borderRadius: '10px',
+                padding: '12px 14px',
+                cursor: 'pointer',
+                textAlign: 'left' as const,
+                transition: 'all 0.15s',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '4px',
+              }}
+            >
+              <span style={{ ...S, fontSize: '13px', fontWeight: 600, color: '#E8E6FF', lineHeight: 1.2 }}>
+                {pool.project}
+              </span>
+              <span style={{ ...S, fontSize: '11px', color: 'rgba(232,230,255,0.45)' }}>
+                {pool.symbol} · {pool.chain}
+              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                <span style={{ ...S, fontSize: '12px', fontWeight: 600, color: '#8B73FF' }}>
+                  {fmtApy(pool.apy)}
+                </span>
+                <span style={{
+                  ...S,
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  color: c,
+                  background: `${c}1a`,
+                  border: `1px solid ${c}40`,
+                  borderRadius: '4px',
+                  padding: '1px 6px',
+                }}>
+                  {s}
+                </span>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Chart card (captured by html2canvas) */}
+      <div
+        ref={chartRef}
+        style={{
+          background: '#0C0B1A',
+          border: '1px solid rgba(107,79,255,0.2)',
+          borderRadius: '12px',
+          padding: '24px',
+          position: 'relative',
+        }}
+      >
+        {/* Chart header */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+          <div>
+            <p style={{ ...S, margin: 0, fontSize: '15px', fontWeight: 700, color: '#E8E6FF' }}>
+              {selectedPool?.project} — {selectedPool?.symbol}
+            </p>
+            <p style={{ ...S, margin: '3px 0 0', fontSize: '12px', color: 'rgba(232,230,255,0.4)' }}>
+              {selectedPool?.chain} · APY history · TVL {fmtTvl(selectedPool?.tvlUsd ?? 0)}
+            </p>
+          </div>
+          <div style={{
+            ...S,
+            fontSize: '12px',
+            fontWeight: 600,
+            color: colour,
+            background: `${colour}1a`,
+            border: `1px solid ${colour}40`,
+            borderRadius: '6px',
+            padding: '4px 10px',
+          }}>
+            Score {score} {getDexarisScoreTier(score)}
+          </div>
+        </div>
+
+        {/* Time range tabs */}
+        <div style={{ display: 'flex', gap: '6px', marginBottom: '16px' }}>
+          {(['30d', '7d'] as const).map(range => (
+            <button
+              key={range}
+              onClick={() => setTimeRange(range)}
+              style={{
+                ...S,
+                background: timeRange === range ? 'rgba(107,79,255,0.18)' : 'transparent',
+                border: `1px solid ${timeRange === range ? 'rgba(107,79,255,0.4)' : 'rgba(107,79,255,0.15)'}`,
+                borderRadius: '6px',
+                padding: '4px 12px',
+                fontSize: '12px',
+                fontWeight: timeRange === range ? 600 : 400,
+                color: timeRange === range ? '#8B73FF' : 'rgba(232,230,255,0.4)',
+                cursor: 'pointer',
+                transition: 'all 0.15s',
+              }}
+            >
+              {range}
+            </button>
+          ))}
+        </div>
+
+        {/* Chart body */}
+        {chartLoading && (
+          <div style={{ height: 240, display: 'flex', flexDirection: 'column', gap: '10px', justifyContent: 'flex-end' }}>
+            {[60, 80, 50, 90, 70, 85, 55].map((h, i) => (
+              <div key={i} style={{
+                height: `${h}%`,
+                background: 'linear-gradient(90deg, rgba(107,79,255,0.06) 0%, rgba(107,79,255,0.12) 50%, rgba(107,79,255,0.06) 100%)',
+                borderRadius: '4px',
+                animation: 'nlgen-spin 1.4s ease-in-out infinite',
+              }} />
+            ))}
+          </div>
+        )}
+
+        {chartError && !chartLoading && (
+          <div style={{
+            ...S,
+            height: 240,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '13px',
+            color: 'rgba(255,107,107,0.7)',
+          }}>
+            {chartError}
+          </div>
+        )}
+
+        {!chartLoading && !chartError && displayData.length === 0 && (
+          <div style={{
+            ...S,
+            height: 240,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '13px',
+            color: 'rgba(232,230,255,0.3)',
+          }}>
+            No historical data available for this pool
+          </div>
+        )}
+
+        {!chartLoading && !chartError && displayData.length > 0 && (
+          <ResponsiveContainer width="100%" height={240}>
+            <AreaChart data={displayData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+              <defs>
+                <linearGradient id="apyGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#6B4FFF" stopOpacity={0.35} />
+                  <stop offset="95%" stopColor="#6B4FFF" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(107,79,255,0.1)" vertical={false} />
+              <XAxis
+                dataKey="date"
+                tick={{ fontSize: 11, fill: 'rgba(232,230,255,0.35)', fontFamily: 'Inter, sans-serif' }}
+                axisLine={false}
+                tickLine={false}
+                interval="preserveStartEnd"
+              />
+              <YAxis
+                tick={{ fontSize: 11, fill: 'rgba(232,230,255,0.35)', fontFamily: 'Inter, sans-serif' }}
+                axisLine={false}
+                tickLine={false}
+                tickFormatter={v => `${v}%`}
+                width={42}
+              />
+              <Tooltip
+                contentStyle={{
+                  background: '#111028',
+                  border: '1px solid rgba(107,79,255,0.3)',
+                  borderRadius: '8px',
+                  fontSize: '12px',
+                  color: '#E8E6FF',
+                  fontFamily: 'Inter, sans-serif',
+                }}
+                formatter={(value) => [`${Number(value).toFixed(2)}%`, 'APY']}
+                labelStyle={{ color: 'rgba(232,230,255,0.5)', marginBottom: '2px' }}
+                cursor={{ stroke: 'rgba(107,79,255,0.4)', strokeWidth: 1 }}
+              />
+              <Area
+                type="monotone"
+                dataKey="apy"
+                stroke="#8B73FF"
+                strokeWidth={2}
+                fill="url(#apyGradient)"
+                dot={false}
+                activeDot={{ r: 4, fill: '#8B73FF', strokeWidth: 0 }}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        )}
+
+        {/* Watermark */}
+        <p style={{
+          ...S,
+          position: 'absolute',
+          bottom: '10px',
+          right: '16px',
+          margin: 0,
+          fontSize: '11px',
+          fontWeight: 600,
+          color: 'rgba(107,79,255,0.4)',
+          letterSpacing: '0.04em',
+          pointerEvents: 'none',
+          userSelect: 'none',
+        }}>
+          dexaris.io
+        </p>
+      </div>
+    </div>
+  );
+}
+
 // ── X Content tab ─────────────────────────────────────────────────────────
 
 function XContentTab() {
   const [posts, setPosts]         = useState<XPost[]>([]);
+  const [topPools, setTopPools]   = useState<Pool[]>([]);
   const [loading, setLoading]     = useState(false);
   const [error, setError]         = useState('');
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
@@ -307,6 +641,8 @@ function XContentTab() {
         .filter(p => p.tvlUsd > 1_000_000 && (p.apy ?? 0) > 0)
         .sort((a, b) => b.tvlUsd - a.tvlUsd)
         .slice(0, 30);
+
+      setTopPools(filtered.slice(0, 5));
 
       // 3. Enrich with Dexaris scores
       const enriched = filtered.map(p => ({
@@ -585,6 +921,14 @@ function XContentTab() {
               style={{ color: '#8B73FF', textDecoration: 'none', fontWeight: 500 }}>Buffer</a>
             <span>can schedule all three at the suggested times.</span>
           </div>
+
+          {/* Chart export */}
+          {topPools.length > 0 && (
+            <>
+              <div style={{ height: '1px', background: 'rgba(107,79,255,0.12)', margin: '4px 0' }} />
+              <ChartExportSection pools={topPools} />
+            </>
+          )}
         </>
       )}
     </div>
