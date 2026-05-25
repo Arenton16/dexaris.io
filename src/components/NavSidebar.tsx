@@ -1,11 +1,60 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import DexarisIcon from './DexarisIcon';
 import DexarisLogo from './DexarisLogo';
 import type { Page } from '../App';
 
+function IconYields() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="1,12 5,7 9,10 15,3" />
+      <polyline points="10,3 15,3 15,8" />
+    </svg>
+  );
+}
+
+function IconBookmark({ filled }: { filled: boolean }) {
+  return filled ? (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+      <path d="M3 2a1 1 0 011-1h8a1 1 0 011 1v12l-5-2.8L3 14V2z" />
+    </svg>
+  ) : (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 2a1 1 0 011-1h8a1 1 0 011 1v12l-5-2.8L3 14V2z" />
+    </svg>
+  );
+}
+
+function IconPortfolio() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="8" cy="8" r="6.5" />
+      <path d="M8 1.5V8h6.5" />
+    </svg>
+  );
+}
+
+function IconAnalytics() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="8" width="3" height="5" rx="0.5" />
+      <rect x="6.5" y="4.5" width="3" height="8.5" rx="0.5" />
+      <rect x="11" y="2" width="3" height="11" rx="0.5" />
+    </svg>
+  );
+}
+
+function IconBell() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M8 1a4 4 0 014 4v3l1.5 1.5V11H2.5v-.5L4 9V5a4 4 0 014-4z" />
+      <path d="M6.5 11a1.5 1.5 0 003 0" />
+    </svg>
+  );
+}
+
 interface NavItem {
   id: Page | null;
-  icon: string;
+  icon: ReactNode;
   label: string;
   comingSoon: boolean;
   isNew?: boolean;
@@ -34,11 +83,11 @@ export default function NavSidebar({
   };
 
   const navItems: NavItem[] = [
-    { id: 'yields',    icon: '◈', label: 'Yields',    comingSoon: false },
-    { id: 'watchlist', icon: watchlistCount > 0 ? '★' : '☆', label: 'Watchlist', comingSoon: false },
-    { id: 'portfolio', icon: '◉', label: 'Portfolio', comingSoon: false },
-    { id: 'analytics', icon: '◎', label: 'Analytics', comingSoon: false, isNew: true },
-    { id: 'alerts',    icon: '◇', label: 'Alerts',    comingSoon: false },
+    { id: 'yields',    icon: <IconYields />,                              label: 'Yields',    comingSoon: false },
+    { id: 'watchlist', icon: <IconBookmark filled={watchlistCount > 0} />, label: 'Watchlist', comingSoon: false },
+    { id: 'portfolio', icon: <IconPortfolio />,                           label: 'Portfolio', comingSoon: false },
+    { id: 'analytics', icon: <IconAnalytics />,                           label: 'Analytics', comingSoon: false, isNew: true },
+    { id: 'alerts',    icon: <IconBell />,                                label: 'Alerts',    comingSoon: false },
   ];
 
   return (
