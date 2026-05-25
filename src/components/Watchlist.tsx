@@ -30,7 +30,7 @@ export default function Watchlist({ allPools, watchlistedIds, onToggleWatchlist,
     : 0;
 
   return (
-    <div className={`watchlist-page${watchlistPools.length === 0 ? ' watchlist-page--empty' : ''}`}>
+    <div className={`watchlist-page${watchlistPools.length === 0 ? ' watchlist-page--empty' : ''}`} style={{ padding: '24px' }}>
       {watchlistPools.length === 0 ? (
         <div style={{
           display: 'flex',
@@ -38,7 +38,7 @@ export default function Watchlist({ allPools, watchlistedIds, onToggleWatchlist,
           alignItems: 'center',
           justifyContent: 'center',
           width: '100%',
-          height: 'calc(100vh - 48px)',
+          minHeight: 'calc(100vh - 120px)',
           textAlign: 'center',
           padding: '24px',
         }}>
