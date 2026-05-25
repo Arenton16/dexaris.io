@@ -106,7 +106,7 @@ export default function YieldTable({
         </div>
       )}
       <div className="table-wrap">
-        <h2 className="table-title" style={{ textTransform: 'none', marginBottom: '10px' }}>Top yields</h2>
+        <h2 className="table-title" style={{ textTransform: 'none', marginBottom: '10px' }}>Top Yields</h2>
         <div className="search-wrap" style={{ marginBottom: '8px' }}>
           <input
             className="search-input"
