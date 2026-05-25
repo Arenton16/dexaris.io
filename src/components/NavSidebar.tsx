@@ -86,7 +86,7 @@ export default function NavSidebar({
     { id: 'yields',    icon: <IconYields />,                              label: 'Yields',    comingSoon: false },
     { id: 'watchlist', icon: <IconBookmark filled={watchlistCount > 0} />, label: 'Watchlist', comingSoon: false },
     { id: 'portfolio', icon: <IconPortfolio />,                           label: 'Portfolio', comingSoon: false },
-    { id: 'analytics', icon: <IconAnalytics />,                           label: 'Analytics', comingSoon: false, isNew: true },
+    { id: 'analytics', icon: <IconAnalytics />,                           label: 'Analytics', comingSoon: false },
     { id: 'alerts',    icon: <IconBell />,                                label: 'Alerts',    comingSoon: false },
   ];
 
