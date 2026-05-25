@@ -38,7 +38,7 @@ export default function NavSidebar({
     { id: 'watchlist', icon: watchlistCount > 0 ? '★' : '☆', label: 'Watchlist', comingSoon: false },
     { id: 'portfolio', icon: '◉', label: 'Portfolio', comingSoon: false },
     { id: 'analytics', icon: '◎', label: 'Analytics', comingSoon: false, isNew: true },
-    { id: null,        icon: '◇', label: 'Alerts',    comingSoon: true  },
+    { id: 'alerts',    icon: '◇', label: 'Alerts',    comingSoon: false },
   ];
 
   return (

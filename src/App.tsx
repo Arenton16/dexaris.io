@@ -7,11 +7,12 @@ import YieldTable from './components/YieldTable';
 import Watchlist from './components/Watchlist';
 import Analytics from './components/Analytics';
 import Portfolio from './components/Portfolio';
+import Alerts from './components/Alerts';
 import { usePools } from './contexts/PoolsContext';
 import { useWatchlist } from './hooks/useWatchlist';
 import { CHAIN_LABELS, type ChainKey } from './types';
 
-export type Page = 'yields' | 'watchlist' | 'analytics' | 'portfolio';
+export type Page = 'yields' | 'watchlist' | 'analytics' | 'portfolio' | 'alerts';
 
 export default function App() {
   const [selectedChains, setSelectedChains] = useState<ChainKey[]>(
@@ -137,6 +138,10 @@ export default function App() {
           ) : currentPage === 'portfolio' ? (
             <main className="content">
               <Portfolio />
+            </main>
+          ) : currentPage === 'alerts' ? (
+            <main className="content">
+              <Alerts />
             </main>
           ) : currentPage === 'yields' ? (
             <>
