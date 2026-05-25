@@ -20,6 +20,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(500).json({ error: 'Missing environment variables' });
   }
 
+  console.log(`[subscribe] apiKey prefix=${apiKey.slice(0, 4)} pubId prefix=${pubId.slice(0, 4)} email=${email}`);
+
   try {
     const beehiivRes = await fetch(
       `https://api.beehiiv.com/v2/publications/${pubId}/subscriptions`,
@@ -40,16 +42,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     );
 
-    const beehiivData = await beehiivRes.json();
+    const rawText = await beehiivRes.text();
 
     if (!beehiivRes.ok) {
-      console.error('Beehiiv error:', beehiivRes.status, JSON.stringify(beehiivData));
+      console.error('Beehiiv error status:', beehiivRes.status, beehiivRes.statusText);
+      console.error('Beehiiv error body:', rawText);
       return res.status(500).json({ error: 'Beehiiv API error' });
     }
 
     return res.status(200).json({ success: true });
   } catch (err) {
-    console.error('Error:', err);
+    console.error('Beehiiv fetch threw:', err);
     return res.status(500).json({ error: String(err) });
   }
 }
