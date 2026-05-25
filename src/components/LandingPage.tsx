@@ -184,7 +184,8 @@ export default function LandingPage() {
             lineHeight: 1.1,
             margin: 0,
           }}>
-            Find the yield <span style={{ color: '#8B73FF' }}>worth chasing.</span>
+            Find the yield<br />
+            <span style={{ color: '#8B73FF' }}>worth chasing.</span>
           </h1>
 
           {/* Subtitle */}
@@ -194,7 +195,7 @@ export default function LandingPage() {
             lineHeight: 1.6,
             margin: 0,
           }}>
-            Dexaris is the DeFi yield intelligence platform — the Dexaris Score ranks 140+ protocols across ETH, SOL, ARB, BASE and more. Free, no signup required.
+            Live APY and TVL intelligence across 140+ protocols on ETH, SOL, ARB, BASE and more. Free forever, no signup required.
           </p>
 
           {/* CTA buttons */}
