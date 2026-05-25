@@ -334,10 +334,10 @@ function ChartExportSection({ pools }: { pools: Pool[] }) {
     setExporting(true);
     try {
       const canvas = await html2canvas(chartRef.current, {
-        backgroundColor: '#0C0B1A',
-        scale: 2,
+        background: '#0C0B1A',
         useCORS: true,
-      });
+        scale: 2,
+      } as Parameters<typeof html2canvas>[1]);
       const link = document.createElement('a');
       const date = new Date().toISOString().split('T')[0];
       const name = selectedPool.project.replace(/\s+/g, '-').toLowerCase();
