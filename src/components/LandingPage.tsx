@@ -184,8 +184,7 @@ export default function LandingPage() {
             lineHeight: 1.1,
             margin: 0,
           }}>
-            Find the risk-adjusted yield<br />
-            <span style={{ color: '#8B73FF' }}>worth chasing.</span>
+            Find the yield <span style={{ color: '#8B73FF' }}>worth chasing.</span>
           </h1>
 
           {/* Subtitle */}
