@@ -49,6 +49,17 @@ const auroraColumns = [
   { left: '83%', width: '6%',  animation: 'aurora10', duration: '7s',  delay: '-1.4s', color: 'rgba(107,79,255,0.18)' },
 ];
 
+function scrollToId(id: string) {
+  return (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    const el = document.getElementById(id);
+    if (el) {
+      const top = el.getBoundingClientRect().top + window.scrollY - 72;
+      window.scrollTo({ top, behavior: 'smooth' });
+    }
+  };
+}
+
 export default function LandingPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
@@ -100,6 +111,7 @@ export default function LandingPage() {
               href={`#${label.toLowerCase()}`}
               className="nav-link"
               style={{ fontSize: '13px', textDecoration: 'none' }}
+              onClick={scrollToId(label.toLowerCase())}
             >
               {label}
             </a>
@@ -536,6 +548,7 @@ export default function LandingPage() {
               key={label}
               href={href}
               {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+              {...(!external ? { onClick: scrollToId(href.slice(1)) } : {})}
               className="footer-link"
               style={{ fontSize: '12px', textDecoration: 'none' }}
             >
