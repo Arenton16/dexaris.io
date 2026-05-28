@@ -8,8 +8,8 @@ function FloatingPaths({ position }: { position: number }) {
   }))
 
   return (
-    <div className="absolute inset-0 pointer-events-none">
-      <svg className="w-full h-full" viewBox="0 0 696 316" fill="none">
+    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+      <svg style={{ width: '100%', height: '100%' }} viewBox="0 0 696 316" fill="none">
         {paths.map((path) => (
           <motion.path
             key={path.id}
@@ -38,7 +38,7 @@ function FloatingPaths({ position }: { position: number }) {
 
 export function BackgroundPaths() {
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
       <FloatingPaths position={1} />
       <FloatingPaths position={-1} />
     </div>
