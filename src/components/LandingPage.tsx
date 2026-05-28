@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DexarisLogo from './DexarisLogo';
 import { usePools } from '../contexts/PoolsContext';
+import { BackgroundPaths } from './ui/BackgroundPaths';
 
 function formatTvl(tvl: number): string {
   if (tvl >= 1_000_000_000) return `$${(tvl / 1_000_000_000).toFixed(1)}B`;
@@ -146,6 +147,8 @@ export default function LandingPage() {
         overflow: 'hidden',
         textAlign: 'center',
       }}>
+        <BackgroundPaths />
+
         {/* Aurora background */}
         <div style={{
           position: 'absolute',
