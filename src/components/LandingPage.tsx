@@ -1,8 +1,114 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DexarisLogo from './DexarisLogo';
 import { usePools } from '../contexts/PoolsContext';
 import { BackgroundPaths } from './ui/BackgroundPaths';
+
+interface TickerPool {
+  project: string;
+  symbol: string;
+  apy: number;
+  tvlUsd: number;
+  chain: string;
+  score: number;
+}
+
+function quickScore(p: { apy: number; tvlUsd: number }): number {
+  const tvlScore = Math.min(p.tvlUsd / 1_000_000, 100) * 0.4;
+  const apyScore = Math.min(p.apy, 80) * 0.6;
+  return Math.round(tvlScore + apyScore);
+}
+
+function LiveTicker() {
+  const [pools, setPools] = useState<TickerPool[]>([]);
+  const [idx, setIdx] = useState(0);
+  const [visible, setVisible] = useState(true);
+  const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('https://yields.llama.fi/pools')
+      .then(r => r.json())
+      .then(data => {
+        if (cancelled) return;
+        const top: TickerPool[] = (data.data as Array<{
+          project: string; symbol: string; apy: number | null;
+          tvlUsd: number; chain: string;
+        }>)
+          .filter(p => p.tvlUsd > 10_000_000 && (p.apy ?? 0) > 0 && (p.apy ?? 0) <= 80)
+          .map(p => ({ ...p, apy: p.apy!, score: quickScore({ apy: p.apy!, tvlUsd: p.tvlUsd }) }))
+          .sort((a, b) => b.score - a.score)
+          .slice(0, 6);
+        setPools(top);
+        setStatus('ready');
+      })
+      .catch(() => { if (!cancelled) setStatus('error'); });
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    if (status !== 'ready' || pools.length === 0) return;
+    intervalRef.current = setInterval(() => {
+      setVisible(false);
+      setTimeout(() => {
+        setIdx(i => (i + 1) % pools.length);
+        setVisible(true);
+      }, 400);
+    }, 3000);
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+  }, [status, pools.length]);
+
+  if (status === 'error') return null;
+
+  if (status === 'loading') {
+    return (
+      <div style={{
+        maxWidth: '480px', height: '40px', borderRadius: '40px',
+        background: 'rgba(107,79,255,0.08)', border: '1px solid rgba(107,79,255,0.15)',
+        animation: 'pulse 1.5s ease-in-out infinite',
+      }} />
+    );
+  }
+
+  const pool = pools[idx];
+  if (!pool) return null;
+
+  return (
+    <div style={{
+      maxWidth: '480px',
+      background: 'rgba(107,79,255,0.08)',
+      border: '1px solid rgba(107,79,255,0.25)',
+      borderRadius: '40px',
+      padding: '10px 20px',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      fontSize: '13px',
+      opacity: visible ? 1 : 0,
+      transition: 'opacity 0.4s ease',
+      userSelect: 'none',
+    }}>
+      <span style={{
+        width: '7px', height: '7px', borderRadius: '50%',
+        background: '#4ECDA4', flexShrink: 0,
+        animation: 'pulse 2s ease-in-out infinite',
+        display: 'inline-block',
+      }} />
+      <span style={{ color: '#E8E6FF', fontWeight: 500, whiteSpace: 'nowrap' }}>{pool.project}</span>
+      <span style={{ color: 'rgba(232,230,255,0.35)' }}>·</span>
+      <span style={{ color: 'rgba(232,230,255,0.55)', whiteSpace: 'nowrap' }}>{pool.symbol}</span>
+      <span style={{ color: 'rgba(232,230,255,0.35)' }}>·</span>
+      <span style={{ color: '#4ECDA4', fontWeight: 700, whiteSpace: 'nowrap' }}>{pool.apy.toFixed(2)}%</span>
+      <span style={{ color: 'rgba(232,230,255,0.35)' }}>·</span>
+      <span style={{ color: 'rgba(232,230,255,0.35)', whiteSpace: 'nowrap' }}>
+        Score <span style={{ color: '#8B73FF', fontWeight: 700 }}>{pool.score}</span>
+      </span>
+      <span style={{ color: 'rgba(232,230,255,0.35)' }}>·</span>
+      <span style={{ color: 'rgba(232,230,255,0.35)', whiteSpace: 'nowrap' }}>{pool.chain}</span>
+    </div>
+  );
+}
 
 function formatTvl(tvl: number): string {
   if (tvl >= 1_000_000_000) return `$${(tvl / 1_000_000_000).toFixed(1)}B`;
@@ -177,6 +283,8 @@ export default function LandingPage() {
           }}>
             Live APY and TVL intelligence across 140+ protocols on ETH, SOL, ARB, BASE and more. Free forever, no signup required.
           </p>
+
+          <LiveTicker />
 
           {/* CTA buttons */}
           <div className="hero-cta-row">
