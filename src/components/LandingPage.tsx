@@ -37,18 +37,6 @@ function D4Icon() {
   );
 }
 
-const auroraColumns = [
-  { left: '5%',  width: '6%',  animation: 'aurora1',  duration: '8s',  delay: '0s',    color: 'rgba(107,79,255,0.25)' },
-  { left: '13%', width: '5%',  animation: 'aurora2',  duration: '11s', delay: '-2.3s', color: 'rgba(139,115,255,0.2)' },
-  { left: '21%', width: '7%',  animation: 'aurora3',  duration: '9s',  delay: '-4.1s', color: 'rgba(78,205,164,0.08)' },
-  { left: '30%', width: '5%',  animation: 'aurora4',  duration: '7s',  delay: '-1.7s', color: 'rgba(107,79,255,0.2)' },
-  { left: '38%', width: '8%',  animation: 'aurora5',  duration: '12s', delay: '-3.5s', color: 'rgba(139,115,255,0.18)' },
-  { left: '48%', width: '5%',  animation: 'aurora6',  duration: '10s', delay: '-5.2s', color: 'rgba(107,79,255,0.22)' },
-  { left: '56%', width: '7%',  animation: 'aurora7',  duration: '8s',  delay: '-0.8s', color: 'rgba(78,205,164,0.07)' },
-  { left: '65%', width: '6%',  animation: 'aurora8',  duration: '11s', delay: '-4.6s', color: 'rgba(107,79,255,0.25)' },
-  { left: '74%', width: '5%',  animation: 'aurora9',  duration: '9s',  delay: '-2.9s', color: 'rgba(139,115,255,0.2)' },
-  { left: '83%', width: '6%',  animation: 'aurora10', duration: '7s',  delay: '-1.4s', color: 'rgba(107,79,255,0.18)' },
-];
 
 function scrollToId(id: string) {
   return (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -146,34 +134,11 @@ export default function LandingPage() {
         position: 'relative',
         overflow: 'hidden',
         textAlign: 'center',
+        background: '#0C0B1A',
       }}>
         <BackgroundPaths />
 
-        {/* Aurora background */}
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          animation: 'auroraShift 8s ease-in-out infinite',
-          pointerEvents: 'none',
-        }}>
-          {auroraColumns.map((col, i) => (
-            <div
-              key={i}
-              style={{
-                position: 'absolute',
-                bottom: 0,
-                left: col.left,
-                width: col.width,
-                borderRadius: '40px 40px 0 0',
-                background: `linear-gradient(to top, ${col.color}, transparent)`,
-                animation: `${col.animation} ${col.duration} ease-in-out infinite`,
-                animationDelay: col.delay,
-              }}
-            />
-          ))}
-        </div>
-
-        {/* Content sits above aurora */}
+        {/* Content sits above BackgroundPaths */}
         <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px' }}>
           {/* Pill badge */}
           <div style={{
