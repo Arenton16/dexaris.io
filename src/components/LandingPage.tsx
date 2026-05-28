@@ -310,7 +310,7 @@ export default function LandingPage() {
       </section>
 
       {/* ─── Features ───────────────────────────────────────────── */}
-      <section id="features" className="features-section reveal" style={{
+      <section id="features" className="features-section" style={{
         borderTop: '0.5px solid rgba(107,79,255,0.1)',
         maxWidth: '1100px',
         margin: '0 auto',
@@ -320,7 +320,7 @@ export default function LandingPage() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          viewport={{ once: true, margin: "-80px" }}
+          viewport={{ once: true, amount: 0.01 }}
           style={{
             fontSize: '9px',
             textTransform: 'uppercase',
@@ -357,7 +357,7 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: idx * 0.12 }}
-              viewport={{ once: true, margin: "-80px" }}
+              viewport={{ once: true, amount: 0.01 }}
               style={{
                 borderRadius: '12px',
                 padding: '24px',
@@ -388,7 +388,7 @@ export default function LandingPage() {
         initial={{ opacity: 0, y: 24 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        viewport={{ once: true, margin: "-80px" }}
+        viewport={{ once: true, amount: 0.01 }}
         style={{ maxWidth: '1100px', margin: '0 auto', width: '100%' }}
       >
         <p style={{
@@ -478,7 +478,7 @@ export default function LandingPage() {
       </motion.section>
 
       {/* ─── Newsletter ─────────────────────────────────────────── */}
-      <section id="newsletter" className="newsletter-section reveal" style={{
+      <section id="newsletter" className="newsletter-section" style={{
         borderTop: '0.5px solid rgba(107,79,255,0.1)',
       }}>
         <motion.div
@@ -486,7 +486,7 @@ export default function LandingPage() {
           initial={{ opacity: 0, y: 32 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          viewport={{ once: true, margin: "-80px" }}
+          viewport={{ once: true, amount: 0.01 }}
           style={{
             maxWidth: '1100px',
             margin: '0 auto',
@@ -600,7 +600,7 @@ export default function LandingPage() {
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          viewport={{ once: true, margin: "-80px" }}
+          viewport={{ once: true, amount: 0.01 }}
           style={{ fontSize: '14px', color: 'rgba(232,230,255,0.5)', lineHeight: 1.8, maxWidth: '640px' }}
         >
           Dexaris is a free DeFi yield intelligence platform built on data from DeFiLlama. It tracks hundreds of liquidity pools across every major chain and updates every 60 seconds — so you always know where the best yields are, and which ones carry the most risk.
@@ -625,7 +625,7 @@ export default function LandingPage() {
       </div>
 
       {/* ─── Footer ─────────────────────────────────────────────── */}
-      <footer className="landing-footer reveal" style={{
+      <footer className="landing-footer" style={{
         borderTop: '0.5px solid rgba(107,79,255,0.1)',
       }}>
         <DexarisLogo iconSize={20} fontSize={13} />
