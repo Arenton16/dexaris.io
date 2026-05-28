@@ -145,6 +145,87 @@ function D4Icon() {
 }
 
 
+const PROTOCOLS = [
+  'aave', 'uniswap', 'curve', 'compound', 'maker', 'lido',
+  'convex-finance', 'balancer', 'yearn-finance', 'sushi',
+  'pancakeswap', 'gmx', 'stargate', 'radiant-capital', 'pendle',
+];
+
+function ProtocolBadge({ name }: { name: string }) {
+  const [err, setErr] = useState(false);
+  const displayName = name.replace(/-/g, ' ');
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+      {err ? (
+        <div style={{
+          width: 36, height: 36, borderRadius: '50%',
+          border: '1px solid rgba(107,79,255,0.15)',
+          background: 'rgba(107,79,255,0.12)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: '14px', fontWeight: 600, color: 'rgba(232,230,255,0.6)',
+        }}>
+          {displayName[0].toUpperCase()}
+        </div>
+      ) : (
+        <img
+          src={`https://icons.llama.fi/icons/protocols/${name}.jpg`}
+          alt={displayName}
+          width={36}
+          height={36}
+          style={{ borderRadius: '50%', border: '1px solid rgba(107,79,255,0.15)', objectFit: 'cover', display: 'block' }}
+          onError={() => setErr(true)}
+        />
+      )}
+      <span style={{ fontSize: '11px', color: 'rgba(232,230,255,0.4)', textTransform: 'capitalize', whiteSpace: 'nowrap' }}>
+        {displayName}
+      </span>
+    </div>
+  );
+}
+
+function ProtocolLogoStrip() {
+  const doubled = [...PROTOCOLS, ...PROTOCOLS];
+  return (
+    <motion.section
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      viewport={{ once: true, amount: 0.01 }}
+      style={{ width: '100%', overflow: 'hidden' }}
+    >
+      <style>{`@keyframes scroll-left{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}`}</style>
+      <p style={{
+        textAlign: 'center',
+        fontSize: '13px',
+        color: 'rgba(232,230,255,0.4)',
+        fontFamily: "'Inter', sans-serif",
+        margin: 0,
+        padding: '48px 0 0',
+      }}>
+        Tracking yields across the protocols you use
+      </p>
+      <div style={{
+        overflow: 'hidden',
+        paddingTop: '32px',
+        paddingBottom: '32px',
+        maskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
+        WebkitMaskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
+      }}>
+        <div style={{
+          display: 'flex',
+          gap: '40px',
+          width: 'max-content',
+          animation: 'scroll-left 30s linear infinite',
+        }}>
+          {doubled.map((name, i) => (
+            <ProtocolBadge key={`${name}-${i}`} name={name} />
+          ))}
+        </div>
+      </div>
+    </motion.section>
+  );
+}
+
 function scrollToId(id: string) {
   return (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -308,6 +389,9 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* ─── Protocol logo strip ────────────────────────────────── */}
+      <ProtocolLogoStrip />
 
       {/* ─── Features ───────────────────────────────────────────── */}
       <section id="features" className="features-section" style={{
