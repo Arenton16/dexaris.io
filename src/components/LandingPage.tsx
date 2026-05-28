@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import DexarisLogo from './DexarisLogo';
 import { usePools } from '../contexts/PoolsContext';
@@ -166,21 +167,6 @@ export default function LandingPage() {
     .sort((a, b) => (b.apy ?? 0) - (a.apy ?? 0))
     .slice(0, 5);
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-          }
-        });
-      },
-      { threshold: 0.2 }
-    );
-    document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
-  }, []);
-
   return (
     <div style={{ background: '#080714', minHeight: '100vh', fontFamily: "'Inter', sans-serif", color: '#E8E6FF' }}>
 
@@ -330,16 +316,22 @@ export default function LandingPage() {
         margin: '0 auto',
         width: '100%',
       }}>
-        <p style={{
-          fontSize: '9px',
-          textTransform: 'uppercase',
-          color: 'rgba(232,230,255,0.25)',
-          letterSpacing: '0.1em',
-          textAlign: 'center',
-          marginBottom: '40px',
-        }}>
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          viewport={{ once: true, margin: "-80px" }}
+          style={{
+            fontSize: '9px',
+            textTransform: 'uppercase',
+            color: 'rgba(232,230,255,0.25)',
+            letterSpacing: '0.1em',
+            textAlign: 'center',
+            marginBottom: '40px',
+          }}
+        >
           Why Dexaris
-        </p>
+        </motion.p>
 
         <div className="features-grid">
           {[
@@ -359,10 +351,18 @@ export default function LandingPage() {
               desc: 'Save pools you care about to your personal watchlist. Set APY targets and get notified when a yield hits your threshold.',
             },
           ].map(({ icon, title, desc }, idx) => (
-            <div key={title} className={`reveal reveal-delay-${idx + 1} feature-card`} style={{
-              borderRadius: '12px',
-              padding: '24px',
-            }}>
+            <motion.div
+              key={title}
+              className="feature-card"
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: idx * 0.12 }}
+              viewport={{ once: true, margin: "-80px" }}
+              style={{
+                borderRadius: '12px',
+                padding: '24px',
+              }}
+            >
               <div style={{
                 width: '36px',
                 height: '36px',
@@ -377,13 +377,20 @@ export default function LandingPage() {
               </div>
               <p style={{ fontSize: '14px', fontWeight: 500, color: '#E8E6FF', marginBottom: '6px' }}>{title}</p>
               <p style={{ fontSize: '12px', color: 'rgba(232,230,255,0.4)', lineHeight: 1.6 }}>{desc}</p>
-            </div>
+            </motion.div>
           ))}
         </div>
       </section>
 
       {/* ─── Live data preview ──────────────────────────────────── */}
-      <section className="preview-section reveal" style={{ maxWidth: '1100px', margin: '0 auto', width: '100%' }}>
+      <motion.section
+        className="preview-section"
+        initial={{ opacity: 0, y: 24 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        viewport={{ once: true, margin: "-80px" }}
+        style={{ maxWidth: '1100px', margin: '0 auto', width: '100%' }}
+      >
         <p style={{
           fontSize: '9px',
           textTransform: 'uppercase',
@@ -468,16 +475,23 @@ export default function LandingPage() {
             View all 140+ protocols →
           </button>
         </div>
-      </section>
+      </motion.section>
 
       {/* ─── Newsletter ─────────────────────────────────────────── */}
       <section id="newsletter" className="newsletter-section reveal" style={{
         borderTop: '0.5px solid rgba(107,79,255,0.1)',
       }}>
-        <div className="newsletter-inner" style={{
-          maxWidth: '1100px',
-          margin: '0 auto',
-        }}>
+        <motion.div
+          className="newsletter-inner"
+          initial={{ opacity: 0, y: 32 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true, margin: "-80px" }}
+          style={{
+            maxWidth: '1100px',
+            margin: '0 auto',
+          }}
+        >
           <div>
             <h2 style={{ fontSize: '18px', fontWeight: 500, color: '#E8E6FF', marginBottom: '8px' }}>
               Stay ahead of the market
@@ -562,7 +576,7 @@ export default function LandingPage() {
               )}
             </form>
           )}
-        </div>
+        </motion.div>
       </section>
 
       {/* ─── About ──────────────────────────────────────────────── */}
@@ -582,9 +596,15 @@ export default function LandingPage() {
         }}>
           About
         </p>
-        <p style={{ fontSize: '14px', color: 'rgba(232,230,255,0.5)', lineHeight: 1.8, maxWidth: '640px' }}>
+        <motion.p
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          viewport={{ once: true, margin: "-80px" }}
+          style={{ fontSize: '14px', color: 'rgba(232,230,255,0.5)', lineHeight: 1.8, maxWidth: '640px' }}
+        >
           Dexaris is a free DeFi yield intelligence platform built on data from DeFiLlama. It tracks hundreds of liquidity pools across every major chain and updates every 60 seconds — so you always know where the best yields are, and which ones carry the most risk.
-        </p>
+        </motion.p>
       </section>
 
       {/* ─── Legal disclaimer ───────────────────────────────────── */}
