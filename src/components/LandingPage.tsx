@@ -134,7 +134,7 @@ export default function LandingPage() {
         position: 'relative',
         overflow: 'hidden',
         textAlign: 'center',
-        background: '#0C0B1A',
+        background: '#06050F',
       }}>
         <BackgroundPaths />
 
