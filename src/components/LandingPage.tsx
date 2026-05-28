@@ -528,7 +528,7 @@ export default function LandingPage() {
 
         <div style={{ display: 'flex', gap: '20px' }}>
           {[
-            { label: 'Twitter',    href: 'https://twitter.com/dexaris_io', external: true },
+            { label: 'Twitter',    href: 'https://x.com/DexarisHQ', external: true },
             { label: 'Newsletter', href: '#newsletter',                    external: false },
             { label: 'dexaris.io', href: 'https://dexaris.io',             external: true },
           ].map(({ label, href, external }) => (
