@@ -402,9 +402,12 @@ export default function LandingPage() {
         </p>
 
         <div style={{
-          background: 'rgba(107,79,255,0.04)',
-          border: '0.5px solid rgba(107,79,255,0.12)',
-          borderRadius: '12px',
+          background: 'rgba(107, 79, 255, 0.06)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          border: '1px solid rgba(107, 79, 255, 0.18)',
+          borderRadius: '16px',
+          boxShadow: '0 4px 24px rgba(107, 79, 255, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.04)',
           overflow: 'hidden',
         }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
