@@ -814,7 +814,7 @@ export default function LandingPage() {
       }}>
         <DexarisLogo iconSize={20} fontSize={13} />
 
-        <span style={{ fontSize: '11px', color: 'rgba(232,230,255,0.2)' }}>
+        <span style={{ fontSize: '11px', color: 'rgba(232,230,255,0.2)', flex: 1, textAlign: 'center' }}>
           Built on DeFiLlama data
         </span>
 
