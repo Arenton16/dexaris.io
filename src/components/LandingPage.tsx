@@ -155,7 +155,7 @@ const CHAINS = [
 ];
 
 function ProtocolLogoStrip() {
-  const tiled = [...CHAINS, ...CHAINS, ...CHAINS, ...CHAINS, ...CHAINS, ...CHAINS];
+  const tiled = [...CHAINS, ...CHAINS];
   return (
     <motion.section
       initial={{ opacity: 0, y: 24 }}
@@ -186,7 +186,8 @@ function ProtocolLogoStrip() {
           display: 'flex',
           gap: '40px',
           width: 'max-content',
-          animation: 'scroll-left 30s linear infinite',
+          animation: 'scroll-left 20s linear infinite',
+          willChange: 'transform',
         }}>
           {tiled.map((chain, i) => (
             <div key={`${chain.name}-${i}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
