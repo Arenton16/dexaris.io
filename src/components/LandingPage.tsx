@@ -145,40 +145,37 @@ function D4Icon() {
 }
 
 
-const CHAINS = [
-  { name: 'Ethereum', logo: '/logos/chains/ethereum.png' },
-  { name: 'Solana',   logo: '/logos/chains/solana.png' },
-  { name: 'Arbitrum', logo: '/logos/chains/arbitrum.png' },
-  { name: 'Base',     logo: '/logos/chains/base.png' },
-  { name: 'Avalanche',logo: '/logos/chains/avalanche.png' },
-  { name: 'Polygon',  logo: '/logos/chains/polygon.png' },
-];
-
 function ProtocolLogoStrip() {
-  const tiled = [...CHAINS, ...CHAINS];
+  const chains = [
+    { name: 'Ethereum', logo: '/logos/chains/ethereum.png' },
+    { name: 'Solana',   logo: '/logos/chains/solana.png' },
+    { name: 'Arbitrum', logo: '/logos/chains/arbitrum.png' },
+    { name: 'Base',     logo: '/logos/chains/base.png' },
+    { name: 'Avalanche',logo: '/logos/chains/avalanche.png' },
+    { name: 'Polygon',  logo: '/logos/chains/polygon.png' },
+  ];
+  const repeated = [...chains, ...chains];
   return (
     <motion.section
       initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
       viewport={{ once: true, amount: 0.01 }}
-      style={{ width: '100%', overflow: 'hidden' }}
+      style={{ width: '100%' }}
     >
-      <style>{`@keyframes scroll-left{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}`}</style>
       <p style={{
         textAlign: 'center',
         fontSize: '13px',
         color: 'rgba(232,230,255,0.4)',
         fontFamily: "'Inter', sans-serif",
         margin: 0,
-        padding: '48px 0 0',
+        padding: '48px 0 32px',
       }}>
         Live yield data across 6 chains and 140+ protocols
       </p>
       <div style={{
         overflow: 'hidden',
-        paddingTop: '32px',
-        paddingBottom: '32px',
+        width: '100%',
         maskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
         WebkitMaskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
       }}>
@@ -186,33 +183,24 @@ function ProtocolLogoStrip() {
           display: 'flex',
           gap: '40px',
           width: 'max-content',
-          animation: 'scroll-left 20s linear infinite',
+          animation: 'chain-scroll 25s linear infinite',
           willChange: 'transform',
         }}>
-          {tiled.map((chain, i) => (
-            <div key={`${chain.name}-${i}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+          {repeated.map((chain, i) => (
+            <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
               <div style={{
+                width: '52px',
+                height: '52px',
+                borderRadius: '50%',
                 background: 'rgba(107,79,255,0.08)',
                 border: '1px solid rgba(107,79,255,0.15)',
-                borderRadius: '50%',
-                padding: '8px',
-                flexShrink: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
               }}>
-                <img
-                  src={chain.logo}
-                  alt={chain.name}
-                  style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: '50%',
-                    objectFit: 'contain',
-                    display: 'block',
-                  }}
-                />
+                <img src={chain.logo} alt={chain.name} style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'contain' }} />
               </div>
-              <span style={{ fontSize: '11px', color: 'rgba(232,230,255,0.4)', whiteSpace: 'nowrap' }}>
-                {chain.name}
-              </span>
+              <span style={{ fontSize: '11px', color: 'rgba(232,230,255,0.4)', whiteSpace: 'nowrap' }}>{chain.name}</span>
             </div>
           ))}
         </div>
