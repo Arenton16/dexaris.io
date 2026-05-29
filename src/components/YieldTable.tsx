@@ -277,17 +277,35 @@ function ProtocolLogo({ logo, name }: { logo?: string; name: string }) {
   );
 }
 
-function TableSkeleton() {
-  const cols = ['28px', '28px', '130px', '90px', '100px', '64px', '80px', '90px'];
+function SkeletonRow() {
   return (
-    <div className="skeleton-wrap">
-      {Array.from({ length: 9 }).map((_, i) => (
-        <div key={i} className="skeleton-row" style={{ animationDelay: `${i * 0.06}s` }}>
-          {cols.map((w, j) => (
-            <div key={j} className="skeleton-bar" style={{ width: w }} />
-          ))}
-        </div>
+    <tr>
+      {[40, 180, 120, 80, 80, 60, 80].map((width, i) => (
+        <td key={i} style={{ padding: '14px 12px' }}>
+          <div style={{
+            width,
+            height: 14,
+            borderRadius: 6,
+            background: 'rgba(232,230,255,0.06)',
+            animation: 'skeleton-pulse 1.5s ease-in-out infinite',
+            animationDelay: `${i * 0.05}s`,
+          }} />
+        </td>
       ))}
+    </tr>
+  );
+}
+
+function TableSkeleton() {
+  return (
+    <div className="table-wrap">
+      <table className="yield-table">
+        <tbody>
+          {Array.from({ length: 10 }).map((_, i) => (
+            <SkeletonRow key={i} />
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

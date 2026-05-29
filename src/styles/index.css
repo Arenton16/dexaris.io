@@ -96,6 +96,7 @@ html {
   100% { filter: hue-rotate(0deg); }
 }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+@keyframes skeleton-pulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
 
 /* ─── Scroll reveal ───────────────────────────────────────────── */
 
@@ -1516,7 +1517,11 @@ body {
 
 .tr-clickable {
   cursor: pointer;
-  transition: background 0.15s ease;
+  border-left: 2px solid transparent;
+  transition: border-color 0.15s, background 0.15s;
+}
+.tr-clickable:hover {
+  border-left: 2px solid #6B4FFF;
 }
 
 .dim {

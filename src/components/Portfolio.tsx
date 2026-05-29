@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import { usePools } from '../contexts/PoolsContext';
-import DexarisIcon from './DexarisIcon';
 import type { Pool } from '../types';
 import { CHAIN_LABELS, CHAIN_LOGOS } from '../types';
 import {
@@ -523,12 +522,21 @@ export default function Portfolio() {
           <h1 className="pf-page-title">Portfolio</h1>
           <p className="pf-page-subtitle">Track your DeFi positions with live Dexaris intelligence</p>
         </div>
-        <div className="pf-empty-state">
-          <div className="pf-empty-icon-wrap">
-            <DexarisIcon size={64} />
-          </div>
-          <h2 className="pf-empty-heading">Your portfolio is empty</h2>
-          <p className="pf-empty-sub">Add your first DeFi position below to start tracking live APY and Dexaris Scores</p>
+        <div className="pf-empty-state" style={{ textAlign: 'center', padding: '48px 0 32px' }}>
+          <div style={{
+            width: 72,
+            height: 72,
+            borderRadius: '50%',
+            background: 'rgba(107,79,255,0.1)',
+            border: '1px solid rgba(107,79,255,0.2)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 20px',
+            fontSize: 28,
+          }}>📊</div>
+          <p style={{ color: '#E8E6FF', fontSize: 18, fontWeight: 500, margin: '0 0 8px' }}>Your portfolio is empty</p>
+          <p style={{ color: 'rgba(232,230,255,0.45)', fontSize: 14, margin: '0 0 24px' }}>Add positions manually to track your DeFi holdings in one place</p>
         </div>
         <AddPositionForm allPools={allPools} onAdd={handleAdd} />
       </div>

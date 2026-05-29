@@ -42,12 +42,33 @@ export default function Watchlist({ allPools, watchlistedIds, onToggleWatchlist,
           textAlign: 'center',
           padding: '24px',
         }}>
-          <span className="watchlist-empty-icon">☆</span>
-          <p className="watchlist-empty-main">No pools saved yet</p>
-          <p className="watchlist-empty-sub">Star any pool from the Yields page to track it here</p>
-          <button className="watchlist-browse-btn" onClick={onNavigateToYields}>
-            Browse Yields
-          </button>
+          <div style={{
+            width: 72,
+            height: 72,
+            borderRadius: '50%',
+            background: 'rgba(107,79,255,0.1)',
+            border: '1px solid rgba(107,79,255,0.2)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 20px',
+            fontSize: 28,
+          }}>★</div>
+          <p style={{ color: '#E8E6FF', fontSize: 18, fontWeight: 500, margin: '0 0 8px' }}>No pools saved yet</p>
+          <p style={{ color: 'rgba(232,230,255,0.45)', fontSize: 14, margin: '0 0 24px' }}>Star any pool from the Yields page to track it here</p>
+          <button
+            style={{
+              background: '#6B4FFF',
+              border: 'none',
+              borderRadius: 8,
+              padding: '10px 24px',
+              color: '#fff',
+              fontSize: 14,
+              fontWeight: 500,
+              cursor: 'pointer',
+            }}
+            onClick={onNavigateToYields}
+          >Browse Yields</button>
         </div>
       ) : (
         <>
