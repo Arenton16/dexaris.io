@@ -145,46 +145,17 @@ function D4Icon() {
 }
 
 
-const PROTOCOLS = [
-  'aave', 'uniswap', 'curve', 'compound', 'maker', 'lido',
-  'convex-finance', 'balancer', 'yearn-finance', 'sushi',
-  'pancakeswap', 'gmx', 'stargate', 'radiant-capital', 'pendle',
+const CHAINS = [
+  { name: 'Ethereum', logo: '/logos/chains/ethereum.png' },
+  { name: 'Solana',   logo: '/logos/chains/solana.png' },
+  { name: 'Arbitrum', logo: '/logos/chains/arbitrum.png' },
+  { name: 'Base',     logo: '/logos/chains/base.png' },
+  { name: 'Avalanche',logo: '/logos/chains/avalanche.png' },
+  { name: 'Polygon',  logo: '/logos/chains/polygon.png' },
 ];
 
-function ProtocolBadge({ name }: { name: string }) {
-  const [err, setErr] = useState(false);
-  const displayName = name.replace(/-/g, ' ');
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-      {err ? (
-        <div style={{
-          width: 36, height: 36, borderRadius: '50%',
-          border: '1px solid rgba(107,79,255,0.15)',
-          background: 'rgba(107,79,255,0.12)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '14px', fontWeight: 600, color: 'rgba(232,230,255,0.6)',
-        }}>
-          {displayName[0].toUpperCase()}
-        </div>
-      ) : (
-        <img
-          src={`https://icons.llama.fi/icons/protocols/${name}.jpg`}
-          alt={displayName}
-          width={36}
-          height={36}
-          style={{ borderRadius: '50%', border: '1px solid rgba(107,79,255,0.15)', objectFit: 'cover', display: 'block' }}
-          onError={() => setErr(true)}
-        />
-      )}
-      <span style={{ fontSize: '11px', color: 'rgba(232,230,255,0.4)', textTransform: 'capitalize', whiteSpace: 'nowrap' }}>
-        {displayName}
-      </span>
-    </div>
-  );
-}
-
 function ProtocolLogoStrip() {
-  const doubled = [...PROTOCOLS, ...PROTOCOLS];
+  const tiled = [...CHAINS, ...CHAINS, ...CHAINS, ...CHAINS];
   return (
     <motion.section
       initial={{ opacity: 0, y: 24 }}
@@ -202,7 +173,7 @@ function ProtocolLogoStrip() {
         margin: 0,
         padding: '48px 0 0',
       }}>
-        Tracking yields across the protocols you use
+        Live yield data across 6 chains and 140+ protocols
       </p>
       <div style={{
         overflow: 'hidden',
@@ -217,8 +188,19 @@ function ProtocolLogoStrip() {
           width: 'max-content',
           animation: 'scroll-left 30s linear infinite',
         }}>
-          {doubled.map((name, i) => (
-            <ProtocolBadge key={`${name}-${i}`} name={name} />
+          {tiled.map((chain, i) => (
+            <div key={`${chain.name}-${i}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+              <img
+                src={chain.logo}
+                alt={chain.name}
+                width={36}
+                height={36}
+                style={{ borderRadius: '50%', border: '1px solid rgba(107,79,255,0.15)', objectFit: 'cover', display: 'block' }}
+              />
+              <span style={{ fontSize: '11px', color: 'rgba(232,230,255,0.4)', whiteSpace: 'nowrap' }}>
+                {chain.name}
+              </span>
+            </div>
           ))}
         </div>
       </div>
