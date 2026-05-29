@@ -165,19 +165,6 @@ function ProtocolLogoStrip() {
       style={{ width: '100%', overflow: 'hidden' }}
     >
       <style>{`@keyframes scroll-left{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}`}</style>
-      <svg style={{ position: 'absolute', width: 0, height: 0 }}>
-        <defs>
-          <filter id="violet-tint" colorInterpolationFilters="sRGB">
-            <feColorMatrix
-              type="matrix"
-              values="0.3  0    0    0    0.26
-                      0    0.2  0    0    0.20
-                      0.5  0    0.5  0    0.65
-                      0    0    0    1    0"
-            />
-          </filter>
-        </defs>
-      </svg>
       <p style={{
         textAlign: 'center',
         fontSize: '13px',
@@ -204,8 +191,8 @@ function ProtocolLogoStrip() {
           {tiled.map((chain, i) => (
             <div key={`${chain.name}-${i}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
               <div style={{
-                background: 'rgba(107,79,255,0.15)',
-                border: '1px solid rgba(107,79,255,0.3)',
+                background: 'rgba(107,79,255,0.08)',
+                border: '1px solid rgba(107,79,255,0.15)',
                 borderRadius: '50%',
                 padding: '8px',
                 flexShrink: 0,
@@ -217,12 +204,9 @@ function ProtocolLogoStrip() {
                     width: 36,
                     height: 36,
                     borderRadius: '50%',
-                    filter: 'url(#violet-tint)',
-                    transition: 'filter 0.2s',
+                    objectFit: 'contain',
                     display: 'block',
                   }}
-                  onMouseEnter={e => (e.currentTarget.style.filter = 'none')}
-                  onMouseLeave={e => (e.currentTarget.style.filter = 'url(#violet-tint)')}
                 />
               </div>
               <span style={{ fontSize: '11px', color: 'rgba(232,230,255,0.4)', whiteSpace: 'nowrap' }}>
