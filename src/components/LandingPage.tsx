@@ -166,7 +166,7 @@ function ProtocolLogoStrip() {
     >
       <style>{`
         @keyframes scroll-left{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
-        .chain-logo-img{filter:saturate(0.3) brightness(0.9) sepia(0.4) hue-rotate(200deg) brightness(1.1);transition:filter 0.2s;}
+        .chain-logo-img{filter:brightness(0) saturate(100%) invert(1) sepia(1) saturate(3) hue-rotate(220deg) brightness(0.85);transition:filter 0.2s;}
         .chain-logo-img:hover{filter:none;}
       `}</style>
       <p style={{
@@ -200,7 +200,7 @@ function ProtocolLogoStrip() {
                 width={36}
                 height={36}
                 className="chain-logo-img"
-                style={{ borderRadius: '50%', border: '1px solid rgba(107,79,255,0.15)', objectFit: 'cover', display: 'block' }}
+                style={{ borderRadius: '50%', border: '1px solid rgba(107,79,255,0.25)', background: 'rgba(107,79,255,0.1)', objectFit: 'cover', display: 'block' }}
               />
               <span style={{ fontSize: '11px', color: 'rgba(232,230,255,0.4)', whiteSpace: 'nowrap' }}>
                 {chain.name}
