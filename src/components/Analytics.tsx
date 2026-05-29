@@ -43,15 +43,15 @@ const AXIS_TICK = {
 
 const TOOLTIP_STYLE = {
   contentStyle: {
-    background: '#0A0918',
-    border: '0.5px solid rgba(255,255,255,0.1)',
-    borderRadius: 4,
+    background: '#0D0C1F',
+    border: '0.5px solid rgba(107,79,255,0.3)',
+    borderRadius: 6,
     fontFamily: 'Space Grotesk, sans-serif',
     fontSize: 11,
   },
   labelStyle:  { color: 'rgba(232,230,255,0.4)', fontFamily: 'Space Grotesk, sans-serif' },
   itemStyle:   { color: '#E8E6FF', fontFamily: 'Space Grotesk, sans-serif' },
-  cursor:      { fill: 'rgba(255,255,255,0.02)' },
+  cursor:      { fill: 'rgba(107,79,255,0.04)' },
 };
 
 const CHART_INFO: Record<string, string> = {
@@ -156,7 +156,7 @@ function ScatterTooltip({ active, payload }: { active?: boolean; payload?: Array
     </p>
   );
   return (
-    <div style={{ background: '#0A0918', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 4, padding: '8px 12px', fontFamily: 'Space Grotesk, sans-serif', fontSize: 11, color: '#E8E6FF', lineHeight: 1.75, minWidth: 140, pointerEvents: 'none' }}>
+    <div style={{ background: '#0D0C1F', border: '1px solid rgba(107,79,255,0.3)', borderRadius: 6, padding: '10px 12px', fontFamily: 'Space Grotesk, sans-serif', fontSize: 11, color: '#E8E6FF', lineHeight: 1.75, minWidth: 140, pointerEvents: 'none' }}>
       <p style={{ margin: '0 0 4px', fontWeight: 500 }}>{d.project}</p>
       {row('Chain', d.chain)}
       {row('APY', `${(d.apy ?? 0).toFixed(2)}%`)}
@@ -175,7 +175,7 @@ function ScoreScatterTooltip({ active, payload }: { active?: boolean; payload?: 
     </p>
   );
   return (
-    <div style={{ background: '#0A0918', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 4, padding: '8px 12px', fontFamily: 'Space Grotesk, sans-serif', fontSize: 11, color: '#E8E6FF', lineHeight: 1.75, minWidth: 140, pointerEvents: 'none' }}>
+    <div style={{ background: '#0D0C1F', border: '1px solid rgba(107,79,255,0.3)', borderRadius: 6, padding: '10px 12px', fontFamily: 'Space Grotesk, sans-serif', fontSize: 11, color: '#E8E6FF', lineHeight: 1.75, minWidth: 140, pointerEvents: 'none' }}>
       <p style={{ margin: '0 0 4px', fontWeight: 500 }}>{d.project}</p>
       {row('Chain', d.chain)}
       {row('APY', `${d.apy.toFixed(2)}%`)}
@@ -185,7 +185,7 @@ function ScoreScatterTooltip({ active, payload }: { active?: boolean; payload?: 
 }
 
 function ScatterDot({ cx, cy, fill }: { cx?: number; cy?: number; fill?: string }) {
-  return <circle cx={cx ?? 0} cy={cy ?? 0} r={4} fill={fill ?? 'rgba(232,230,255,0.3)'} fillOpacity={0.6} />;
+  return <circle cx={cx ?? 0} cy={cy ?? 0} r={4} fill={fill ?? 'rgba(232,230,255,0.3)'} fillOpacity={0.65} />;
 }
 
 function QuadrantOverlay() {
@@ -398,7 +398,7 @@ export default function Analytics({ displayPools }: Props) {
     const entry = index != null ? topByApy[index] : null;
     if (!entry) return <g />;
     const n = topByApy.length > 1 ? topByApy.length - 1 : 1;
-    const opacity = 0.7 - ((index ?? 0) / n) * 0.4;
+    const opacity = 0.75 - ((index ?? 0) / n) * 0.45;
     const fill = `rgba(107,79,255,${opacity.toFixed(2)})`;
     const meanWidth = entry.mean30d != null && entry.apy > 0
       ? Math.max(0, (entry.mean30d / entry.apy) * width)
@@ -470,8 +470,8 @@ export default function Analytics({ displayPools }: Props) {
           ))}
         </div>
 
-        {/* Row 2 — Risk vs Reward + Top 10 APY */}
-        <div className="analytics-chart-row">
+        {/* Row 1 — Risk vs Reward (60%) + Top 10 APY (40%) */}
+        <div className="analytics-chart-row analytics-chart-row-wide">
           <ChartCard id="riskReward" title="Risk vs Reward" info={CHART_INFO.riskReward} openInfo={openInfo} onInfo={setOpenInfo}>
             <ResponsiveContainer width="100%" height={360}>
               <ScatterChart margin={{ top: 4, right: 16, bottom: 24, left: 8 }}>
@@ -529,7 +529,7 @@ export default function Analytics({ displayPools }: Props) {
           </ChartCard>
         </div>
 
-        {/* Row 3 — Chain Performance + Score Distribution */}
+        {/* Row 2 — Chain Performance + Score Distribution */}
         <div className="analytics-chart-row">
           <ChartCard id="chainPerf" title="Chain Performance" info={CHART_INFO.chainPerf} openInfo={openInfo} onInfo={setOpenInfo}>
             <ResponsiveContainer width="100%" height={280}>
@@ -573,9 +573,8 @@ export default function Analytics({ displayPools }: Props) {
           </ChartCard>
         </div>
 
-        {/* Row 4 — APY vs Score scatter + Top 10 by Score table */}
-        <div className="analytics-chart-row">
-          <ChartCard id="apyVsScore" title="APY vs Dexaris Score" info={CHART_INFO.apyVsScore} openInfo={openInfo} onInfo={setOpenInfo}>
+        {/* Row 3 — full-width charts */}
+        <ChartCard id="apyVsScore" title="APY vs Dexaris Score" info={CHART_INFO.apyVsScore} openInfo={openInfo} onInfo={setOpenInfo}>
             <ResponsiveContainer width="100%" height={340}>
               <ScatterChart margin={{ top: 4, right: 16, bottom: 24, left: 8 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
@@ -613,7 +612,7 @@ export default function Analytics({ displayPools }: Props) {
             </div>
           </ChartCard>
 
-          <ChartCard id="topScore" title="Top 10 by Dexaris Score" info={CHART_INFO.topScore} openInfo={openInfo} onInfo={setOpenInfo}>
+        <ChartCard id="topScore" title="Top 10 by Dexaris Score" info={CHART_INFO.topScore} openInfo={openInfo} onInfo={setOpenInfo}>
             <div className="score-table">
               {topByScore.map((pool, i) => {
                 const score = scoreMap.get(pool.pool) ?? 0;
@@ -648,8 +647,7 @@ export default function Analytics({ displayPools }: Props) {
                 );
               })}
             </div>
-          </ChartCard>
-        </div>
+        </ChartCard>
       </div>
     </div>
   );

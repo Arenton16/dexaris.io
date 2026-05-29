@@ -986,11 +986,18 @@ body {
 }
 
 .chart-card {
-  background: #0A0918;
+  background: rgba(255,255,255,0.03);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255,255,255,0.07);
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
   position: relative;
+  transition: border-color 0.2s;
+}
+
+.chart-card:hover {
+  border-color: rgba(107,79,255,0.25);
 }
 
 .chart-card-header {
@@ -1002,7 +1009,7 @@ body {
 }
 
 .chart-card-body {
-  padding: 16px 8px 8px;
+  padding: 8px 8px 16px;
 }
 
 .chart-title {
@@ -1097,7 +1104,7 @@ body {
   gap: 14px;
   border-top: 1px solid rgba(255,255,255,0.05);
   padding: 10px 20px;
-  margin: 0 -8px -8px;
+  margin: 0 -8px -16px;
 }
 
 .scatter-legend-item {
@@ -1121,12 +1128,12 @@ body {
 
 .analytics-page {
   width: 100%;
+  background: #07060F;
+  min-height: 100%;
 }
 
 .analytics-header {
-  margin-bottom: 20px;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-  padding-bottom: 18px;
+  padding: 24px 24px 0;
 }
 
 .analytics-title {
@@ -1155,28 +1162,40 @@ body {
 .analytics-dashboard {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  padding: 24px;
+  gap: 16px;
 }
 
 .analytics-stat-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+  gap: 16px;
 }
 
 .analytics-chart-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: 16px;
+}
+
+.analytics-chart-row-wide {
+  grid-template-columns: 3fr 2fr;
 }
 
 .stat-card {
-  background: #0A0918;
+  background: rgba(255,255,255,0.03);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255,255,255,0.07);
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 20px 24px;
   display: flex;
   flex-direction: column;
+  transition: border-color 0.2s;
+}
+
+.stat-card:hover {
+  border-color: rgba(107,79,255,0.25);
 }
 
 .stat-card-label {
@@ -1343,7 +1362,8 @@ body {
 }
 
 @media (max-width: 960px) {
-  .analytics-chart-row {
+  .analytics-chart-row,
+  .analytics-chart-row-wide {
     grid-template-columns: 1fr;
   }
 }
