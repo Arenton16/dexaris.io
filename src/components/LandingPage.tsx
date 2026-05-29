@@ -166,8 +166,10 @@ function ProtocolLogoStrip() {
     >
       <style>{`
         @keyframes scroll-left{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
-        .chain-logo-img{filter:brightness(0) saturate(100%) invert(1) sepia(1) saturate(3) hue-rotate(220deg) brightness(0.85);transition:filter 0.2s;}
+        .chain-logo-img{filter:saturate(0.2) brightness(0.8) hue-rotate(230deg) brightness(1.2);transition:filter 0.2s;}
         .chain-logo-img:hover{filter:none;}
+        .chain-logo-wrap{background:rgba(107,79,255,0.12);border:1px solid rgba(107,79,255,0.2);border-radius:50%;transition:background 0.2s;}
+        .chain-logo-wrap:hover{background:rgba(107,79,255,0.05);}
       `}</style>
       <p style={{
         textAlign: 'center',
@@ -194,14 +196,16 @@ function ProtocolLogoStrip() {
         }}>
           {tiled.map((chain, i) => (
             <div key={`${chain.name}-${i}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-              <img
-                src={chain.logo}
-                alt={chain.name}
-                width={36}
-                height={36}
-                className="chain-logo-img"
-                style={{ borderRadius: '50%', border: '1px solid rgba(107,79,255,0.25)', background: 'rgba(107,79,255,0.1)', objectFit: 'cover', display: 'block' }}
-              />
+              <div className="chain-logo-wrap" style={{ width: 36, height: 36, flexShrink: 0 }}>
+                <img
+                  src={chain.logo}
+                  alt={chain.name}
+                  width={36}
+                  height={36}
+                  className="chain-logo-img"
+                  style={{ borderRadius: '50%', objectFit: 'cover', display: 'block' }}
+                />
+              </div>
               <span style={{ fontSize: '11px', color: 'rgba(232,230,255,0.4)', whiteSpace: 'nowrap' }}>
                 {chain.name}
               </span>
