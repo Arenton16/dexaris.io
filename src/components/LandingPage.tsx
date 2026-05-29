@@ -26,7 +26,15 @@ function LiveTicker() {
   const [idx, setIdx] = useState(0);
   const [visible, setVisible] = useState(true);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [isMobile, setIsMobile] = useState(() => window.matchMedia('(max-width: 768px)').matches);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)');
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -66,7 +74,8 @@ function LiveTicker() {
   if (status === 'loading') {
     return (
       <div style={{
-        maxWidth: '480px', height: '40px', borderRadius: '40px',
+        maxWidth: 'min(480px, calc(100vw - 48px))', height: '40px', borderRadius: '40px',
+        margin: '0 auto',
         background: 'rgba(107,79,255,0.08)', border: '1px solid rgba(107,79,255,0.15)',
         animation: 'pulse 1.5s ease-in-out infinite',
       }} />
@@ -78,15 +87,17 @@ function LiveTicker() {
 
   return (
     <div style={{
-      maxWidth: '480px',
+      maxWidth: 'min(480px, calc(100vw - 48px))',
+      overflow: 'hidden',
+      margin: '0 auto',
       background: 'rgba(107,79,255,0.08)',
       border: '1px solid rgba(107,79,255,0.25)',
       borderRadius: '40px',
-      padding: '10px 20px',
+      padding: isMobile ? '8px 14px' : '10px 20px',
       display: 'flex',
       alignItems: 'center',
       gap: '8px',
-      fontSize: '13px',
+      fontSize: isMobile ? '12px' : '13px',
       opacity: visible ? 1 : 0,
       transition: 'opacity 0.4s ease',
       userSelect: 'none',
@@ -97,17 +108,17 @@ function LiveTicker() {
         animation: 'pulse 2s ease-in-out infinite',
         display: 'inline-block',
       }} />
-      <span style={{ color: '#E8E6FF', fontWeight: 500, whiteSpace: 'nowrap' }}>{pool.project}</span>
-      <span style={{ color: 'rgba(232,230,255,0.35)' }}>·</span>
-      <span style={{ color: 'rgba(232,230,255,0.55)', whiteSpace: 'nowrap' }}>{pool.symbol}</span>
-      <span style={{ color: 'rgba(232,230,255,0.35)' }}>·</span>
-      <span style={{ color: '#4ECDA4', fontWeight: 700, whiteSpace: 'nowrap' }}>{pool.apy.toFixed(2)}%</span>
-      <span style={{ color: 'rgba(232,230,255,0.35)' }}>·</span>
-      <span style={{ color: 'rgba(232,230,255,0.35)', whiteSpace: 'nowrap' }}>
-        Score <span style={{ color: '#8B73FF', fontWeight: 700 }}>{pool.score}</span>
+      <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
+        <span style={{ color: '#E8E6FF', fontWeight: 500 }}>{pool.project}</span>
+        <span style={{ color: 'rgba(232,230,255,0.35)' }}> · </span>
+        <span style={{ color: 'rgba(232,230,255,0.55)' }}>{pool.symbol}</span>
+        <span style={{ color: 'rgba(232,230,255,0.35)' }}> · </span>
+        <span style={{ color: '#4ECDA4', fontWeight: 700 }}>{pool.apy.toFixed(2)}%</span>
+        <span style={{ color: 'rgba(232,230,255,0.35)' }}> · </span>
+        <span style={{ color: 'rgba(232,230,255,0.35)' }}>Score <span style={{ color: '#8B73FF', fontWeight: 700 }}>{pool.score}</span></span>
+        <span style={{ color: 'rgba(232,230,255,0.35)' }}> · </span>
+        <span style={{ color: 'rgba(232,230,255,0.35)' }}>{pool.chain}</span>
       </span>
-      <span style={{ color: 'rgba(232,230,255,0.35)' }}>·</span>
-      <span style={{ color: 'rgba(232,230,255,0.35)', whiteSpace: 'nowrap' }}>{pool.chain}</span>
     </div>
   );
 }
