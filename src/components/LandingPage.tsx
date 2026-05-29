@@ -767,7 +767,9 @@ export default function LandingPage() {
         maxWidth: '1100px',
         margin: '0 auto',
         width: '100%',
+        textAlign: 'center',
       }}>
+        <div style={{ maxWidth: '640px', margin: '0 auto' }}>
         <p style={{
           fontSize: '9px',
           textTransform: 'uppercase',
@@ -782,10 +784,11 @@ export default function LandingPage() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           viewport={{ once: true, amount: 0.01 }}
-          style={{ fontSize: '14px', color: 'rgba(232,230,255,0.5)', lineHeight: 1.8, maxWidth: '640px' }}
+          style={{ fontSize: '14px', color: 'rgba(232,230,255,0.5)', lineHeight: 1.8 }}
         >
           Dexaris is a free DeFi yield intelligence platform built on data from DeFiLlama. It tracks hundreds of liquidity pools across every major chain and updates every 60 seconds — so you always know where the best yields are, and which ones carry the most risk.
         </motion.p>
+        </div>
       </section>
 
       {/* ─── Legal disclaimer ───────────────────────────────────── */}
