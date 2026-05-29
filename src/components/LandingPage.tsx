@@ -164,13 +164,20 @@ function ProtocolLogoStrip() {
       viewport={{ once: true, amount: 0.01 }}
       style={{ width: '100%', overflow: 'hidden' }}
     >
-      <style>{`
-        @keyframes scroll-left{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
-        .chain-logo-img{filter:saturate(0.2) brightness(0.8) hue-rotate(230deg) brightness(1.2);transition:filter 0.2s;}
-        .chain-logo-img:hover{filter:none;}
-        .chain-logo-wrap{background:rgba(107,79,255,0.12);border:1px solid rgba(107,79,255,0.2);border-radius:50%;transition:background 0.2s;}
-        .chain-logo-wrap:hover{background:rgba(107,79,255,0.05);}
-      `}</style>
+      <style>{`@keyframes scroll-left{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}`}</style>
+      <svg style={{ position: 'absolute', width: 0, height: 0 }}>
+        <defs>
+          <filter id="violet-tint">
+            <feColorMatrix
+              type="matrix"
+              values="0.2 0 0.8 0 0.42
+                      0   0 0.8 0 0.31
+                      0.2 0 1   0 1
+                      0   0 0   1 0"
+            />
+          </filter>
+        </defs>
+      </svg>
       <p style={{
         textAlign: 'center',
         fontSize: '13px',
@@ -196,14 +203,26 @@ function ProtocolLogoStrip() {
         }}>
           {tiled.map((chain, i) => (
             <div key={`${chain.name}-${i}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-              <div className="chain-logo-wrap" style={{ width: 36, height: 36, flexShrink: 0 }}>
+              <div style={{
+                background: 'rgba(107,79,255,0.1)',
+                border: '1px solid rgba(107,79,255,0.2)',
+                borderRadius: '50%',
+                padding: '8px',
+                flexShrink: 0,
+              }}>
                 <img
                   src={chain.logo}
                   alt={chain.name}
-                  width={36}
-                  height={36}
-                  className="chain-logo-img"
-                  style={{ borderRadius: '50%', objectFit: 'cover', display: 'block' }}
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: '50%',
+                    filter: 'url(#violet-tint)',
+                    transition: 'filter 0.2s',
+                    display: 'block',
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.filter = 'none')}
+                  onMouseLeave={e => (e.currentTarget.style.filter = 'url(#violet-tint)')}
                 />
               </div>
               <span style={{ fontSize: '11px', color: 'rgba(232,230,255,0.4)', whiteSpace: 'nowrap' }}>
