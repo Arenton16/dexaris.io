@@ -155,7 +155,7 @@ const CHAINS = [
 ];
 
 function ProtocolLogoStrip() {
-  const tiled = [...CHAINS, ...CHAINS, ...CHAINS, ...CHAINS];
+  const tiled = [...CHAINS, ...CHAINS, ...CHAINS, ...CHAINS, ...CHAINS, ...CHAINS];
   return (
     <motion.section
       initial={{ opacity: 0, y: 24 }}
@@ -164,7 +164,11 @@ function ProtocolLogoStrip() {
       viewport={{ once: true, amount: 0.01 }}
       style={{ width: '100%', overflow: 'hidden' }}
     >
-      <style>{`@keyframes scroll-left{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}`}</style>
+      <style>{`
+        @keyframes scroll-left{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+        .chain-logo-img{filter:saturate(0.3) brightness(0.9) sepia(0.4) hue-rotate(200deg) brightness(1.1);transition:filter 0.2s;}
+        .chain-logo-img:hover{filter:none;}
+      `}</style>
       <p style={{
         textAlign: 'center',
         fontSize: '13px',
@@ -195,6 +199,7 @@ function ProtocolLogoStrip() {
                 alt={chain.name}
                 width={36}
                 height={36}
+                className="chain-logo-img"
                 style={{ borderRadius: '50%', border: '1px solid rgba(107,79,255,0.15)', objectFit: 'cover', display: 'block' }}
               />
               <span style={{ fontSize: '11px', color: 'rgba(232,230,255,0.4)', whiteSpace: 'nowrap' }}>
