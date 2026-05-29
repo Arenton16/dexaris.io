@@ -146,6 +146,23 @@ function D4Icon() {
 
 
 function ProtocolLogoStrip() {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    let x = 0;
+    let raf: number;
+    const step = () => {
+      x += 0.5;
+      if (x >= el.scrollWidth / 2) x = 0;
+      el.style.transform = `translateX(-${x}px)`;
+      raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
   const chains = [
     { name: 'Ethereum', logo: '/logos/chains/ethereum.png' },
     { name: 'Solana',   logo: '/logos/chains/solana.png' },
@@ -154,7 +171,8 @@ function ProtocolLogoStrip() {
     { name: 'Avalanche',logo: '/logos/chains/avalanche.png' },
     { name: 'Polygon',  logo: '/logos/chains/polygon.png' },
   ];
-  const repeated = [...chains, ...chains];
+  const repeated = [...chains, ...chains, ...chains, ...chains];
+
   return (
     <motion.section
       initial={{ opacity: 0, y: 24 }}
@@ -176,16 +194,18 @@ function ProtocolLogoStrip() {
       <div style={{
         overflow: 'hidden',
         width: '100%',
-        maskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
-        WebkitMaskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
+        maskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)',
+        WebkitMaskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)',
       }}>
-        <div style={{
-          display: 'flex',
-          gap: '40px',
-          width: 'max-content',
-          animation: 'chain-scroll 25s linear infinite',
-          willChange: 'transform',
-        }}>
+        <div
+          ref={scrollRef}
+          style={{
+            display: 'flex',
+            gap: '48px',
+            width: 'max-content',
+            willChange: 'transform',
+          }}
+        >
           {repeated.map((chain, i) => (
             <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
               <div style={{

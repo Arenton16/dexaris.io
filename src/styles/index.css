@@ -97,13 +97,6 @@ html {
 }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
-/* ─── Chain logo scroll ───────────────────────────────────────── */
-
-@keyframes chain-scroll {
-  0%   { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-
 /* ─── Scroll reveal ───────────────────────────────────────────── */
 
 .reveal {
