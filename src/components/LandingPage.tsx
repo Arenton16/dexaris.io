@@ -147,19 +147,35 @@ function D4Icon() {
 
 function ProtocolLogoStrip() {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const posRef = useRef(0);
 
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
-    let x = 0;
+
+    const singleSetWidth = el.scrollWidth / 4;
     let raf: number;
+
     const step = () => {
-      x += 0.5;
-      if (x >= el.scrollWidth / 2) x = 0;
-      el.style.transform = `translateX(-${x}px)`;
+      posRef.current += 0.5;
+      if (posRef.current >= singleSetWidth) {
+        posRef.current = posRef.current - singleSetWidth;
+      }
+      el.style.transform = `translateX(-${posRef.current}px)`;
       raf = requestAnimationFrame(step);
     };
-    raf = requestAnimationFrame(step);
+
+    const imgs = el.querySelectorAll('img');
+    let loaded = 0;
+    const onLoad = () => {
+      loaded++;
+      if (loaded === imgs.length) raf = requestAnimationFrame(step);
+    };
+    imgs.forEach(img => {
+      if (img.complete) onLoad();
+      else img.addEventListener('load', onLoad);
+    });
+
     return () => cancelAnimationFrame(raf);
   }, []);
 
