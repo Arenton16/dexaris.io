@@ -105,6 +105,7 @@ interface StatCardData {
   sub?: string;
   valueColour?: string;
   logo?: string;
+  accent: string;
 }
 
 // ── Sub-components ─────────────────────────────────────────────
@@ -130,7 +131,7 @@ function ChartCard({ id, title, info, openInfo, onInfo, children }: ChartCardPro
           aria-label="About this chart"
         >ⓘ</button>
       </div>
-      {children}
+      <div className="chart-card-body">{children}</div>
       {isOpen && (
         <div className="chart-info-overlay" onClick={() => onInfo(null)}>
           <div className="chart-info-panel" onClick={e => e.stopPropagation()}>
@@ -304,6 +305,7 @@ export default function Analytics({ displayPools }: Props) {
         label: 'Average APY',
         value: `${avgApy.toFixed(2)}%`,
         sub: `${displayPools.length.toLocaleString()} pools`,
+        accent: '#4ECDA4',
       },
       {
         id: 'avg-score',
@@ -311,12 +313,14 @@ export default function Analytics({ displayPools }: Props) {
         value: String(avgScore),
         sub: getDexarisScoreTier(avgScore),
         valueColour: getDexarisScoreColour(avgScore),
+        accent: '#8B73FF',
       },
       {
         id: 'protocols',
         label: 'Protocols Tracked',
         value: String(protocolCount),
         sub: `${new Set(displayPools.map(p => p.chain)).size} chains`,
+        accent: '#3B9EFF',
       },
       {
         id: 'best-chain',
@@ -324,6 +328,7 @@ export default function Analytics({ displayPools }: Props) {
         value: bestChain?.chain ?? '—',
         sub: bestChain ? `${bestChain.avg.toFixed(2)}% avg APY` : '',
         logo: CHAIN_LOGOS[bestChain?.chain ?? ''],
+        accent: '#FFB347',
       },
     ];
   }, [displayPools, scoreMap]);
@@ -464,13 +469,13 @@ export default function Analytics({ displayPools }: Props) {
         {/* Row 1 — Stat cards */}
         <div className="analytics-stat-row">
           {stats.map(s => (
-            <div key={s.id} className="stat-card">
+            <div key={s.id} className="stat-card" style={{ borderLeft: `3px solid ${s.accent}` }}>
               <span className="stat-card-label">{s.label}</span>
               <div className="stat-card-value-row">
                 {s.logo && (
                   <img src={s.logo} alt={s.value} width={22} height={22} className="stat-card-chain-logo" />
                 )}
-                <span className="stat-card-value" style={s.valueColour ? { color: s.valueColour } : undefined}>
+                <span className="stat-card-value" style={{ color: s.valueColour ?? s.accent }}>
                   {s.value}
                 </span>
               </div>
