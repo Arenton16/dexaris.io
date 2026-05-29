@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import DexarisLogo from './DexarisLogo';
 import { usePools } from '../contexts/PoolsContext';
 import { BackgroundPaths } from './ui/BackgroundPaths';
+import { calculateDexarisScore } from '../utils/dexarisScore';
 
 interface TickerPool {
   project: string;
@@ -119,7 +120,7 @@ function formatTvl(tvl: number): string {
 
 function ChainIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" stroke="#6B4FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
       <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" stroke="#6B4FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
@@ -128,7 +129,7 @@ function ChainIcon() {
 
 function StarIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="#6B4FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   );
@@ -136,7 +137,7 @@ function StarIcon() {
 
 function D4Icon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="24" height="24" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
       <polygon points="4,42 10,26 16,26 10,42" fill="rgba(107,79,255,0.5)" />
       <polygon points="16,42 22,16 28,16 22,42" fill="rgba(107,79,255,0.75)" />
       <polygon points="28,42 34,5 40,5 34,42" fill="#6B4FFF" />
@@ -243,6 +244,22 @@ function ProtocolLogoStrip() {
       </div>
     </motion.section>
   );
+}
+
+function ScoreIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="12" r="9" stroke="#6B4FFF" strokeWidth="1.5" />
+      <path d="M8 12l3 3 5-5" stroke="#6B4FFF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function scoreColour(score: number): string {
+  if (score >= 80) return '#4ECDA4';
+  if (score >= 60) return '#8B73FF';
+  if (score >= 40) return '#FFB347';
+  return '#FF6B6B';
 }
 
 function scrollToId(id: string) {
@@ -419,67 +436,108 @@ export default function LandingPage() {
         margin: '0 auto',
         width: '100%',
       }}>
-        <motion.p
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           viewport={{ once: true, amount: 0.01 }}
-          style={{
-            fontSize: '9px',
-            textTransform: 'uppercase',
-            color: 'rgba(232,230,255,0.25)',
-            letterSpacing: '0.1em',
-            textAlign: 'center',
-            marginBottom: '40px',
-          }}
+          style={{ textAlign: 'center', marginBottom: '48px' }}
         >
-          Why Dexaris
-        </motion.p>
+          <p style={{
+            fontSize: '13px',
+            letterSpacing: '0.08em',
+            color: 'rgba(232,230,255,0.4)',
+            textTransform: 'uppercase',
+            marginBottom: '16px',
+            margin: '0 0 16px',
+          }}>
+            What makes Dexaris different
+          </p>
+          <h2 style={{ fontSize: '36px', fontWeight: 600, color: '#E8E6FF', margin: 0 }}>
+            Built for yield intelligence.
+          </h2>
+        </motion.div>
 
-        <div className="features-grid">
+        {/* Row 1: wide + narrow */}
+        <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: '16px', marginBottom: '16px' }}>
           {[
             {
               icon: <D4Icon />,
               title: 'Risk vs Reward intelligence',
               desc: 'Our unique scatter chart plots every pool by APY and TVL so you can instantly see which yields are worth the risk and which to avoid.',
+              delay: 0,
             },
             {
               icon: <ChainIcon />,
               title: 'Every major chain covered',
               desc: 'Track yields across Ethereum, Solana, Arbitrum, Base, Avalanche and Polygon in one unified platform. No switching between tools.',
+              delay: 0.12,
             },
-            {
-              icon: <StarIcon />,
-              title: 'Watchlist and alerts',
-              desc: 'Save pools you care about to your personal watchlist. Set APY targets and get notified when a yield hits your threshold.',
-            },
-          ].map(({ icon, title, desc }, idx) => (
+          ].map(({ icon, title, desc, delay }) => (
             <motion.div
               key={title}
               className="feature-card"
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: idx * 0.12 }}
+              transition={{ duration: 0.5, delay }}
               viewport={{ once: true, amount: 0.01 }}
-              style={{
-                borderRadius: '12px',
-                padding: '24px',
-              }}
+              style={{ borderRadius: '16px', padding: '28px' }}
             >
               <div style={{
-                width: '36px',
-                height: '36px',
-                background: 'rgba(107,79,255,0.12)',
-                borderRadius: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: '14px',
+                width: '48px', height: '48px',
+                background: 'rgba(107,79,255,0.15)',
+                border: '1px solid rgba(107,79,255,0.25)',
+                borderRadius: '12px',
+                boxShadow: '0 0 20px rgba(107,79,255,0.2)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                marginBottom: '16px',
               }}>
                 {icon}
               </div>
-              <p style={{ fontSize: '14px', fontWeight: 500, color: '#E8E6FF', marginBottom: '6px' }}>{title}</p>
-              <p style={{ fontSize: '12px', color: 'rgba(232,230,255,0.4)', lineHeight: 1.6 }}>{desc}</p>
+              <p style={{ fontSize: '14px', fontWeight: 500, color: '#E8E6FF', marginBottom: '8px' }}>{title}</p>
+              <p style={{ fontSize: '12px', color: 'rgba(232,230,255,0.4)', lineHeight: 1.6, margin: 0 }}>{desc}</p>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Row 2: narrow + wide */}
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 3fr', gap: '16px' }}>
+          {[
+            {
+              icon: <StarIcon />,
+              title: 'Watchlist and alerts',
+              desc: 'Save pools you care about to your personal watchlist. Set APY targets and get notified when a yield hits your threshold.',
+              delay: 0.24,
+            },
+            {
+              icon: <ScoreIcon />,
+              title: 'The Dexaris Score',
+              desc: 'Every pool is rated 0–100 based on TVL size, APY sustainability, and organic yield ratio — so you can instantly compare pools across chains and protocols.',
+              delay: 0.36,
+            },
+          ].map(({ icon, title, desc, delay }) => (
+            <motion.div
+              key={title}
+              className="feature-card"
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay }}
+              viewport={{ once: true, amount: 0.01 }}
+              style={{ borderRadius: '16px', padding: '28px' }}
+            >
+              <div style={{
+                width: '48px', height: '48px',
+                background: 'rgba(107,79,255,0.15)',
+                border: '1px solid rgba(107,79,255,0.25)',
+                borderRadius: '12px',
+                boxShadow: '0 0 20px rgba(107,79,255,0.2)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                marginBottom: '16px',
+              }}>
+                {icon}
+              </div>
+              <p style={{ fontSize: '14px', fontWeight: 500, color: '#E8E6FF', marginBottom: '8px' }}>{title}</p>
+              <p style={{ fontSize: '12px', color: 'rgba(232,230,255,0.4)', lineHeight: 1.6, margin: 0 }}>{desc}</p>
             </motion.div>
           ))}
         </div>
@@ -516,10 +574,10 @@ export default function LandingPage() {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: '0.5px solid rgba(107,79,255,0.12)' }}>
-                {['Protocol', 'Chain', 'APY', 'TVL'].map(col => (
+                {['Protocol', 'Chain', 'APY', 'TVL', 'Score'].map(col => (
                   <th key={col} className={col === 'TVL' ? 'preview-tvl-col' : undefined} style={{
                     padding: '12px 16px',
-                    textAlign: col === 'APY' || col === 'TVL' ? 'right' : 'left',
+                    textAlign: col === 'APY' || col === 'TVL' || col === 'Score' ? 'right' : 'left',
                     fontSize: '11px',
                     fontWeight: 500,
                     color: 'rgba(232,230,255,0.35)',
@@ -533,7 +591,7 @@ export default function LandingPage() {
               {loadingPools
                 ? Array.from({ length: 5 }).map((_, i) => (
                     <tr key={i} style={{ borderBottom: '0.5px solid rgba(107,79,255,0.06)' }}>
-                      {Array.from({ length: 4 }).map((_, j) => (
+                      {Array.from({ length: 5 }).map((_, j) => (
                         <td key={j} style={{ padding: '14px 16px' }}>
                           <div style={{
                             height: '12px',
@@ -546,7 +604,9 @@ export default function LandingPage() {
                       ))}
                     </tr>
                   ))
-                : pools.map((pool, i) => (
+                : pools.map((pool, i) => {
+                    const score = calculateDexarisScore(pool);
+                    return (
                     <tr key={i} className="preview-row" style={{ borderBottom: i < pools.length - 1 ? '0.5px solid rgba(107,79,255,0.06)' : 'none' }}>
                       <td style={{ padding: '14px 16px', fontSize: '13px', color: '#E8E6FF' }}>
                         <span style={{ textTransform: 'capitalize' }}>{pool.project}</span>
@@ -559,23 +619,38 @@ export default function LandingPage() {
                       <td className="preview-tvl-col" style={{ padding: '14px 16px', fontSize: '13px', color: 'rgba(232,230,255,0.6)', textAlign: 'right' }}>
                         {formatTvl(pool.tvlUsd)}
                       </td>
+                      <td style={{ padding: '14px 16px', fontSize: '13px', color: scoreColour(score), textAlign: 'right', fontWeight: 600 }}>
+                        {score}
+                      </td>
                     </tr>
-                  ))
+                    );
+                  })
               }
             </tbody>
           </table>
         </div>
 
-        <div style={{ textAlign: 'center', marginTop: '20px' }}>
+        <div style={{ textAlign: 'center', marginTop: '24px' }}>
           <button
             onClick={() => navigate('/app')}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = 'rgba(107,79,255,0.15)';
+              e.currentTarget.style.borderColor = 'rgba(107,79,255,0.6)';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = 'rgba(107,79,255,0.08)';
+              e.currentTarget.style.borderColor = 'rgba(107,79,255,0.4)';
+            }}
             style={{
-              background: 'none',
-              border: 'none',
-              color: '#6B4FFF',
-              fontSize: '12px',
+              background: 'rgba(107,79,255,0.08)',
+              border: '1px solid rgba(107,79,255,0.4)',
+              borderRadius: '8px',
+              padding: '10px 24px',
+              color: '#8B73FF',
+              fontSize: '14px',
               cursor: 'pointer',
               fontFamily: "'Inter', sans-serif",
+              transition: 'background 0.2s, border-color 0.2s',
             }}
           >
             View all 140+ protocols →
