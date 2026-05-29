@@ -36,22 +36,22 @@ const TVL_THRESHOLD = 50;
 const SCORE_THRESHOLD = 50;
 
 const AXIS_TICK = {
-  fill: 'rgba(232,230,255,0.3)',
+  fill: 'rgba(232,230,255,0.45)',
   fontFamily: 'Space Grotesk, sans-serif',
   fontSize: 11,
 } as const;
 
 const TOOLTIP_STYLE = {
   contentStyle: {
-    background: '#0D0C1F',
+    background: '#111028',
     border: '0.5px solid rgba(107,79,255,0.3)',
     borderRadius: 6,
     fontFamily: 'Space Grotesk, sans-serif',
     fontSize: 11,
   },
-  labelStyle:  { color: 'rgba(232,230,255,0.4)', fontFamily: 'Space Grotesk, sans-serif' },
+  labelStyle:  { color: '#8B73FF', fontFamily: 'Space Grotesk, sans-serif' },
   itemStyle:   { color: '#E8E6FF', fontFamily: 'Space Grotesk, sans-serif' },
-  cursor:      { fill: 'rgba(107,79,255,0.04)' },
+  cursor:      { fill: 'rgba(107,79,255,0.06)' },
 };
 
 const CHART_INFO: Record<string, string> = {
@@ -156,7 +156,7 @@ function ScatterTooltip({ active, payload }: { active?: boolean; payload?: Array
     </p>
   );
   return (
-    <div style={{ background: '#0D0C1F', border: '1px solid rgba(107,79,255,0.3)', borderRadius: 6, padding: '10px 12px', fontFamily: 'Space Grotesk, sans-serif', fontSize: 11, color: '#E8E6FF', lineHeight: 1.75, minWidth: 140, pointerEvents: 'none' }}>
+    <div style={{ background: '#111028', border: '1px solid rgba(107,79,255,0.3)', borderRadius: 6, padding: '10px 12px', fontFamily: 'Space Grotesk, sans-serif', fontSize: 11, color: '#E8E6FF', lineHeight: 1.75, minWidth: 140, pointerEvents: 'none' }}>
       <p style={{ margin: '0 0 4px', fontWeight: 500 }}>{d.project}</p>
       {row('Chain', d.chain)}
       {row('APY', `${(d.apy ?? 0).toFixed(2)}%`)}
@@ -175,7 +175,7 @@ function ScoreScatterTooltip({ active, payload }: { active?: boolean; payload?: 
     </p>
   );
   return (
-    <div style={{ background: '#0D0C1F', border: '1px solid rgba(107,79,255,0.3)', borderRadius: 6, padding: '10px 12px', fontFamily: 'Space Grotesk, sans-serif', fontSize: 11, color: '#E8E6FF', lineHeight: 1.75, minWidth: 140, pointerEvents: 'none' }}>
+    <div style={{ background: '#111028', border: '1px solid rgba(107,79,255,0.3)', borderRadius: 6, padding: '10px 12px', fontFamily: 'Space Grotesk, sans-serif', fontSize: 11, color: '#E8E6FF', lineHeight: 1.75, minWidth: 140, pointerEvents: 'none' }}>
       <p style={{ margin: '0 0 4px', fontWeight: 500 }}>{d.project}</p>
       {row('Chain', d.chain)}
       {row('APY', `${d.apy.toFixed(2)}%`)}
@@ -200,8 +200,8 @@ function QuadrantOverlay() {
   const ap = { fontSize: 8, fontFamily: 'Space Grotesk, sans-serif', fill: 'rgba(232,230,255,0.2)' } as const;
   return (
     <g>
-      <line x1={thresholdX} y1={top}       x2={thresholdX} y2={top + h}   stroke="rgba(255,255,255,0.06)" strokeDasharray="4 4" strokeWidth={1} />
-      <line x1={left}       y1={thresholdY} x2={left + w}   y2={thresholdY} stroke="rgba(255,255,255,0.06)" strokeDasharray="4 4" strokeWidth={1} />
+      <line x1={thresholdX} y1={top}       x2={thresholdX} y2={top + h}   stroke="rgba(107,79,255,0.15)" strokeDasharray="4 4" strokeWidth={1} />
+      <line x1={left}       y1={thresholdY} x2={left + w}   y2={thresholdY} stroke="rgba(107,79,255,0.15)" strokeDasharray="4 4" strokeWidth={1} />
       <text x={left + 3}    y={thresholdY - 3} textAnchor="start"  {...ap}>15% APY</text>
       <text x={thresholdX}  y={top + h - 4}    textAnchor="middle" {...ap}>$50M TVL</text>
     </g>
@@ -220,8 +220,8 @@ function ApyScoreQuadrant() {
   const ap = { fontSize: 8, fontFamily: 'Space Grotesk, sans-serif', fill: 'rgba(232,230,255,0.2)' } as const;
   return (
     <g>
-      <line x1={thresholdX} y1={top}       x2={thresholdX} y2={top + h}   stroke="rgba(255,255,255,0.06)" strokeDasharray="4 4" strokeWidth={1} />
-      <line x1={left}       y1={thresholdY} x2={left + w}   y2={thresholdY} stroke="rgba(255,255,255,0.06)" strokeDasharray="4 4" strokeWidth={1} />
+      <line x1={thresholdX} y1={top}       x2={thresholdX} y2={top + h}   stroke="rgba(107,79,255,0.15)" strokeDasharray="4 4" strokeWidth={1} />
+      <line x1={left}       y1={thresholdY} x2={left + w}   y2={thresholdY} stroke="rgba(107,79,255,0.15)" strokeDasharray="4 4" strokeWidth={1} />
       <text x={left + 3}    y={thresholdY - 3} textAnchor="start"  {...ap}>15% APY</text>
       <text x={thresholdX}  y={top + h - 4}    textAnchor="middle" {...ap}>Score 50</text>
     </g>
@@ -398,7 +398,7 @@ export default function Analytics({ displayPools }: Props) {
     const entry = index != null ? topByApy[index] : null;
     if (!entry) return <g />;
     const n = topByApy.length > 1 ? topByApy.length - 1 : 1;
-    const opacity = 0.75 - ((index ?? 0) / n) * 0.45;
+    const opacity = 1.0 - ((index ?? 0) / n) * 0.55;
     const fill = `rgba(107,79,255,${opacity.toFixed(2)})`;
     const meanWidth = entry.mean30d != null && entry.apy > 0
       ? Math.max(0, (entry.mean30d / entry.apy) * width)
@@ -475,17 +475,17 @@ export default function Analytics({ displayPools }: Props) {
           <ChartCard id="riskReward" title="Risk vs Reward" info={CHART_INFO.riskReward} openInfo={openInfo} onInfo={setOpenInfo}>
             <ResponsiveContainer width="100%" height={360}>
               <ScatterChart margin={{ top: 4, right: 16, bottom: 24, left: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(232,230,255,0.06)" />
                 <XAxis
                   type="number" dataKey="tvlM" name="TVL" scale="log"
                   domain={['auto', 'auto']} ticks={[1, 10, 100, 1000, 10000]}
                   tickFormatter={formatTvlLog} tick={AXIS_TICK} tickLine={false} axisLine={false}
-                  label={{ value: 'TVL', position: 'insideBottom', offset: -14, fill: 'rgba(232,230,255,0.3)', fontSize: 9, fontFamily: 'Space Grotesk, sans-serif' }}
+                  label={{ value: 'TVL', position: 'insideBottom', offset: -14, fill: 'rgba(232,230,255,0.45)', fontSize: 9, fontFamily: 'Space Grotesk, sans-serif' }}
                 />
                 <YAxis
                   type="number" dataKey="apy" name="APY"
                   tickFormatter={v => `${v}%`} tick={AXIS_TICK} tickLine={false} axisLine={false}
-                  label={{ value: 'APY %', angle: -90, position: 'insideLeft', offset: 10, fill: 'rgba(232,230,255,0.3)', fontSize: 9, fontFamily: 'Space Grotesk, sans-serif' }}
+                  label={{ value: 'APY %', angle: -90, position: 'insideLeft', offset: 10, fill: 'rgba(232,230,255,0.45)', fontSize: 9, fontFamily: 'Space Grotesk, sans-serif' }}
                 />
                 <ZAxis range={[1, 1]} />
                 <QuadrantOverlay />
@@ -514,7 +514,7 @@ export default function Analytics({ displayPools }: Props) {
           <ChartCard id="topApy" title="Top 10 by APY" info={CHART_INFO.topApy} openInfo={openInfo} onInfo={setOpenInfo}>
             <ResponsiveContainer width="100%" height={400}>
               <BarChart data={topByApy} layout="vertical" margin={{ top: 4, right: 90, bottom: 4, left: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" horizontal={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(232,230,255,0.06)" horizontal={false} />
                 <XAxis type="number" domain={[0, 'auto']} tickFormatter={v => `${v}%`} tick={AXIS_TICK} tickLine={false} axisLine={false} />
                 <YAxis type="category" dataKey="name" tick={AXIS_TICK} tickLine={false} axisLine={false} width={140} />
                 <Tooltip {...TOOLTIP_STYLE} formatter={(value) => [`${value}%`, 'APY']} />
@@ -534,7 +534,7 @@ export default function Analytics({ displayPools }: Props) {
           <ChartCard id="chainPerf" title="Chain Performance" info={CHART_INFO.chainPerf} openInfo={openInfo} onInfo={setOpenInfo}>
             <ResponsiveContainer width="100%" height={280}>
               <BarChart data={chainPerformance} margin={{ top: 8, right: 16, bottom: 4, left: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(232,230,255,0.06)" vertical={false} />
                 <XAxis dataKey="chain" tick={AXIS_TICK} tickLine={false} axisLine={false} />
                 <YAxis yAxisId="left" orientation="left" tickFormatter={v => `${v}%`} tick={AXIS_TICK} tickLine={false} axisLine={false} />
                 <YAxis yAxisId="right" orientation="right" domain={[0, 100]} tick={AXIS_TICK} tickLine={false} axisLine={false} />
@@ -558,7 +558,7 @@ export default function Analytics({ displayPools }: Props) {
           <ChartCard id="scoreDist" title="Score Distribution" info={CHART_INFO.scoreDist} openInfo={openInfo} onInfo={setOpenInfo}>
             <ResponsiveContainer width="100%" height={280}>
               <BarChart data={scoreDistribution} margin={{ top: 8, right: 16, bottom: 4, left: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(232,230,255,0.06)" vertical={false} />
                 <XAxis dataKey="tier" tick={AXIS_TICK} tickLine={false} axisLine={false} />
                 <YAxis tick={AXIS_TICK} tickLine={false} axisLine={false} />
                 <Tooltip {...TOOLTIP_STYLE} formatter={(value) => [value, 'Pools']} />
@@ -577,16 +577,16 @@ export default function Analytics({ displayPools }: Props) {
         <ChartCard id="apyVsScore" title="APY vs Dexaris Score" info={CHART_INFO.apyVsScore} openInfo={openInfo} onInfo={setOpenInfo}>
             <ResponsiveContainer width="100%" height={340}>
               <ScatterChart margin={{ top: 4, right: 16, bottom: 24, left: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(232,230,255,0.06)" />
                 <XAxis
                   type="number" dataKey="score" name="Score" domain={[0, 100]}
                   tick={AXIS_TICK} tickLine={false} axisLine={false}
-                  label={{ value: 'Dexaris Score', position: 'insideBottom', offset: -14, fill: 'rgba(232,230,255,0.3)', fontSize: 9, fontFamily: 'Space Grotesk, sans-serif' }}
+                  label={{ value: 'Dexaris Score', position: 'insideBottom', offset: -14, fill: 'rgba(232,230,255,0.45)', fontSize: 9, fontFamily: 'Space Grotesk, sans-serif' }}
                 />
                 <YAxis
                   type="number" dataKey="apy" name="APY"
                   tickFormatter={v => `${v}%`} tick={AXIS_TICK} tickLine={false} axisLine={false}
-                  label={{ value: 'APY %', angle: -90, position: 'insideLeft', offset: 10, fill: 'rgba(232,230,255,0.3)', fontSize: 9, fontFamily: 'Space Grotesk, sans-serif' }}
+                  label={{ value: 'APY %', angle: -90, position: 'insideLeft', offset: 10, fill: 'rgba(232,230,255,0.45)', fontSize: 9, fontFamily: 'Space Grotesk, sans-serif' }}
                 />
                 <ZAxis range={[1, 1]} />
                 <ApyScoreQuadrant />
