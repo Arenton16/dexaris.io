@@ -4,58 +4,77 @@ export function calculateDexarisScore(pool: Pool): number {
   const tvl = pool.tvlUsd;
   const apy = pool.apy ?? 0;
 
-  // TVL Size (20%)
-  let tvlScore: number;
-  if (tvl < 1_000_000)        tvlScore = 0;
-  else if (tvl < 10_000_000)  tvlScore = 5;
-  else if (tvl < 50_000_000)  tvlScore = 10;
-  else if (tvl < 500_000_000) tvlScore = 15;
-  else                         tvlScore = 20;
-
-  // APY Level (20%)
-  let apyScore: number;
-  if (apy <= 0)       apyScore = 0;
-  else if (apy < 2)   apyScore = 5;
-  else if (apy < 5)   apyScore = 10;
-  else if (apy < 15)  apyScore = 15;
-  else if (apy <= 50) apyScore = 12;
-  else                 apyScore = 6;
-
-  // APY Consistency (25%) — current vs 30d mean
-  let consistencyScore: number;
+  // APY Consistency (30%) — rewards stable yields; penalises pools whose current APY
+  // has drifted far from their 30-day mean, which often signals incentive manipulation.
   const mean = pool.apyMean30d;
+  let consistencySubScore: number;
   if (mean != null && mean > 0 && apy > 0) {
     const diff = Math.abs(apy - mean) / mean;
-    if (diff <= 0.10)      consistencyScore = 25;
-    else if (diff <= 0.25) consistencyScore = 18;
-    else if (diff <= 0.50) consistencyScore = 10;
-    else                    consistencyScore = 4;
+    if (diff <= 0.05)      consistencySubScore = 10;
+    else if (diff <= 0.15) consistencySubScore = 8;
+    else if (diff <= 0.30) consistencySubScore = 6;
+    else if (diff <= 0.50) consistencySubScore = 4;
+    else                    consistencySubScore = 2;
   } else {
-    consistencyScore = 10;
+    consistencySubScore = 5; // neutral when 30d mean unavailable
   }
 
-  // TVL Trend (20%) — apyBase/apy ratio as organic yield proxy
-  let trendScore: number;
+  // APY Level (20%) — favours realistic yields in the 5–50% range with diminishing
+  // returns above ~50% APY, since unsustainably high yields are a risk signal.
+  let apyLevelSubScore: number;
+  if (apy <= 0)        apyLevelSubScore = 0;
+  else if (apy < 2)    apyLevelSubScore = 2;
+  else if (apy < 5)    apyLevelSubScore = 5;
+  else if (apy < 15)   apyLevelSubScore = 8;
+  else if (apy <= 50)  apyLevelSubScore = 10;
+  else if (apy <= 100) apyLevelSubScore = 7;
+  else                  apyLevelSubScore = 4; // >100% APY is likely incentive-driven
+
+  // TVL Size (20%) — log-scaled so each order of magnitude contributes equally;
+  // avoids the large-pool over-reward of a linear threshold approach.
+  // Maps log10($1M)=6 → 0 through log10($10B)=10 → 10.
+  const logTvl = Math.log10(Math.max(tvl, 1));
+  const tvlSizeSubScore = Math.min(10, Math.max(0, (logTvl - 6) * 2.5));
+
+  // Organic Yield Ratio (20%) — apyBase/apy measures what fraction of yield comes from
+  // real protocol fees vs. token incentives. Higher ratio = more sustainable yield.
+  // Scored 0 if apy is zero or apyBase is missing, to avoid division-by-zero inflation.
+  let organicRatioSubScore: number;
   const base = pool.apyBase;
-  if (base != null && apy > 0) {
+  if (apy > 0 && base != null) {
     const ratio = base / apy;
-    if (ratio >= 0.7)      trendScore = 20;
-    else if (ratio >= 0.4) trendScore = 12;
-    else                    trendScore = 6;
+    if (ratio >= 0.9)      organicRatioSubScore = 10;
+    else if (ratio >= 0.7) organicRatioSubScore = 8;
+    else if (ratio >= 0.5) organicRatioSubScore = 6;
+    else if (ratio >= 0.3) organicRatioSubScore = 4;
+    else if (ratio >= 0.1) organicRatioSubScore = 2;
+    else                    organicRatioSubScore = 0; // almost entirely incentive yield
   } else {
-    trendScore = 10;
+    organicRatioSubScore = 0;
   }
 
-  // Pool Maturity / Trust (15%) — TVL as trust proxy
-  let maturityScore: number;
-  if (tvl >= 1_000_000_000)    maturityScore = 15;
-  else if (tvl >= 100_000_000) maturityScore = 12;
-  else if (tvl >= 10_000_000)  maturityScore = 8;
-  else if (tvl >= 1_000_000)   maturityScore = 4;
-  else                          maturityScore = 1;
+  // Pool Age Proxy (10%) — uses DeFiLlama's ilRisk category and outlier flag as trust
+  // signals. Neutral 5 when neither is present to avoid penalising pools with no data.
+  const p = pool as unknown as { ilRisk?: string; outlier?: boolean };
+  let ageProxySubScore: number;
+  if (p.ilRisk != null) {
+    const ilMap: Record<string, number> = {
+      no: 10, low: 8, medium: 5, high: 3, 'very high': 1,
+    };
+    ageProxySubScore = ilMap[p.ilRisk] ?? 5;
+    if (p.outlier) ageProxySubScore = Math.max(0, ageProxySubScore - 3);
+  } else if (p.outlier != null) {
+    ageProxySubScore = p.outlier ? 2 : 7;
+  } else {
+    ageProxySubScore = 5; // neutral when no trust signals available
+  }
 
   return Math.round(Math.min(100, Math.max(0,
-    tvlScore + apyScore + consistencyScore + trendScore + maturityScore
+    consistencySubScore  * 3 +   // 30%
+    apyLevelSubScore     * 2 +   // 20%
+    tvlSizeSubScore      * 2 +   // 20%
+    organicRatioSubScore * 2 +   // 20%
+    ageProxySubScore     * 1     // 10%
   )));
 }
 
