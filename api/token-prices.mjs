@@ -53,7 +53,11 @@ export default async function handler(req, res) {
     .map(s => s.trim().toUpperCase())
     .filter(s => s && SYMBOL_TO_ID[s]);
 
+  console.log('[token-prices] incoming symbols raw:', rawSymbols);
+  console.log('[token-prices] recognised symbols:', symbols);
+
   if (!symbols.length) {
+    console.log('[token-prices] no recognised symbols — returning empty');
     res.setHeader('Cache-Control', 'public, max-age=300');
     return res.status(200).json({});
   }
@@ -66,12 +70,16 @@ export default async function handler(req, res) {
     ids.push(id);
   }
 
+  console.log('[token-prices] CoinGecko IDs to fetch:', ids);
+
   try {
     // Batch price + change data
     const priceUrl = `${COINGECKO_BASE}/simple/price?ids=${ids.join(',')}&vs_currencies=usd&include_24hr_change=true&include_7d_change=true`;
     const priceRes = await fetch(priceUrl, { headers: cgHeaders() });
     if (!priceRes.ok) throw new Error(`CoinGecko price fetch failed: ${priceRes.status}`);
     const priceData = await priceRes.json();
+
+    console.log('[token-prices] CoinGecko price response:', JSON.stringify(priceData));
 
     // Sparkline data — one request per token, run concurrently
     const sparklineResults = await Promise.allSettled(
@@ -111,6 +119,7 @@ export default async function handler(req, res) {
       };
     }
 
+    console.log('[token-prices] final output keys:', Object.keys(output));
     res.setHeader('Cache-Control', 'public, max-age=300');
     res.status(200).json(output);
   } catch (err) {

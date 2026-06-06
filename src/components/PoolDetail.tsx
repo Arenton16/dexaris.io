@@ -118,7 +118,17 @@ function TokenPricesSection({
       </div>
 
       <div style={{ padding: '6px 0' }}>
-        {loading ? (
+        {!loading && !symbols.some(s => prices[s]) ? (
+          <p style={{
+            margin: 0,
+            padding: '14px 14px',
+            fontSize: 12,
+            color: 'rgba(232,230,255,0.35)',
+            fontStyle: 'italic',
+          }}>
+            Price data unavailable for this pool's tokens.
+          </p>
+        ) : loading ? (
           // Skeleton rows
           symbols.map(sym => (
             <div key={sym} style={{
