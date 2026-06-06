@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dexaris Council Report — 2 June 2026</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f7f8fa; color: #1a1a2e; line-height: 1.6; }
+  .page { max-width: 860px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  /* Header */
+  .report-header { border-bottom: 2px solid #e2e4ea; padding-bottom: 24px; margin-bottom: 36px; }
+  .report-title { font-size: 26px; font-weight: 700; color: #111; letter-spacing: -0.4px; }
+  .report-sub { font-size: 13px; color: #6b7280; margin-top: 6px; }
+  .question-block { background: #fff; border: 1px solid #e2e4ea; border-radius: 10px; padding: 18px 22px; margin-top: 18px; font-size: 14px; color: #374151; }
+  .question-block strong { display: block; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #9ca3af; margin-bottom: 8px; }
+
+  /* Verdict section */
+  .section { background: #fff; border: 1px solid #e2e4ea; border-radius: 12px; padding: 28px 32px; margin-bottom: 20px; }
+  .section-title { font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 16px; }
+  .section-body { font-size: 15px; color: #374151; }
+  .section-body p { margin-bottom: 12px; }
+  .section-body p:last-child { margin-bottom: 0; }
+
+  .section-agrees .section-title { color: #059669; }
+  .section-agrees { border-left: 4px solid #059669; }
+
+  .section-clashes .section-title { color: #d97706; }
+  .section-clashes { border-left: 4px solid #d97706; }
+
+  .section-blindspots .section-title { color: #7c3aed; }
+  .section-blindspots { border-left: 4px solid #7c3aed; }
+
+  .section-recommendation .section-title { color: #1d4ed8; }
+  .section-recommendation { border-left: 4px solid #1d4ed8; }
+
+  .one-thing { background: #111827; color: #f9fafb; border-radius: 12px; padding: 28px 32px; margin-bottom: 20px; }
+  .one-thing-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #9ca3af; margin-bottom: 10px; }
+  .one-thing-body { font-size: 16px; font-weight: 500; line-height: 1.7; }
+
+  /* Agreement grid */
+  .grid-section { background: #fff; border: 1px solid #e2e4ea; border-radius: 12px; padding: 28px 32px; margin-bottom: 20px; }
+  .grid-section-title { font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #6b7280; margin-bottom: 20px; }
+  .advisor-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+  .advisor-card { border-radius: 8px; padding: 14px 12px; text-align: center; border: 1px solid; }
+  .advisor-card .advisor-name { font-size: 11px; font-weight: 700; letter-spacing: 0.04em; margin-bottom: 8px; }
+  .advisor-card .advisor-stance { font-size: 11px; line-height: 1.4; }
+  .card-contrarian { background: #fef2f2; border-color: #fca5a5; color: #991b1b; }
+  .card-first { background: #eff6ff; border-color: #93c5fd; color: #1e40af; }
+  .card-expansionist { background: #f0fdf4; border-color: #86efac; color: #166534; }
+  .card-outsider { background: #faf5ff; border-color: #c4b5fd; color: #5b21b6; }
+  .card-executor { background: #fff7ed; border-color: #fdba74; color: #9a3412; }
+
+  .convergence-bar { margin-top: 20px; }
+  .convergence-label { font-size: 12px; color: #6b7280; margin-bottom: 8px; }
+  .convergence-items { display: flex; flex-direction: column; gap: 8px; }
+  .convergence-item { display: flex; align-items: center; gap: 10px; }
+  .convergence-item-label { font-size: 13px; color: #374151; flex: 1; }
+  .convergence-dots { display: flex; gap: 4px; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .dot-filled { background: #6366f1; }
+  .dot-empty { background: #e5e7eb; }
+
+  /* Advisor details */
+  details { border: 1px solid #e2e4ea; border-radius: 10px; margin-bottom: 10px; background: #fff; overflow: hidden; }
+  summary { cursor: pointer; padding: 16px 20px; font-size: 14px; font-weight: 600; color: #374151; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: '+'; font-size: 18px; color: #9ca3af; font-weight: 300; }
+  details[open] summary::after { content: '−'; }
+  details[open] summary { border-bottom: 1px solid #f3f4f6; }
+  .detail-body { padding: 18px 20px; font-size: 14px; color: #374151; line-height: 1.7; }
+
+  /* Peer review details */
+  .peer-header { background: #f9fafb; }
+
+  /* Footer */
+  .footer { text-align: center; font-size: 12px; color: #9ca3af; margin-top: 48px; padding-top: 24px; border-top: 1px solid #e2e4ea; }
+
+  @media (max-width: 600px) {
+    .advisor-grid { grid-template-columns: 1fr 1fr; }
+    .section, .grid-section, .one-thing { padding: 20px 18px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="report-header">
+    <div class="report-title">Dexaris Platform Council Report</div>
+    <div class="report-sub">LLM Council Session · 2 June 2026 · 5 advisors · 5 peer reviewers · Chairman synthesis</div>
+    <div class="question-block">
+      <strong>The Question</strong>
+      What are Dexaris's genuine strengths worth doubling down on, what are its critical weaknesses that will limit growth, and what is the most important thing to build or change to scale this platform correctly and beneficially?
+    </div>
+  </div>
+
+  <!-- One Thing First — shown prominently at top -->
+  <div class="one-thing">
+    <div class="one-thing-label">The One Thing to Do First</div>
+    <div class="one-thing-body">Audit and rewrite the Dexaris Score to eliminate the TVL double-count, document the revised methodology in a public-facing page on the site, and add a clear disclaimer that the score is an analytical tool, not financial advice.<br><br>This takes one day to fix and one day to publish. It is the prerequisite for everything — persistence, backtesting, institutional trust, and competitive defensibility.</div>
+  </div>
+
+  <!-- Where the Council Agrees -->
+  <div class="section section-agrees">
+    <div class="section-title">Where the Council Agrees</div>
+    <div class="section-body">
+      <p><strong>The Dexaris Score is the only meaningful differentiator.</strong> Without it, this is a DeFiLlama reskin. Every advisor independently reached this conclusion.</p>
+      <p><strong>The platform has no memory and therefore no retention mechanism.</strong> localStorage is not a product architecture — it is a prototype detail that got shipped. Users who lose their watchlist on device switch or browser clear do not return. This is not a minor UX issue; it is the primary churn driver.</p>
+      <p><strong>The Score is currently unvalidated.</strong> There is no historical data proving that a high Dexaris Score predicts better risk-adjusted outcomes over any time horizon. The "intelligence" label is a marketing claim, not a demonstrated capability.</p>
+      <p><strong>The data dependency on DeFiLlama's public API is a structural vulnerability.</strong> A rate limit change, a schema restructure, or a competing scoring layer added by DeFiLlama itself removes the value proposition without warning.</p>
+    </div>
+  </div>
+
+  <!-- Where the Council Clashes -->
+  <div class="section section-clashes">
+    <div class="section-title">Where the Council Clashes</div>
+    <div class="section-body">
+      <p><strong>Clash 1: Sequencing — persist first vs. validate first.</strong> The Executor says ship Supabase auth Monday and persist the watchlist. The First Principles Thinker says none of that matters until the Score is validated. Both are correct about different users. A casual DeFi browser needs persistence to form a habit. A sophisticated yield farmer needs a validated score before they take the platform seriously. The question is which user Dexaris is trying to win first — and that decision gates everything else.</p>
+      <p><strong>Clash 2: Institutional ambition — right ceiling, wrong timing.</strong> The Expansionist says build a Score API and pitch DAO treasuries. All five peer reviewers said: not yet. The Moody's analogy is strategically correct and tactically premature. You cannot license a score that double-counts TVL at 35% of weight to a DAO treasury manager whose quant will review it in the first meeting. Building toward institutional positioning is correct. Pitching it now is reputationally damaging.</p>
+    </div>
+  </div>
+
+  <!-- Blind Spots -->
+  <div class="section section-blindspots">
+    <div class="section-title">Blind Spots the Council Caught</div>
+    <div class="section-body">
+      <p><strong>Regulatory and liability exposure.</strong> Three of five peer reviewers independently raised this — yet none of the original advisors addressed it. A solo founder publishing numerical scores on DeFi investment assets with institutional ambitions sits directly in territory the SEC and FCA are actively litigating. The moment Dexaris adds a paid tier, a Score API, or a single institutional customer, "is this financial advice?" becomes a legal question, not just a disclaimer question. Add prominent methodology disclaimers now, before growth makes retroactive framing impossible.</p>
+      <p><strong>Solo-founder execution risk.</strong> No advisor asked whether one person can maintain backend uptime, data pipeline integrity, scoring consistency, and product development simultaneously once a database and auth layer are added. Every piece of infrastructure added before revenue justifies it is a maintenance burden that competes with shipping.</p>
+      <p><strong>Competitive timing risk.</strong> DeFiLlama, Zapper, or any well-resourced aggregator can clone the scoring methodology in a sprint once it is public. The Expansionist's answer — become the cited standard before anyone else does — is the right strategic response, but it requires the score to be validated and the methodology published with a track record attached. A copied methodology without a track record is a clone. A copied methodology that lacks six months of documented predictive accuracy is not a clone — it is a lesser version.</p>
+      <p><strong>Competitive substitution from user's own tools.</strong> Serious yield farmers already have Dune dashboards, Notion trackers, and spreadsheets. None of the advisors asked why that person switches to Dexaris and stays. The retention problem was identified, but the acquisition and switching-cost problem was entirely unaddressed.</p>
+    </div>
+  </div>
+
+  <!-- The Recommendation -->
+  <div class="section section-recommendation">
+    <div class="section-title">The Recommendation</div>
+    <div class="section-body">
+      <p><strong>Fix the scoring algorithm first, then wire up persistence, then build the historical data pipeline. In that order.</strong></p>
+      <p>The Contrarian is correct that TVL double-counting at 35% of the score is the load-bearing structural defect. Fix it before anything else — not because it is the most urgent user-facing problem, but because every subsequent decision (persistence, backtesting, institutional outreach, Score API) is built on top of that number. If the number is methodologically indefensible, you are scaling a flaw.</p>
+      <p>Once the score is methodologically clean, the Executor is correct: Supabase auth and server-side watchlist persistence is the right next infrastructure move. It converts a stateless tool into a returnable service. Do not build historical data storage, alerts infrastructure, or a Score API before this exists.</p>
+      <p>Once persistence exists, start logging daily pool snapshots — score, APY, TVL, timestamp. Run that for 90 days without showing it to anyone. At the end of 90 days, you have the most important asset in DeFi data: a documented track record of whether your score actually predicted anything. That is what makes the institutional thesis viable, the retention problem solvable, and Dexaris defensible against a well-funded clone.</p>
+      <p><em>The chairman disagrees with the majority on one point: the Expansionist's institutional ambitions are premature in timing but correct in direction. The Moody's of DeFi is the right long-range target. It just requires 12 months of foundation-building before the first institutional conversation — not 12 days.</em></p>
+    </div>
+  </div>
+
+  <!-- Advisor Agreement Grid -->
+  <div class="grid-section">
+    <div class="grid-section-title">Advisor Alignment Map</div>
+    <div class="advisor-grid">
+      <div class="advisor-card card-contrarian">
+        <div class="advisor-name">The Contrarian</div>
+        <div class="advisor-stance">Fix score double-count first. No data moat. localStorage is a ceiling.</div>
+      </div>
+      <div class="advisor-card card-first">
+        <div class="advisor-name">First Principles</div>
+        <div class="advisor-stance">Score is unvalidated. Build a data store. Intelligence requires memory.</div>
+      </div>
+      <div class="advisor-card card-expansionist">
+        <div class="advisor-name">The Expansionist</div>
+        <div class="advisor-stance">Score → financial primitive. Score API + DAO treasury outreach. Moody's of DeFi.</div>
+      </div>
+      <div class="advisor-card card-outsider">
+        <div class="advisor-name">The Outsider</div>
+        <div class="advisor-stance">Score meaning unexplained. No habit loop. Build alerts that actually fire.</div>
+      </div>
+      <div class="advisor-card card-executor">
+        <div class="advisor-name">The Executor</div>
+        <div class="advisor-stance">Supabase Monday. Persist watchlist. Auth from existing email form.</div>
+      </div>
+    </div>
+
+    <div class="convergence-bar" style="margin-top:24px;">
+      <div class="convergence-label">Signal strength by topic (advisors who independently converged)</div>
+      <div class="convergence-items">
+        <div class="convergence-item">
+          <div class="convergence-item-label">Dexaris Score is the only differentiator</div>
+          <div class="convergence-dots">
+            <div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div>
+          </div>
+        </div>
+        <div class="convergence-item">
+          <div class="convergence-item-label">localStorage / no persistence is a critical ceiling</div>
+          <div class="convergence-dots">
+            <div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-empty"></div>
+          </div>
+        </div>
+        <div class="convergence-item">
+          <div class="convergence-item-label">Score is unvalidated — no historical data</div>
+          <div class="convergence-dots">
+            <div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-empty"></div><div class="dot dot-empty"></div>
+          </div>
+        </div>
+        <div class="convergence-item">
+          <div class="convergence-item-label">Regulatory / financial advice exposure</div>
+          <div class="convergence-dots">
+            <div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-empty"></div><div class="dot dot-empty"></div>
+          </div>
+        </div>
+        <div class="convergence-item">
+          <div class="convergence-item-label">Institutional ceiling is the right long-range target</div>
+          <div class="convergence-dots">
+            <div class="dot dot-filled"></div><div class="dot dot-filled"></div><div class="dot dot-empty"></div><div class="dot dot-empty"></div><div class="dot dot-empty"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Advisor Responses (collapsible) -->
+  <div class="grid-section">
+    <div class="grid-section-title">Full Advisor Responses</div>
+
+    <details>
+      <summary>The Contrarian</summary>
+      <div class="detail-body">The scoring function and data model tell me everything I need to know. The score is defensible, but not defensible enough. TVL appears twice — once as "TVL Size" (20%) and again as "Pool Maturity / Trust" (15%). That's 35% of the score derived from a single metric, just rebadged. A $1B Curve pool scores near-maximum before APY is even considered. You're not scoring quality — you're scoring size with extra steps. A competitor or a sophisticated user will spot this in five minutes and dismiss the whole intelligence layer.<br><br>The single fatal structural weakness: no data moat. Everything runs against DeFiLlama's public API. DeFiLlama could add a similar scoring layer, rate-limit the endpoint, or restructure their data, and Dexaris loses its value proposition overnight. There is no proprietary data, no historical storage, no user behaviour signals. The "intelligence" is a pure transform on someone else's feed.<br><br>Portfolio is localStorage-only and asks users to trust you with investment tracking. That's not a temporary inconvenience — it's a ceiling. The moment a user clears their browser or switches device, their portfolio is gone. They'll churn before they ever convert to a paying customer.<br><br>What to actually fix first: Stop building features and fix the score's double-counting of TVL. If the score is wrong, every feature built on top of it is wrong. That's the load-bearing wall. Everything else is furniture.</div>
+    </details>
+
+    <details>
+      <summary>The First Principles Thinker</summary>
+      <div class="detail-body">The question being asked is "what should we build?" The actual question is "what problem does Dexaris solve that no one else solves?"<br><br>Strip it back: DeFiLlama already shows yields. Coingecko shows yields. Every yield aggregator shows yields. Dexaris adds a score on top of someone else's data from a single API endpoint. That is not a moat. That is a feature on top of a free service.<br><br>The Dexaris Score is the only thing worth examining closely. Ask the real question: is the scoring methodology actually predictive of anything? Does a high Dexaris Score correlate with better risk-adjusted returns over 30, 60, 90 days? Nobody knows, because there is no historical data stored anywhere. The "proprietary intelligence layer" is unvalidated. It is an algorithm, not intelligence.<br><br>This is the critical weakness: you cannot claim to be a yield intelligence platform when you have no memory. Every session is amnesiac. You cannot show users whether your score actually worked. You cannot build trust. You cannot differentiate.<br><br>The most important thing to build is not another feature. It is a data store. Start logging pool snapshots daily — score, APY, TVL. Even 90 days of that data transforms everything. Suddenly the Dexaris Score becomes testable. Backtestable. Publishable. That is the thing no solo DeFi dashboard has: a validated, transparent scoring methodology with a track record.</div>
+    </details>
+
+    <details>
+      <summary>The Expansionist</summary>
+      <div class="detail-body">The Dexaris Score is the only thing that matters. Everything else is a wrapper around data anyone can get for free.<br><br>Here is what you are undervaluing: a proprietary scoring system, if trusted, becomes a financial primitive. Bloomberg has the Bloomberg Score. Morningstar has star ratings. These are not features — they are the product. Funds pay for them. They get embedded in screeners, aggregators, third-party tools. They become cited in research. That is the trajectory hiding inside your current MVP.<br><br>The adjacent opportunity no one is talking about: institutional DeFi allocation is nascent and desperate for exactly this kind of normalized scoring layer. A treasury manager at a mid-size DAO cannot evaluate 6,000 pools. You can collapse that problem to a number. That is worth a subscription, a data license, or an API product — not just a consumer web app.<br><br>Double down on: making the Score methodology public enough to be trusted but proprietary enough to be defensible. Publish the formula broadly. Let people argue with it. That argument is marketing. Every protocol that disputes their score becomes a distribution channel.<br><br>The ceiling on this is not a yield dashboard. The ceiling is becoming the Moody's of DeFi.</div>
+    </details>
+
+    <details>
+      <summary>The Outsider</summary>
+      <div class="detail-body">The Dexaris Score is a number between 0 and 100. I have no idea what a "good" score means in practice, and neither would a first-time visitor. The tooltip says "TVL size, APY level, yield consistency, and organic yield ratio" — but that tells me nothing about whether a score of 62 should make me excited or worried. There is no benchmark, no explanation of why those four factors were chosen, no guidance on how to act on it. You have invented a metric and then asked people to trust it without showing your work.<br><br>The second problem: the entire platform is read-only with no memory. A user finds a pool, thinks "I should come back to this" — and closes the tab. The Watchlist exists but it's localStorage, so it disappears if they clear their browser. There is nothing pulling them back tomorrow.<br><br>The critical weakness is the same one that kills most DeFi dashboards: there is no reason to return. The data refreshes every 60 seconds but the user gets nothing from having been here yesterday. No "this pool's APY dropped 40% since you last checked." No "three pools you watched hit your threshold." No history. No delta. The platform is a snapshot with no memory of the past.<br><br>The single most important thing to build: APY change alerts that actually fire. Not an email waitlist. Actual notifications — even just a browser push or a weekly email digest showing movement in watched pools. That creates the habit loop the platform currently cannot form.</div>
+    </details>
+
+    <details>
+      <summary>The Executor</summary>
+      <div class="detail-body">The Dexaris Score algorithm and the client-side-only architecture tell me everything I need.<br><br>What's real and worth building on: The Dexaris Score is the only thing that differentiates this from a DeFiLlama reskin. The algorithm is already sound — TVL weight, consistency vs 30d mean, organic yield ratio. That scoring logic, applied at scale, is the actual product. The X content generator is the one feature that converts data into distribution. Those two together are the core loop.<br><br>The critical blocker: Everything is ephemeral. No backend, no database, no user accounts. The Portfolio and Watchlist data lives in localStorage and disappears on device switch. You cannot build a recurring-user product on localStorage. Users who lose their watchlist don't come back. This is the ceiling.<br><br>The one thing to build Monday morning: Wire up a Supabase free tier. Two tables: users (email/auth) and watchlist_items (user_id, pool_id). Add email/password auth to the existing Alerts email capture — the waitlist form is already there, it already calls /api/subscribe. Turn that into real auth. Persist watchlist server-side. That single change converts a tool people visit into a service people return to, and gives you an email list you actually own.<br><br>Don't touch the scoring algorithm. Don't build historical data storage yet. Don't polish the UI. Ship persistent state first — everything else scales from there.</div>
+    </details>
+  </div>
+
+  <!-- Peer Review Highlights (collapsible) -->
+  <div class="grid-section">
+    <div class="grid-section-title">Peer Review Highlights</div>
+
+    <details class="peer-header">
+      <summary>Peer Review Findings (all 5 reviewers)</summary>
+      <div class="detail-body">
+        <strong>Strongest response — unanimous: Response D (The First Principles Thinker)</strong><br>
+        All five peer reviewers independently selected D as the strongest. The reason given across all five: D is the only response that asks the epistemically prior question — is the score actually predictive of anything? — before prescribing solutions. Recommending a data store and daily pool snapshots was identified as the highest-leverage single action because it unlocks validation, backtesting, trust, and differentiation simultaneously.<br><br>
+
+        <strong>Biggest blind spot — unanimous: Response A (The Expansionist)</strong><br>
+        All five reviewers flagged A as having the largest blind spot. The consistent criticism: A builds an entire institutional monetisation thesis (Score API, DAO treasury outreach, "Moody's of DeFi") on a scoring methodology that Response C correctly identifies as structurally broken — TVL double-counted at 35% of the weight. A treats trust as a marketing problem when it is a data problem. Recommending a paid Score API before the methodology is audited is building a commercial product on an unexamined foundation.<br><br>
+
+        <strong>What all five responses missed — three independent blind spots emerged:</strong><br><br>
+
+        <em>1. Regulatory and liability exposure (raised by 3/5 reviewers independently)</em><br>
+        A solo founder publishing investment-relevant numerical scores on DeFi assets sits in territory the SEC and FCA are actively litigating. The moment a paid tier, Score API, or institutional customer arrives, "is this financial advice?" becomes a legal question. None of the original advisors mentioned it. Add prominent disclaimers now before growth makes retroactive framing impossible.<br><br>
+
+        <em>2. Solo-founder execution risk (raised by 1 reviewer)</em><br>
+        Every response prescribes significant new infrastructure — Supabase auth, daily snapshot pipelines, Score API. None asks whether a single founder can maintain backend uptime, data integrity, and product development simultaneously. What is the minimum durable architecture that doesn't become a maintenance burden before revenue justifies it?<br><br>
+
+        <em>3. Competitive timing risk (raised by 1 reviewer)</em><br>
+        DeFiLlama, Zapper, or any well-resourced aggregator can clone the scoring methodology in a sprint. None of the advisors addressed what makes Dexaris defensible if that happens. Network effects, proprietary data, or community lock-in — none seriously proposed as the actual moat.
+      </div>
+    </details>
+  </div>
+
+  <div class="footer">
+    Council session: 2 June 2026 · Dexaris platform analysis · 5 advisors · 5 peer reviewers · 1 chairman synthesis<br>
+    Generated by LLM Council (CLAUDE.md) · Reference: council-transcript-20260602-105725.md
+  </div>
+
+</div>
+</body>
+</html>
