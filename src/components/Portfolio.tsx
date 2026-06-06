@@ -8,8 +8,8 @@ import {
   getDexarisScoreColour,
   getDexarisScoreTier,
 } from '../utils/dexarisScore';
-
-const STORAGE_KEY = 'dexaris_portfolio';
+import { supabase } from '../lib/supabase';
+import { getAnonymousId } from '../lib/anonymousId';
 
 interface Position {
   id: string;
@@ -36,15 +36,6 @@ function fmtUsd(val: number): string {
   if (val >= 1_000_000) return `$${(val / 1_000_000).toFixed(2)}M`;
   if (val >= 1_000)     return `$${(val / 1_000).toFixed(1)}k`;
   return `$${val.toFixed(0)}`;
-}
-
-function loadPositions(): Position[] {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]'); }
-  catch { return []; }
-}
-
-function savePositions(positions: Position[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(positions));
 }
 
 function matchPool(position: Position, allPools: Pool[]): Pool | null {
@@ -445,7 +436,30 @@ function AddPositionForm({
 
 export default function Portfolio() {
   const { allPools } = usePools();
-  const [positions, setPositions] = useState<Position[]>(loadPositions);
+  const [positions, setPositions] = useState<Position[]>([]);
+
+  // On mount: load this user's positions from Supabase.
+  // Fails silently — if Supabase is unreachable the portfolio renders empty.
+  // asset is stored in the notes column since the schema has no dedicated asset field.
+  useEffect(() => {
+    const anonId = getAnonymousId();
+    supabase
+      .from('portfolio_positions')
+      .select('pool_id, protocol, chain, amount_usd, entry_date, notes')
+      .eq('anonymous_id', anonId)
+      .order('entry_date', { ascending: true })
+      .then(({ data, error }) => {
+        if (error || !data) return;
+        setPositions(data.map(r => ({
+          id:             r.pool_id,
+          protocol:       r.protocol ?? '',
+          asset:          r.notes    ?? '',
+          chain:          r.chain    ?? '',
+          amountInvested: r.amount_usd ?? 0,
+          dateAdded:      r.entry_date ?? '',
+        })));
+      });
+  }, []);
 
   const enriched = useMemo(() =>
     positions.map(pos => {
@@ -498,21 +512,38 @@ export default function Portfolio() {
     return Object.entries(byChain).map(([name, value]) => ({ name, value }));
   }, [positions]);
 
+  // Optimistic add: update local state immediately, write to Supabase in background.
+  // asset is stored in notes — the only available free-text column in the schema.
   function handleAdd(data: Pick<Position, 'protocol' | 'asset' | 'chain' | 'amountInvested'>) {
-    const next: Position = {
-      id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
-      ...data,
-      dateAdded: new Date().toISOString(),
-    };
-    const updated = [...positions, next];
-    setPositions(updated);
-    savePositions(updated);
+    const positionId = crypto.randomUUID();
+    const dateAdded  = new Date().toISOString();
+    const next: Position = { id: positionId, ...data, dateAdded };
+    setPositions(prev => [...prev, next]);
+    const anonId = getAnonymousId();
+    supabase
+      .from('portfolio_positions')
+      .insert({
+        anonymous_id: anonId,
+        pool_id:      positionId,
+        protocol:     data.protocol,
+        chain:        data.chain,
+        amount_usd:   data.amountInvested,
+        entry_date:   dateAdded,
+        notes:        data.asset,
+      })
+      .then(() => {});
   }
 
+  // Optimistic remove: update local state immediately, delete from Supabase in background.
   function removePosition(id: string) {
-    const updated = positions.filter(p => p.id !== id);
-    setPositions(updated);
-    savePositions(updated);
+    setPositions(prev => prev.filter(p => p.id !== id));
+    const anonId = getAnonymousId();
+    supabase
+      .from('portfolio_positions')
+      .delete()
+      .eq('anonymous_id', anonId)
+      .eq('pool_id', id)
+      .then(() => {});
   }
 
   if (positions.length === 0) {
