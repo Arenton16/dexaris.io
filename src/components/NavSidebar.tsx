@@ -52,12 +52,24 @@ function IconBell() {
   );
 }
 
+function IconMethodology() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="1.5" width="12" height="13" rx="1.5" />
+      <line x1="5" y1="5.5" x2="11" y2="5.5" />
+      <line x1="5" y1="8" x2="11" y2="8" />
+      <line x1="5" y1="10.5" x2="8.5" y2="10.5" />
+    </svg>
+  );
+}
+
 interface NavItem {
   id: Page | null;
   icon: ReactNode;
   label: string;
   comingSoon: boolean;
   isNew?: boolean;
+  href?: string;
 }
 
 interface Props {
@@ -88,6 +100,7 @@ export default function NavSidebar({
     { id: 'portfolio', icon: <IconPortfolio />,                           label: 'Portfolio', comingSoon: false },
     { id: 'analytics', icon: <IconAnalytics />,                           label: 'Analytics', comingSoon: false },
     { id: 'alerts',    icon: <IconBell />,                                label: 'Alerts',    comingSoon: false },
+    { id: null, icon: <IconMethodology />, label: 'Methodology', comingSoon: false, href: '/methodology' },
   ];
 
   return (
@@ -110,7 +123,7 @@ export default function NavSidebar({
               <div
                 key={item.label}
                 className={`nav-item${isActive ? ' nav-item--active' : ''}`}
-                onClick={item.id !== null ? () => { onNavigate(item.id!); onClose(); } : undefined}
+                onClick={item.href ? () => { window.location.href = item.href!; } : item.id !== null ? () => { onNavigate(item.id!); onClose(); } : undefined}
                 onMouseEnter={isCollapsed ? (e) => {
                   const rect = e.currentTarget.getBoundingClientRect();
                   setTooltip({ label: item.label, y: rect.top + rect.height / 2 });
