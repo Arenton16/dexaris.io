@@ -6,6 +6,7 @@ import {
 import type { Pool } from '../types';
 import { CHAIN_LOGOS } from '../types';
 import { calculateDexarisScore, getDexarisScoreColour, getDexarisScoreTier } from '../utils/dexarisScore';
+import { useTokenPrices, parsePoolSymbols } from '../hooks/useTokenPrices';
 
 interface Props {
   pool: Pool | null;
@@ -45,11 +46,194 @@ function formatTvl(val: number): string {
   return '$' + val.toFixed(0);
 }
 
+// ── Token Prices Section ───────────────────────────────────────────────────
+
+function Sparkline({ points, positive }: { points: number[]; positive: boolean }) {
+  if (points.length < 2) return null;
+  const min = Math.min(...points);
+  const max = Math.max(...points);
+  const range = max - min || 1;
+  const W = 56, H = 24, PAD = 2;
+  const xs = points.map((_, i) => PAD + (i / (points.length - 1)) * (W - PAD * 2));
+  const ys = points.map(v => PAD + (1 - (v - min) / range) * (H - PAD * 2));
+  const d = xs.map((x, i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${ys[i].toFixed(1)}`).join(' ');
+  const color = positive ? '#4ECDA4' : '#FF6B6B';
+  return (
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ display: 'block', flexShrink: 0 }}>
+      <path d={d} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity={0.85} />
+    </svg>
+  );
+}
+
+function ChangeLabel({ value }: { value: number | null }) {
+  if (value === null) return <span style={{ color: 'rgba(232,230,255,0.3)' }}>—</span>;
+  const color = value >= 0 ? '#4ECDA4' : '#FF6B6B';
+  return (
+    <span style={{ color, fontWeight: 500 }}>
+      {value >= 0 ? '+' : ''}{value.toFixed(2)}%
+    </span>
+  );
+}
+
+function TokenPricesSection({
+  poolSymbol, poolApy, prices, loading,
+}: {
+  poolSymbol: string;
+  poolApy: number;
+  prices: ReturnType<typeof import('../hooks/useTokenPrices').useTokenPrices>['prices'];
+  loading: boolean;
+}) {
+  const symbols = parsePoolSymbols(poolSymbol);
+  if (!symbols.length) return null;
+
+  // Depreciation warnings: token down >10% in 7d and pool APY <50%
+  const warnings = !loading
+    ? symbols.filter(sym => {
+        const p = prices[sym];
+        return p && !p.isStable && p.change7d !== null && p.change7d < -10 && poolApy < 50;
+      })
+    : [];
+
+  return (
+    <div style={{
+      margin: '16px 0',
+      background: 'rgba(107,79,255,0.07)',
+      border: '1px solid rgba(107,79,255,0.2)',
+      borderRadius: 10,
+      overflow: 'hidden',
+    }}>
+      <div style={{
+        padding: '10px 14px 8px',
+        borderBottom: '1px solid rgba(107,79,255,0.1)',
+      }}>
+        <span style={{
+          fontSize: 10,
+          fontWeight: 600,
+          letterSpacing: '0.1em',
+          textTransform: 'uppercase',
+          color: 'rgba(232,230,255,0.4)',
+        }}>
+          Token Prices
+        </span>
+      </div>
+
+      <div style={{ padding: '6px 0' }}>
+        {loading ? (
+          // Skeleton rows
+          symbols.map(sym => (
+            <div key={sym} style={{
+              display: 'flex', alignItems: 'center', gap: 10,
+              padding: '10px 14px',
+            }}>
+              <div style={{ width: 36, height: 11, borderRadius: 4, background: 'rgba(232,230,255,0.07)', flex: 'none' }} />
+              <div style={{ flex: 1, height: 11, borderRadius: 4, background: 'rgba(232,230,255,0.05)' }} />
+              <div style={{ width: 56, height: 24, borderRadius: 4, background: 'rgba(232,230,255,0.05)' }} />
+            </div>
+          ))
+        ) : (
+          symbols.map(sym => {
+            const p = prices[sym];
+            if (!p) return null;
+            const positive7d = (p.change7d ?? 0) >= 0;
+            return (
+              <div key={sym} style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                padding: '9px 14px',
+                borderBottom: '1px solid rgba(107,79,255,0.06)',
+              }}>
+                {/* Symbol */}
+                <span style={{
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: '#E8E6FF',
+                  minWidth: 48,
+                  flex: 'none',
+                }}>
+                  {sym}
+                </span>
+
+                {/* Price */}
+                <span style={{
+                  fontSize: 13,
+                  fontWeight: 500,
+                  color: '#E8E6FF',
+                  flex: 1,
+                  fontVariantNumeric: 'tabular-nums',
+                }}>
+                  {p.price !== null
+                    ? p.isStable
+                      ? `$${p.price.toFixed(4)}`
+                      : p.price >= 1000
+                        ? `$${p.price.toLocaleString('en-US', { maximumFractionDigits: 0 })}`
+                        : `$${p.price.toFixed(2)}`
+                    : '—'
+                  }
+                </span>
+
+                {p.isStable ? (
+                  <span style={{
+                    fontSize: 10,
+                    color: 'rgba(232,230,255,0.3)',
+                    letterSpacing: '0.06em',
+                    textTransform: 'uppercase',
+                    flex: 'none',
+                  }}>
+                    Stablecoin
+                  </span>
+                ) : (
+                  <>
+                    {/* 24h */}
+                    <span style={{ fontSize: 11, flex: 'none', minWidth: 52, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                      <span style={{ fontSize: 9, color: 'rgba(232,230,255,0.3)', display: 'block', marginBottom: 1 }}>24h</span>
+                      <ChangeLabel value={p.change24h} />
+                    </span>
+
+                    {/* 7d */}
+                    <span style={{ fontSize: 11, flex: 'none', minWidth: 52, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                      <span style={{ fontSize: 9, color: 'rgba(232,230,255,0.3)', display: 'block', marginBottom: 1 }}>7d</span>
+                      <ChangeLabel value={p.change7d} />
+                    </span>
+
+                    {/* Sparkline */}
+                    <Sparkline points={p.sparkline} positive={positive7d} />
+                  </>
+                )}
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {/* Depreciation warnings */}
+      {warnings.map(sym => {
+        const p = prices[sym];
+        return (
+          <div key={sym} style={{
+            margin: '0 10px 10px',
+            background: 'rgba(255,107,107,0.08)',
+            border: '1px solid rgba(255,107,107,0.25)',
+            borderRadius: 7,
+            padding: '10px 12px',
+          }}>
+            <span style={{ fontSize: 11, color: '#FF6B6B', lineHeight: 1.5 }}>
+              ⚠ <strong>{sym}</strong> is down {Math.abs(p.change7d!).toFixed(1)}% in 7 days.
+              The {poolApy.toFixed(2)}% APY may not offset token depreciation — review before entering.
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function PoolDetail({ pool, onClose }: Props) {
   const isOpen = pool !== null;
   const [historyData, setHistoryData] = useState<HistoryPoint[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState(false);
+  const { prices, loading: pricesLoading } = useTokenPrices(pool?.symbol ?? '');
 
   useEffect(() => {
     if (!pool) {
@@ -155,6 +339,14 @@ export default function PoolDetail({ pool, onClose }: Props) {
                   </span>
                 </div>
               </div>
+
+              {/* Token Prices */}
+              <TokenPricesSection
+                poolSymbol={pool.symbol}
+                poolApy={apy}
+                prices={prices}
+                loading={pricesLoading}
+              />
 
               {/* Dexaris Score */}
               <div className="detail-score-section">
