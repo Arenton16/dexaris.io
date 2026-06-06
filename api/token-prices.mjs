@@ -6,7 +6,7 @@
  * can set Cache-Control headers on the response (5-minute revalidation window).
  */
 
-const COINGECKO_BASE = 'https://pro-api.coingecko.com/api/v3';
+const COINGECKO_BASE = 'https://api.coingecko.com/api/v3';
 
 // Hardcoded symbol → CoinGecko ID mapping for common DeFi tokens
 const SYMBOL_TO_ID = {
@@ -47,6 +47,9 @@ function cgHeaders() {
 }
 
 export default async function handler(req, res) {
+  console.log('API key present:', !!process.env.COINGECKO_API_KEY);
+  console.log('API key prefix:', process.env.COINGECKO_API_KEY?.slice(0, 8));
+
   const rawSymbols = req.query?.symbols ?? '';
   const symbols = rawSymbols
     .split(',')
