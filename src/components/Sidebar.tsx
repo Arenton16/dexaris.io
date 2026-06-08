@@ -43,17 +43,17 @@ export default function Sidebar({
     return Array.from(names).sort((a, b) => a.localeCompare(b));
   }, [allPools, selected]);
 
-  const visibleProtocols = protocolSearch.trim()
-    ? availableProtocols.filter(p => p.toLowerCase().includes(protocolSearch.toLowerCase()))
-    : availableProtocols;
+  const suggestions = useMemo(() => {
+    const q = protocolSearch.trim();
+    if (q.length < 2) return [];
+    const lower = q.toLowerCase();
+    return availableProtocols
+      .filter(p => !selectedProtocols.includes(p) && p.toLowerCase().includes(lower))
+      .slice(0, 6);
+  }, [availableProtocols, protocolSearch, selectedProtocols]);
 
-  const toggleProtocol = (name: string) => {
-    onProtocolsChange(
-      selectedProtocols.includes(name)
-        ? selectedProtocols.filter(p => p !== name)
-        : [...selectedProtocols, name]
-    );
-  };
+  const removeProtocol = (name: string) => onProtocolsChange(selectedProtocols.filter(p => p !== name));
+  const addProtocol = (name: string) => { onProtocolsChange([...selectedProtocols, name]); setProtocolSearch(''); };
 
   return (
     <aside className={`sidebar${isOpen ? ' mobile-open' : ''}`}>
@@ -139,6 +139,25 @@ export default function Sidebar({
           </button>
         )}
       </div>
+
+      {selectedProtocols.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginBottom: '8px' }}>
+          {selectedProtocols.map(name => (
+            <span
+              key={name}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 8px 3px 10px', background: 'rgba(107,79,255,0.14)', border: '0.5px solid #6B4FFF', borderRadius: '20px', color: '#8B73FF', fontSize: '11px', fontWeight: 500 }}
+            >
+              {name}
+              <button
+                onClick={() => removeProtocol(name)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#8B73FF', padding: '0 0 0 2px', lineHeight: 1, fontSize: '13px', opacity: 0.7 }}
+                aria-label={`Remove ${name}`}
+              >×</button>
+            </span>
+          ))}
+        </div>
+      )}
+
       <input
         type="text"
         placeholder="Search protocol..."
@@ -147,37 +166,37 @@ export default function Sidebar({
         style={{
           width: '100%',
           boxSizing: 'border-box',
-          background: 'rgba(232,230,255,0.04)',
-          border: '0.5px solid rgba(232,230,255,0.1)',
+          padding: '7px 8px',
+          background: 'rgba(107,79,255,0.08)',
+          border: '1px solid rgba(107,79,255,0.2)',
           borderRadius: '6px',
-          padding: '6px 10px',
-          fontSize: '12px',
-          color: '#E8E6FF',
+          color: 'var(--accent-text)',
+          fontFamily: "'Inter', sans-serif",
+          fontSize: '13px',
           outline: 'none',
-          marginBottom: '8px',
         }}
       />
-      <div style={{ maxHeight: '180px', overflowY: 'auto' }}>
-        {visibleProtocols.map(name => {
-          const active = selectedProtocols.includes(name);
-          return (
+
+      {suggestions.length > 0 && (
+        <div style={{ marginTop: '6px' }}>
+          {suggestions.map(name => (
             <button
               key={name}
-              onClick={() => toggleProtocol(name)}
+              onClick={() => addProtocol(name)}
               className="chain-btn"
               style={{
-                background: active ? 'rgba(107,79,255,0.14)' : 'rgba(232,230,255,0.04)',
-                border: active ? '0.5px solid #6B4FFF' : '0.5px solid rgba(232,230,255,0.1)',
-                color: active ? '#8B73FF' : 'rgba(232,230,255,0.55)',
+                background: 'rgba(232,230,255,0.04)',
+                border: '0.5px solid rgba(232,230,255,0.1)',
+                color: 'rgba(232,230,255,0.55)',
                 textAlign: 'left',
                 width: '100%',
               }}
             >
               {name}
             </button>
-          );
-        })}
-      </div>
+          ))}
+        </div>
+      )}
 
       {onClose && (
         <button className="sidebar-apply-btn" onClick={onClose}>
