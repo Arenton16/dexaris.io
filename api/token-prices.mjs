@@ -82,6 +82,7 @@ const SYMBOL_TO_ID = {
   WTAO:   'bittensor',
   INJ:    'injective-protocol',
   TIA:    'celestia',
+  REI:    'rei-network',
 };
 
 function cgHeaders() {
@@ -147,21 +148,26 @@ export default async function handler(req, res) {
 
     const sparklineMap = {};
     for (const result of sparklineResults) {
-      if (result.status === 'fulfilled') {
+      if (result.status === 'fulfilled' && result.value) {
         sparklineMap[result.value.id] = result.value.sparkline;
       }
     }
 
+    console.log('[token-prices] sparklineMap keys:', Object.keys(sparklineMap));
+    console.log('[token-prices] sparklineMap point counts:', Object.fromEntries(Object.entries(sparklineMap).map(([k, v]) => [k, v.length])));
+
     const output = {};
     for (const id of ids) {
-      const sym  = idToSymbol[id];
-      const data = priceData[id];
+      const sym       = idToSymbol[id];
+      const data      = priceData[id];
       if (!data) continue;
+      const sparkline = Array.isArray(sparklineMap[id]) ? sparklineMap[id] : [];
+      console.log(`[token-prices] building output for ${sym} (${id}): sparkline points = ${sparkline.length}`);
       output[sym] = {
-        price:     data.usd ?? null,
+        price:     data.usd         ?? null,
         change24h: data.usd_24h_change ?? null,
         change7d:  data.usd_7d_change  ?? null,
-        sparkline: sparklineMap[id] ?? [],
+        sparkline,
       };
     }
 
