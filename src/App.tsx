@@ -19,7 +19,7 @@ export default function App() {
     Object.keys(CHAIN_LABELS) as ChainKey[]
   );
   const [minApy, setMinApy] = useState(1);
-  const [sortKey, setSortKey] = useState<'apy' | 'tvlUsd' | 'score'>('apy');
+  const [sortKey, setSortKey] = useState<'apy' | 'tvlUsd' | 'score'>('score');
   const [sortDir, setSortDir] = useState<'desc' | 'asc'>('desc');
   const [countdown, setCountdown] = useState(60);
   const [isNavOpen, setIsNavOpen] = useState(false);
