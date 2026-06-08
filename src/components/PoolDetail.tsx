@@ -48,19 +48,31 @@ function formatTvl(val: number): string {
 
 // ── Token Prices Section ───────────────────────────────────────────────────
 
-function Sparkline({ points, positive }: { points: number[]; positive: boolean }) {
-  if (points.length < 2) return null;
-  const min = Math.min(...points);
-  const max = Math.max(...points);
+function SparklineChart({ data, color }: { data: number[]; color: string }) {
+  if (!data || data.length < 2) return <span style={{ color: 'rgba(232,230,255,0.25)' }}>—</span>;
+
+  const width = 56;
+  const height = 24;
+  const min = Math.min(...data);
+  const max = Math.max(...data);
   const range = max - min || 1;
-  const W = 56, H = 24, PAD = 2;
-  const xs = points.map((_, i) => PAD + (i / (points.length - 1)) * (W - PAD * 2));
-  const ys = points.map(v => PAD + (1 - (v - min) / range) * (H - PAD * 2));
-  const d = xs.map((x, i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${ys[i].toFixed(1)}`).join(' ');
-  const color = positive ? '#4ECDA4' : '#FF6B6B';
+
+  const points = data.map((val, i) => {
+    const x = (i / (data.length - 1)) * width;
+    const y = height - ((val - min) / range) * height;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+
   return (
-    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ display: 'block', flexShrink: 0 }}>
-      <path d={d} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity={0.85} />
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} style={{ display: 'block' }}>
+      <polyline
+        points={points}
+        fill="none"
+        stroke={color}
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -207,7 +219,7 @@ function TokenPricesSection({
                     </span>
 
                     {/* Sparkline */}
-                    <Sparkline points={p.sparkline} positive={positive7d} />
+                    <SparklineChart data={p.sparkline} color={positive7d ? '#4ECDA4' : '#FF6B6B'} />
                   </>
                 )}
               </div>
