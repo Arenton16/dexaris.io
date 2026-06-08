@@ -169,13 +169,14 @@ export default function Sidebar({
         style={{
           width: '100%',
           background: 'rgba(232,230,255,0.04)',
-          border: protocolInputFocused ? '0.5px solid rgba(107,79,255,0.5)' : '0.5px solid rgba(232,230,255,0.1)',
-          borderRadius: '6px',
-          padding: '6px 10px',
-          fontSize: '12px',
+          border: protocolInputFocused ? '0.5px solid rgba(107,79,255,0.5)' : '0.5px solid rgba(232,230,255,0.15)',
+          borderRadius: '20px',
+          padding: '7px 14px',
+          fontSize: '13px',
           color: '#E8E6FF',
           outline: 'none',
           fontFamily: 'Inter, sans-serif',
+          cursor: 'text',
         }}
       />
 
