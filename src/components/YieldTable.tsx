@@ -75,6 +75,17 @@ export default function YieldTable({
   const displayPools = filteredSortedPools.slice(0, visibleCount);
   const hasMore = filteredSortedPools.length > visibleCount;
 
+  const bestPickId = useMemo(() => {
+    if (!filteredSortedPools.length) return null;
+    let bestId = filteredSortedPools[0].pool;
+    let bestScore = scoreMap.get(filteredSortedPools[0].pool) ?? 0;
+    for (const p of filteredSortedPools) {
+      const s = scoreMap.get(p.pool) ?? 0;
+      if (s > bestScore) { bestScore = s; bestId = p.pool; }
+    }
+    return bestId;
+  }, [filteredSortedPools, scoreMap]);
+
   // Stats reflect the full filtered set, not just the visible page
   const highestApy = filteredSortedPools.length > 0 ? Math.max(...filteredSortedPools.map(p => p.apy ?? 0)) : 0;
   const totalTvl = filteredSortedPools.reduce((sum, p) => sum + p.tvlUsd, 0);
@@ -192,6 +203,9 @@ export default function YieldTable({
                         <div className="protocol-cell">
                           <ProtocolLogo logo={pool.logo} name={pool.project} />
                           {pool.project}
+                          {pool.pool === bestPickId && (
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', fontSize: '10px', fontWeight: 600, padding: '2px 7px', borderRadius: '10px', background: 'rgba(107,79,255,0.15)', border: '0.5px solid rgba(107,79,255,0.4)', color: '#8B73FF', marginLeft: '8px', letterSpacing: '0.3px', textTransform: 'uppercase' }}>✦ Best Pick</span>
+                          )}
                         </div>
                       </td>
                       <td>{pool.symbol}</td>
