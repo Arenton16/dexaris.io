@@ -10,19 +10,55 @@ const COINGECKO_BASE = 'https://api.coingecko.com/api/v3';
 
 // Hardcoded symbol → CoinGecko ID mapping for common DeFi tokens
 const SYMBOL_TO_ID = {
+  // Blue chips
   ETH:    'ethereum',
   WETH:   'weth',
+  BTC:    'bitcoin',
+  WBTC:   'wrapped-bitcoin',
+  CBBTC:  'coinbase-wrapped-btc',
+  SOL:    'solana',
+  BNB:    'binancecoin',
+
+  // Stablecoins
   USDC:   'usd-coin',
   USDT:   'tether',
   DAI:    'dai',
-  WBTC:   'wrapped-bitcoin',
-  BTC:    'bitcoin',
-  SOL:    'solana',
+  FRAX:   'frax',
+  CRVUSD: 'crvusd',
+  USDE:   'ethena-usde',
+  SUSDE:  'ethena-staked-usde',
+  PYUSD:  'paypal-usd',
+  GHO:    'gho',
+  EURC:   'euro-coin',
+
+  // Liquid staking / restaking
+  WSTETH: 'wrapped-steth',
+  RETH:   'rocket-pool-eth',
+  WEETH:  'wrapped-eeth',
+  OSETH:  'stakewise-v3-oseth',
+  EZETH:  'renzo-restaked-eth',
+  RSETH:  'kelp-dao-restaked-eth',
+
+  // L2 / chains
   ARB:    'arbitrum',
   OP:     'optimism',
   MATIC:  'matic-network',
+  POL:    'matic-network',
   AVAX:   'avalanche-2',
-  BNB:    'binancecoin',
+  FTM:    'fantom',
+  METIS:  'metis-token',
+  STRK:   'starknet',
+  MANTA:  'manta-network',
+
+  // Solana ecosystem
+  JTO:    'jito-governance-token',
+  JUP:    'jupiter-exchange-solana',
+  ORCA:   'orca',
+  RAY:    'raydium',
+  BONK:   'bonk',
+  WIF:    'dogwifcoin',
+
+  // DeFi protocols
   LINK:   'chainlink',
   UNI:    'uniswap',
   AAVE:   'aave',
@@ -40,6 +76,12 @@ const SYMBOL_TO_ID = {
   GNO:    'gnosis',
   SUSHI:  'sushi',
   '1INCH':'1inch',
+  BLUR:   'blur',
+
+  // Other
+  WTAO:   'bittensor',
+  INJ:    'injective-protocol',
+  TIA:    'celestia',
 };
 
 function cgHeaders() {
@@ -88,16 +130,17 @@ export default async function handler(req, res) {
     const sparklineResults = await Promise.allSettled(
       ids.map(id =>
         fetch(
-          `${COINGECKO_BASE}/coins/${id}/market_chart?vs_currency=usd&days=7&interval=daily`,
+          `${COINGECKO_BASE}/coins/${id}/market_chart?vs_currency=usd&days=7`,
           { headers: cgHeaders() }
         )
           .then(r => r.ok ? r.json() : null)
-          .then(data => ({
-            id,
-            sparkline: data?.prices
-              ? data.prices.slice(-7).map(([, price]) => price)
-              : [],
-          }))
+          .then(data => {
+            const sparkline = data?.prices
+              ? data.prices.map(([, price]) => price)
+              : [];
+            console.log('Sparkline for', id, '— points:', sparkline.length, 'sample:', sparkline[0]);
+            return { id, sparkline };
+          })
           .catch(() => ({ id, sparkline: [] }))
       )
     );
