@@ -171,11 +171,12 @@ export default function Sidebar({
           background: 'rgba(232,230,255,0.04)',
           border: protocolInputFocused ? '0.5px solid rgba(107,79,255,0.5)' : '0.5px solid rgba(232,230,255,0.15)',
           borderRadius: '20px',
-          padding: '7px 14px',
-          fontSize: '13px',
-          color: '#E8E6FF',
+          padding: '4px 10px',
+          fontSize: '11px',
+          fontFamily: "'Inter', sans-serif",
+          fontWeight: 400,
+          color: 'rgba(232,230,255,0.45)',
           outline: 'none',
-          fontFamily: 'Inter, sans-serif',
           cursor: 'text',
         }}
       />
