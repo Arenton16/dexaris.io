@@ -21,6 +21,7 @@ export default function App() {
   const [minApy, setMinApy] = useState(1);
   const [sortKey, setSortKey] = useState<'apy' | 'tvlUsd' | 'score'>('score');
   const [sortDir, setSortDir] = useState<'desc' | 'asc'>('desc');
+  const [selectedProtocols, setSelectedProtocols] = useState<string[]>([]);
   const [countdown, setCountdown] = useState(60);
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -157,6 +158,9 @@ export default function App() {
                 onSortKeyChange={handleSortKeyChange}
                 isOpen={isSidebarOpen}
                 onClose={closeSidebar}
+                allPools={allPools}
+                selectedProtocols={selectedProtocols}
+                onProtocolsChange={setSelectedProtocols}
               />
               <main className="content">
                 <YieldTable
@@ -168,6 +172,7 @@ export default function App() {
                   apyDelta={apyDelta}
                   onRetry={triggerRefresh}
                   selectedChains={selectedChains}
+                  selectedProtocols={selectedProtocols}
                   minApy={minApy}
                   sortKey={sortKey}
                   sortDir={sortDir}

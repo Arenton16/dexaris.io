@@ -1,4 +1,5 @@
-import { CHAIN_LABELS, CHAIN_LOGOS, type ChainKey } from '../types';
+import { useMemo, useState } from 'react';
+import { CHAIN_LABELS, CHAIN_LOGOS, type ChainKey, type Pool } from '../types';
 
 interface Props {
   selected: ChainKey[];
@@ -9,6 +10,9 @@ interface Props {
   onSortKeyChange: (key: 'apy' | 'tvlUsd' | 'score') => void;
   isOpen: boolean;
   onClose?: () => void;
+  allPools: Pool[];
+  selectedProtocols: string[];
+  onProtocolsChange: (protocols: string[]) => void;
 }
 
 export default function Sidebar({
@@ -16,15 +20,38 @@ export default function Sidebar({
   minApy, onMinApyChange,
   sortKey, onSortKeyChange,
   isOpen, onClose,
+  allPools, selectedProtocols, onProtocolsChange,
 }: Props) {
   const chains = Object.keys(CHAIN_LABELS) as ChainKey[];
   const allSelected = selected.length === chains.length;
+  const [protocolSearch, setProtocolSearch] = useState('');
 
   const toggle = (chain: ChainKey) => {
     onChange(
       selected.includes(chain)
         ? selected.filter(c => c !== chain)
         : [...selected, chain]
+    );
+  };
+
+  const availableProtocols = useMemo(() => {
+    const allowedChains = new Set(selected.map(c => CHAIN_LABELS[c]));
+    const names = new Set<string>();
+    for (const p of allPools) {
+      if (allowedChains.has(p.chain)) names.add(p.project);
+    }
+    return Array.from(names).sort((a, b) => a.localeCompare(b));
+  }, [allPools, selected]);
+
+  const visibleProtocols = protocolSearch.trim()
+    ? availableProtocols.filter(p => p.toLowerCase().includes(protocolSearch.toLowerCase()))
+    : availableProtocols;
+
+  const toggleProtocol = (name: string) => {
+    onProtocolsChange(
+      selectedProtocols.includes(name)
+        ? selectedProtocols.filter(p => p !== name)
+        : [...selectedProtocols, name]
     );
   };
 
@@ -98,6 +125,59 @@ export default function Sidebar({
       >
         Dexaris Score
       </button>
+
+      <div className="sidebar-divider" />
+
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+        <h3 className="sidebar-title" style={{ margin: 0 }}>Protocol</h3>
+        {selectedProtocols.length > 0 && (
+          <button
+            onClick={() => onProtocolsChange([])}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '11px', color: 'rgba(232,230,255,0.4)', padding: 0 }}
+          >
+            Clear
+          </button>
+        )}
+      </div>
+      <input
+        type="text"
+        placeholder="Search protocol..."
+        value={protocolSearch}
+        onChange={e => setProtocolSearch(e.target.value)}
+        style={{
+          width: '100%',
+          boxSizing: 'border-box',
+          background: 'rgba(232,230,255,0.04)',
+          border: '0.5px solid rgba(232,230,255,0.1)',
+          borderRadius: '6px',
+          padding: '6px 10px',
+          fontSize: '12px',
+          color: '#E8E6FF',
+          outline: 'none',
+          marginBottom: '8px',
+        }}
+      />
+      <div style={{ maxHeight: '180px', overflowY: 'auto' }}>
+        {visibleProtocols.map(name => {
+          const active = selectedProtocols.includes(name);
+          return (
+            <button
+              key={name}
+              onClick={() => toggleProtocol(name)}
+              className="chain-btn"
+              style={{
+                background: active ? 'rgba(107,79,255,0.14)' : 'rgba(232,230,255,0.04)',
+                border: active ? '0.5px solid #6B4FFF' : '0.5px solid rgba(232,230,255,0.1)',
+                color: active ? '#8B73FF' : 'rgba(232,230,255,0.55)',
+                textAlign: 'left',
+                width: '100%',
+              }}
+            >
+              {name}
+            </button>
+          );
+        })}
+      </div>
 
       {onClose && (
         <button className="sidebar-apply-btn" onClick={onClose}>

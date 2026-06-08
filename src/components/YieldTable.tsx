@@ -22,6 +22,7 @@ interface Props {
   apyDelta: number | null;
   onRetry: () => void;
   selectedChains: ChainKey[];
+  selectedProtocols: string[];
   minApy: number;
   sortKey: 'apy' | 'tvlUsd' | 'score';
   sortDir: 'desc' | 'asc';
@@ -35,7 +36,7 @@ const PAGE_SIZE = 100;
 
 export default function YieldTable({
   allPools, loading, error, fetchedAt, isFlashing, apyDelta, onRetry,
-  selectedChains, minApy, sortKey, sortDir, onSortChange,
+  selectedChains, selectedProtocols, minApy, sortKey, sortDir, onSortChange,
   watchlistedIds, onToggleWatchlist, onNavigateToAnalytics,
 }: Props) {
   const [search, setSearch] = useState('');
@@ -56,11 +57,13 @@ export default function YieldTable({
 
   const filteredSortedPools = useMemo(() => {
     const allowed = new Set(selectedChains.map(c => CHAIN_LABELS[c]));
+    const allowedProtocols = selectedProtocols.length ? new Set(selectedProtocols) : null;
     const q = search.toLowerCase().trim();
     return allPools
       .filter(p =>
         allowed.has(p.chain) &&
-        (p.apy ?? 0) >= minApy
+        (p.apy ?? 0) >= minApy &&
+        (!allowedProtocols || allowedProtocols.has(p.project))
       )
       .filter(p => !q || p.project.toLowerCase().includes(q) || p.symbol.toLowerCase().includes(q))
       .sort((a, b) => {
@@ -70,7 +73,7 @@ export default function YieldTable({
           : sortKey === 'apy' ? (b.apy ?? 0) : b.tvlUsd;
         return sortDir === 'desc' ? bv - av : av - bv;
       });
-  }, [allPools, selectedChains, minApy, search, sortKey, sortDir, scoreMap]);
+  }, [allPools, selectedChains, selectedProtocols, minApy, search, sortKey, sortDir, scoreMap]);
 
   const displayPools = filteredSortedPools.slice(0, visibleCount);
   const hasMore = filteredSortedPools.length > visibleCount;
