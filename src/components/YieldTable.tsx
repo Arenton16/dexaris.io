@@ -41,6 +41,7 @@ export default function YieldTable({
   const [search, setSearch] = useState('');
   const [selectedPool, setSelectedPool] = useState<Pool | null>(null);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [scoreInfoOpen, setScoreInfoOpen] = useState(false);
 
   // Reset to first page whenever filters, sort, or search changes
   useEffect(() => {
@@ -154,10 +155,12 @@ export default function YieldTable({
                   >
                     <span className="th-score-header">
                       Score {sortKey === 'score' ? (sortDir === 'desc' ? '▼' : '▲') : ''}
-                      <span className="th-info-wrap" onClick={e => e.stopPropagation()}>
-                        <span className="th-info-icon">ⓘ</span>
-                        <span className="th-info-tooltip">The Dexaris Score rates each pool 0–100 based on TVL size, APY level, yield consistency, and organic yield ratio.</span>
-                      </span>
+                      <button
+                        className="th-info-icon"
+                        onClick={e => { e.stopPropagation(); setScoreInfoOpen(true); }}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0 0 0 4px', color: 'inherit', fontSize: 'inherit', lineHeight: 1 }}
+                        aria-label="Dexaris Score information"
+                      >ⓘ</button>
                     </span>
                   </th>
                   <th className="show-mobile">APY / TVL</th>
@@ -256,7 +259,131 @@ export default function YieldTable({
         )}
         <PoolDetail pool={selectedPool} onClose={() => setSelectedPool(null)} />
       </div>
+      <ScoreInfoModal open={scoreInfoOpen} onClose={() => setScoreInfoOpen(false)} />
     </>
+  );
+}
+
+function ScoreInfoModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [open, onClose]);
+
+  if (!open) return null;
+
+  const tiers = [
+    { range: '80–100', label: 'Excellent', color: '#4ECDA4' },
+    { range: '60–79',  label: 'Strong',    color: 'rgba(78,205,164,0.7)' },
+    { range: '40–59',  label: 'Moderate',  color: '#FFB347' },
+    { range: '20–39',  label: 'Weak',      color: '#FF6B6B' },
+    { range: '0–19',   label: 'Poor',      color: 'rgba(255,107,107,0.7)' },
+  ];
+
+  const components = [
+    { name: 'APY Consistency',     weight: '30%' },
+    { name: 'APY Level',           weight: '20%' },
+    { name: 'TVL Size',            weight: '20%' },
+    { name: 'Organic Yield Ratio', weight: '20%' },
+    { name: 'Pool Age Proxy',      weight: '10%' },
+  ];
+
+  return (
+    <div
+      style={{
+        position: 'fixed', inset: 0, zIndex: 1000,
+        background: 'rgba(0,0,0,0.6)',
+        backdropFilter: 'blur(4px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          background: '#111028',
+          border: '0.5px solid rgba(107,79,255,0.3)',
+          borderRadius: 12,
+          padding: '28px 28px 24px',
+          width: 360,
+          maxWidth: 'calc(100vw - 32px)',
+          position: 'relative',
+          maxHeight: 'calc(100vh - 64px)',
+          overflowY: 'auto',
+        }}
+        onClick={e => e.stopPropagation()}
+      >
+        <button
+          onClick={onClose}
+          style={{
+            position: 'absolute', top: 14, right: 14,
+            background: 'none', border: 'none', cursor: 'pointer',
+            color: 'rgba(232,230,255,0.4)', fontSize: 18, lineHeight: 1,
+            padding: '2px 6px',
+          }}
+          aria-label="Close"
+        >×</button>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+          <span style={{ fontSize: 16, color: '#6B4FFF' }}>ⓘ</span>
+          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: '#E8E6FF' }}>Dexaris Score</h3>
+        </div>
+
+        <div style={{ marginBottom: 20 }}>
+          {tiers.map(t => (
+            <div key={t.label} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 7 }}>
+              <div style={{ width: 4, height: 28, borderRadius: 2, background: t.color, flexShrink: 0 }} />
+              <span style={{ fontSize: 13, color: t.color, fontWeight: 600, minWidth: 72 }}>{t.label}</span>
+              <span style={{ fontSize: 12, color: 'rgba(232,230,255,0.4)' }}>{t.range}</span>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ height: 1, background: 'rgba(107,79,255,0.15)', marginBottom: 20 }} />
+
+        <div style={{ marginBottom: 20 }}>
+          <p style={{ margin: '0 0 10px', fontSize: 11, color: 'rgba(232,230,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Components</p>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr>
+                <th style={{ textAlign: 'left', fontSize: 11, color: 'rgba(232,230,255,0.35)', fontWeight: 500, paddingBottom: 6, paddingRight: 8 }}>Component</th>
+                <th style={{ textAlign: 'right', fontSize: 11, color: 'rgba(232,230,255,0.35)', fontWeight: 500, paddingBottom: 6 }}>Weight</th>
+              </tr>
+            </thead>
+            <tbody>
+              {components.map((c, i) => (
+                <tr key={c.name} style={{ background: i % 2 === 0 ? 'rgba(107,79,255,0.04)' : 'transparent' }}>
+                  <td style={{ fontSize: 13, color: 'rgba(232,230,255,0.75)', padding: '6px 8px 6px 0' }}>{c.name}</td>
+                  <td style={{ fontSize: 13, color: '#6B4FFF', fontWeight: 600, textAlign: 'right', padding: '6px 0' }}>{c.weight}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <button
+          onClick={() => { window.location.href = '/methodology'; onClose(); }}
+          style={{
+            display: 'block', width: '100%',
+            padding: '9px 0',
+            background: 'rgba(107,79,255,0.08)',
+            border: '0.5px solid rgba(107,79,255,0.25)',
+            borderRadius: 7,
+            color: 'rgba(232,230,255,0.65)',
+            fontSize: 13,
+            cursor: 'pointer',
+            marginBottom: 14,
+          }}
+        >
+          Read full methodology →
+        </button>
+
+        <p style={{ margin: 0, fontSize: 11, color: 'rgba(232,230,255,0.25)', textAlign: 'center' }}>
+          The Dexaris Score is an analytical tool, not financial advice.
+        </p>
+      </div>
+    </div>
   );
 }
 
