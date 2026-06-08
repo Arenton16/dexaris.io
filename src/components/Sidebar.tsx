@@ -25,6 +25,7 @@ export default function Sidebar({
   const chains = Object.keys(CHAIN_LABELS) as ChainKey[];
   const allSelected = selected.length === chains.length;
   const [protocolSearch, setProtocolSearch] = useState('');
+  const [protocolInputFocused, setProtocolInputFocused] = useState(false);
 
   const toggle = (chain: ChainKey) => {
     onChange(
@@ -141,11 +142,11 @@ export default function Sidebar({
       </div>
 
       {selectedProtocols.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginBottom: '8px' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginBottom: '8px' }}>
           {selectedProtocols.map(name => (
             <span
               key={name}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 8px 3px 10px', background: 'rgba(107,79,255,0.14)', border: '0.5px solid #6B4FFF', borderRadius: '20px', color: '#8B73FF', fontSize: '11px', fontWeight: 500 }}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', background: 'rgba(107,79,255,0.14)', border: '0.5px solid #6B4FFF', borderRadius: '20px', color: '#8B73FF', fontSize: '11px', fontFamily: 'Inter, sans-serif', cursor: 'pointer', margin: '2px' }}
             >
               {name}
               <button
@@ -163,34 +164,28 @@ export default function Sidebar({
         placeholder="Search protocol..."
         value={protocolSearch}
         onChange={e => setProtocolSearch(e.target.value)}
+        onFocus={() => setProtocolInputFocused(true)}
+        onBlur={() => setProtocolInputFocused(false)}
         style={{
           width: '100%',
-          boxSizing: 'border-box',
-          padding: '7px 8px',
-          background: 'rgba(107,79,255,0.08)',
-          border: '1px solid rgba(107,79,255,0.2)',
+          background: 'rgba(232,230,255,0.04)',
+          border: protocolInputFocused ? '0.5px solid rgba(107,79,255,0.5)' : '0.5px solid rgba(232,230,255,0.1)',
           borderRadius: '6px',
-          color: 'var(--accent-text)',
-          fontFamily: "'Inter', sans-serif",
-          fontSize: '13px',
+          padding: '6px 10px',
+          fontSize: '12px',
+          color: '#E8E6FF',
           outline: 'none',
+          fontFamily: 'Inter, sans-serif',
         }}
       />
 
       {suggestions.length > 0 && (
-        <div style={{ marginTop: '6px' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '6px' }}>
           {suggestions.map(name => (
             <button
               key={name}
               onClick={() => addProtocol(name)}
-              className="chain-btn"
-              style={{
-                background: 'rgba(232,230,255,0.04)',
-                border: '0.5px solid rgba(232,230,255,0.1)',
-                color: 'rgba(232,230,255,0.55)',
-                textAlign: 'left',
-                width: '100%',
-              }}
+              style={{ display: 'inline-block', padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontFamily: 'Inter, sans-serif', cursor: 'pointer', background: 'rgba(232,230,255,0.04)', border: '0.5px solid rgba(232,230,255,0.15)', color: 'rgba(232,230,255,0.55)', margin: '2px' }}
             >
               {name}
             </button>
