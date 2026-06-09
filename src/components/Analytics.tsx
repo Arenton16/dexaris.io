@@ -383,41 +383,47 @@ export default function Analytics({ displayPools }: Props) {
           return (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', alignItems: 'stretch' }}>
               {/* Left hero card — three horizontal zones */}
-              <div style={{ flex: '1.4 1 280px', background: '#111028', border: '0.5px solid rgba(107,79,255,0.25)', borderLeft: '2px solid #6B4FFF', borderRadius: '12px', padding: '24px', display: 'flex', flexDirection: 'row', gap: '24px', minHeight: '200px', boxSizing: 'border-box' }}>
+              <div style={{ flex: '1.4 1 280px', background: '#111028', border: '0.5px solid rgba(107,79,255,0.25)', borderLeft: '2px solid #6B4FFF', borderRadius: '12px', padding: '24px', display: 'flex', flexDirection: 'row', alignItems: 'stretch', gap: '32px', minHeight: '200px', boxSizing: 'border-box' }}>
                 {/* Zone 1 — score */}
-                <div style={{ flex: '1 1 0', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                  <span style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(232,230,255,0.35)', display: 'block', marginBottom: '8px' }}>Avg Dexaris Score</span>
-                  <span style={{ fontSize: '52px', fontWeight: 600, lineHeight: 1, color: scoreColor }}>{insightData.avgScore}</span>
-                  <span style={{ fontSize: '13px', color: scoreColor, opacity: 0.7, marginTop: '4px', display: 'block' }}>{scoreTier}</span>
-                  <span style={{ fontSize: '12px', color: 'rgba(232,230,255,0.3)', marginTop: '10px', display: 'block' }}>Across {insightData.poolCount.toLocaleString()} scored pools</span>
+                <div style={{ flex: '1.4 1 0', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(232,230,255,0.35)', display: 'block', marginBottom: '14px' }}>Avg Dexaris Score</span>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                    <span style={{ fontSize: '52px', fontWeight: 600, lineHeight: 1, color: scoreColor }}>{insightData.avgScore}</span>
+                    <span style={{ fontSize: '13px', color: scoreColor, opacity: 0.7, marginTop: '4px', display: 'block' }}>{scoreTier}</span>
+                    <span style={{ fontSize: '12px', color: 'rgba(232,230,255,0.3)', marginTop: '10px', display: 'block' }}>Across {insightData.poolCount.toLocaleString()} scored pools</span>
+                  </div>
                 </div>
                 {/* Zone 2 — tier gauge */}
-                <div style={{ flex: '1 1 0', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                  <span style={{ fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(232,230,255,0.35)', display: 'block', marginBottom: '12px' }}>Score Gauge</span>
-                  <div style={{ position: 'relative', height: '14px', marginBottom: '2px' }}>
-                    <span style={{ position: 'absolute', left: `${insightData.avgScore}%`, bottom: 0, transform: 'translateX(-50%)', fontSize: '9px', color: scoreColor, lineHeight: 1 }}>▼</span>
-                  </div>
-                  <div style={{ display: 'flex', height: '6px', borderRadius: '3px', overflow: 'hidden', gap: '1px' }}>
-                    {TIER_SEGMENTS.map((colour, i) => (
-                      <div key={i} style={{ flex: '1 1 0', background: colour, height: '100%' }} />
-                    ))}
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
-                    <span style={{ fontSize: '10px', color: 'rgba(232,230,255,0.3)' }}>0</span>
-                    <span style={{ fontSize: '10px', color: 'rgba(232,230,255,0.3)' }}>100</span>
+                <div style={{ flex: '1 1 0', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(232,230,255,0.35)', display: 'block', marginBottom: '14px' }}>Score Gauge</span>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                    <div style={{ position: 'relative', height: '14px', marginBottom: '2px' }}>
+                      <span style={{ position: 'absolute', left: `${insightData.avgScore}%`, bottom: 0, transform: 'translateX(-50%)', fontSize: '9px', color: scoreColor, lineHeight: 1 }}>▼</span>
+                    </div>
+                    <div style={{ display: 'flex', height: '6px', borderRadius: '3px', overflow: 'hidden', gap: '1px' }}>
+                      {TIER_SEGMENTS.map((colour, i) => (
+                        <div key={i} style={{ flex: '1 1 0', background: colour, height: '100%' }} />
+                      ))}
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
+                      <span style={{ fontSize: '10px', color: 'rgba(232,230,255,0.3)' }}>0</span>
+                      <span style={{ fontSize: '10px', color: 'rgba(232,230,255,0.3)' }}>100</span>
+                    </div>
                   </div>
                 </div>
                 {/* Zone 3 — mini distribution */}
-                <div style={{ flex: '1 1 0', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
-                  <span style={{ fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(232,230,255,0.35)', display: 'block', marginBottom: '6px' }}>Distribution</span>
-                  <div style={{ display: 'flex', alignItems: 'flex-end', gap: '3px', height: '70px' }}>
-                    {scoreHistogram.map((entry, i) => (
-                      <div
-                        key={i}
-                        style={{ flex: '1 1 0', height: `${Math.max(2, (entry.count / maxHistCount) * 70)}px`, background: entry.colour, borderRadius: '2px 2px 0 0', opacity: 0.85 }}
-                        title={`${entry.band}: ${entry.count} pools`}
-                      />
-                    ))}
+                <div style={{ flex: '1 1 0', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(232,230,255,0.35)', display: 'block', marginBottom: '14px' }}>Distribution</span>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '3px', height: '70px' }}>
+                      {scoreHistogram.map((entry, i) => (
+                        <div
+                          key={i}
+                          style={{ flex: '1 1 0', height: `${Math.max(2, (entry.count / maxHistCount) * 70)}px`, background: entry.colour, borderRadius: '2px 2px 0 0', opacity: 0.85 }}
+                          title={`${entry.band}: ${entry.count} pools`}
+                        />
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
