@@ -23,12 +23,12 @@ const CHAIN_COLORS: Record<string, { bg: string; text: string }> = {
 };
 
 const SCATTER_CHAIN_COLORS: Record<string, string> = {
-  Ethereum: '#6B4FFF',
+  Ethereum: '#8B73FF',
   Solana:   '#4ECDA4',
   Arbitrum: '#3B9EFF',
-  Base:     '#6AABFF',
+  Base:     '#FFFFFF',
   Avalanche:'#FF6B6B',
-  Polygon:  '#A855F7',
+  Polygon:  '#FFB347',
 };
 
 const APY_THRESHOLD = 15;
@@ -67,6 +67,7 @@ const CHART_INFO: Record<string, string> = {
 
 interface ScatterPoint extends Pool {
   tvlM: number;
+  score: number;
 }
 
 interface ScoreScatterPoint {
@@ -112,18 +113,22 @@ interface InsightData {
 interface ChartCardProps {
   id: string;
   title: string;
+  subtitle?: string;
   info: string;
   openInfo: string | null;
   onInfo: (id: string | null) => void;
   children: ReactNode;
 }
 
-function ChartCard({ id, title, info, openInfo, onInfo, children }: ChartCardProps) {
+function ChartCard({ id, title, subtitle, info, openInfo, onInfo, children }: ChartCardProps) {
   const isOpen = openInfo === id;
   return (
     <div className="chart-card">
       <div className="chart-card-header">
-        <h3 className="chart-title">{title}</h3>
+        <div>
+          <h3 className="chart-title">{title}</h3>
+          {subtitle && <p style={{ margin: '3px 0 0', fontSize: '12px', color: 'rgba(232,230,255,0.3)', fontWeight: 400 }}>{subtitle}</p>}
+        </div>
         <button
           className="chart-info-btn"
           onClick={() => onInfo(isOpen ? null : id)}
@@ -156,11 +161,12 @@ function ScatterTooltip({ active, payload }: { active?: boolean; payload?: Array
     </p>
   );
   return (
-    <div style={{ background: '#111028', border: '1px solid rgba(107,79,255,0.3)', borderRadius: 6, padding: '10px 12px', fontFamily: 'Space Grotesk, sans-serif', fontSize: 11, color: '#E8E6FF', lineHeight: 1.75, minWidth: 140, pointerEvents: 'none' }}>
-      <p style={{ margin: '0 0 4px', fontWeight: 500 }}>{d.project}</p>
+    <div style={{ background: '#111028', border: '1px solid rgba(107,79,255,0.3)', borderRadius: 6, padding: '10px 12px', fontFamily: 'Space Grotesk, sans-serif', fontSize: 11, color: '#E8E6FF', lineHeight: 1.75, minWidth: 160, pointerEvents: 'none' }}>
+      <p style={{ margin: '0 0 4px', fontWeight: 500 }}>{d.project} <span style={{ color: 'rgba(232,230,255,0.4)', fontWeight: 400 }}>{d.symbol}</span></p>
       {row('Chain', d.chain)}
       {row('APY', `${(d.apy ?? 0).toFixed(2)}%`)}
       {row('TVL', tvl)}
+      {row('Score', String(d.score))}
     </div>
   );
 }
@@ -185,7 +191,7 @@ function ScoreScatterTooltip({ active, payload }: { active?: boolean; payload?: 
 }
 
 function ScatterDot({ cx, cy, fill }: { cx?: number; cy?: number; fill?: string }) {
-  return <circle cx={cx ?? 0} cy={cy ?? 0} r={4} fill={fill ?? 'rgba(232,230,255,0.3)'} fillOpacity={0.65} />;
+  return <circle cx={cx ?? 0} cy={cy ?? 0} r={5} fill={fill ?? 'rgba(232,230,255,0.3)'} fillOpacity={0.55} />;
 }
 
 function QuadrantOverlay() {
@@ -200,9 +206,9 @@ function QuadrantOverlay() {
   const ap = { fontSize: 8, fontFamily: 'Space Grotesk, sans-serif', fill: 'rgba(232,230,255,0.2)' } as const;
   return (
     <g>
-      <line x1={thresholdX} y1={top}       x2={thresholdX} y2={top + h}   stroke="rgba(107,79,255,0.15)" strokeDasharray="4 4" strokeWidth={1} />
-      <line x1={left}       y1={thresholdY} x2={left + w}   y2={thresholdY} stroke="rgba(107,79,255,0.15)" strokeDasharray="4 4" strokeWidth={1} />
-      <text x={left + 3}    y={thresholdY - 3} textAnchor="start"  {...ap}>15% APY</text>
+      <line x1={thresholdX} y1={top}       x2={thresholdX} y2={top + h}   stroke="rgba(107,79,255,0.2)"  strokeDasharray="4 4" strokeWidth={1} />
+      <line x1={left}       y1={thresholdY} x2={left + w}   y2={thresholdY} stroke="rgba(107,79,255,0.3)" strokeDasharray="4 4" strokeWidth={1} />
+      <text x={left + 4}    y={thresholdY - 4} textAnchor="start"  {...ap}>15% APY</text>
       <text x={thresholdX}  y={top + h - 4}    textAnchor="middle" {...ap}>$50M TVL</text>
     </g>
   );
@@ -312,11 +318,12 @@ export default function Analytics({ displayPools }: Props) {
   const { chainGroups, legendChains } = useMemo(() => {
     const groups: Record<string, ScatterPoint[]> = {};
     for (const p of displayPools) {
+      if (p.tvlUsd < 10_000_000) continue;
       if (!groups[p.chain]) groups[p.chain] = [];
-      groups[p.chain].push({ ...p, tvlM: p.tvlUsd / 1_000_000 });
+      groups[p.chain].push({ ...p, tvlM: p.tvlUsd / 1_000_000, score: scoreMap.get(p.pool) ?? 0 });
     }
     return { chainGroups: groups, legendChains: Object.keys(groups).sort() };
-  }, [displayPools]);
+  }, [displayPools, scoreMap]);
 
   const chainPerformance = useMemo<ChainPerfEntry[]>(() => {
     const groups: Record<string, { apySum: number; scoreSum: number; count: number }> = {};
@@ -502,47 +509,55 @@ export default function Analytics({ displayPools }: Props) {
           );
         })()}
 
-        {/* Row 1 — Risk vs Reward (60%) + Top 10 APY (40%) */}
-        <div className="analytics-chart-row analytics-chart-row-wide">
-          <ChartCard id="riskReward" title="Risk vs Reward" info={CHART_INFO.riskReward} openInfo={openInfo} onInfo={setOpenInfo}>
-            <ResponsiveContainer width="100%" height={360}>
-              <ScatterChart margin={{ top: 4, right: 16, bottom: 24, left: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(232,230,255,0.06)" />
-                <XAxis
-                  type="number" dataKey="tvlM" name="TVL" scale="log"
-                  domain={['auto', 'auto']} ticks={[1, 10, 100, 1000, 10000]}
-                  tickFormatter={formatTvlLog} tick={AXIS_TICK} tickLine={false} axisLine={false}
-                  label={{ value: 'TVL', position: 'insideBottom', offset: -14, fill: 'rgba(232,230,255,0.45)', fontSize: 9, fontFamily: 'Space Grotesk, sans-serif' }}
-                />
-                <YAxis
-                  type="number" dataKey="apy" name="APY"
-                  tickFormatter={v => `${v}%`} tick={AXIS_TICK} tickLine={false} axisLine={false}
-                  label={{ value: 'APY %', angle: -90, position: 'insideLeft', offset: 10, fill: 'rgba(232,230,255,0.45)', fontSize: 9, fontFamily: 'Space Grotesk, sans-serif' }}
-                />
-                <ZAxis range={[1, 1]} />
-                <QuadrantOverlay />
-                <Tooltip content={<ScatterTooltip />} wrapperStyle={{ overflow: 'visible', zIndex: 100 }} />
-                {Object.entries(chainGroups)
-                  .filter(([chain]) => !hiddenChains.has(chain))
-                  .map(([chain, points]) => (
-                    <Scatter key={chain} name={chain} data={points} fill={SCATTER_CHAIN_COLORS[chain] ?? 'rgba(232,230,255,0.3)'} shape={ScatterDot} />
-                  ))}
-              </ScatterChart>
-            </ResponsiveContainer>
-            <div className="scatter-legend">
-              {legendChains.map(chain => {
-                const active = !hiddenChains.has(chain);
-                return (
-                  <span key={chain} className="scatter-legend-item" onClick={() => toggleChain(chain)}
-                    style={{ cursor: 'pointer', opacity: active ? 1 : 0.3, textDecoration: active ? 'none' : 'line-through', transition: 'opacity 0.15s ease', userSelect: 'none' }}>
-                    <span className="scatter-legend-dot" style={{ background: SCATTER_CHAIN_COLORS[chain] ?? 'rgba(232,230,255,0.3)' }} />
-                    {chain}
-                  </span>
-                );
-              })}
-            </div>
-          </ChartCard>
+        {/* Risk vs Reward — full width centrepiece */}
+        <ChartCard
+          id="riskReward"
+          title="Risk vs Reward"
+          subtitle="Every pool above $10M TVL, plotted by yield against pool depth"
+          info={CHART_INFO.riskReward}
+          openInfo={openInfo}
+          onInfo={setOpenInfo}
+        >
+          <ResponsiveContainer width="100%" height={420}>
+            <ScatterChart margin={{ top: 4, right: 16, bottom: 24, left: 8 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(232,230,255,0.06)" />
+              <XAxis
+                type="number" dataKey="tvlM" name="TVL" scale="log"
+                domain={['auto', 'auto']} ticks={[10, 50, 100, 500, 1000, 10000]}
+                tickFormatter={formatTvlLog} tick={AXIS_TICK} tickLine={false} axisLine={false}
+                label={{ value: 'TVL', position: 'insideBottom', offset: -14, fill: 'rgba(232,230,255,0.45)', fontSize: 9, fontFamily: 'Space Grotesk, sans-serif' }}
+              />
+              <YAxis
+                type="number" dataKey="apy" name="APY"
+                tickFormatter={v => `${v}%`} tick={AXIS_TICK} tickLine={false} axisLine={false}
+                label={{ value: 'APY %', angle: -90, position: 'insideLeft', offset: 10, fill: 'rgba(232,230,255,0.45)', fontSize: 9, fontFamily: 'Space Grotesk, sans-serif' }}
+              />
+              <ZAxis range={[1, 1]} />
+              <QuadrantOverlay />
+              <Tooltip content={<ScatterTooltip />} wrapperStyle={{ overflow: 'visible', zIndex: 100 }} />
+              {Object.entries(chainGroups)
+                .filter(([chain]) => !hiddenChains.has(chain))
+                .map(([chain, points]) => (
+                  <Scatter key={chain} name={chain} data={points} fill={SCATTER_CHAIN_COLORS[chain] ?? 'rgba(232,230,255,0.3)'} shape={ScatterDot} />
+                ))}
+            </ScatterChart>
+          </ResponsiveContainer>
+          <div className="scatter-legend">
+            {legendChains.map(chain => {
+              const active = !hiddenChains.has(chain);
+              return (
+                <span key={chain} className="scatter-legend-item" onClick={() => toggleChain(chain)}
+                  style={{ cursor: 'pointer', opacity: active ? 1 : 0.3, textDecoration: active ? 'none' : 'line-through', transition: 'opacity 0.15s ease', userSelect: 'none' }}>
+                  <span className="scatter-legend-dot" style={{ background: SCATTER_CHAIN_COLORS[chain] ?? 'rgba(232,230,255,0.3)' }} />
+                  {chain}
+                </span>
+              );
+            })}
+          </div>
+        </ChartCard>
 
+        {/* Top 10 APY + Chain Performance + Score Distribution */}
+        <div className="analytics-chart-row analytics-chart-row-wide">
           <ChartCard id="topApy" title="Top 10 by APY" info={CHART_INFO.topApy} openInfo={openInfo} onInfo={setOpenInfo}>
             <ResponsiveContainer width="100%" height={400}>
               <BarChart data={topByApy} layout="vertical" margin={{ top: 4, right: 90, bottom: 4, left: 0 }}>
@@ -559,6 +574,7 @@ export default function Analytics({ displayPools }: Props) {
               </BarChart>
             </ResponsiveContainer>
           </ChartCard>
+
         </div>
 
         {/* Row 2 — Chain Performance + Score Distribution */}
