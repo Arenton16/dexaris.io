@@ -1,3 +1,5 @@
+import { useEffect, useRef, useState } from 'react';
+
 interface Props {
   countdown: number;
   isLoading: boolean;
@@ -13,6 +15,20 @@ export default function TopBar({
   onToggleNav,
   onToggleFilters,
 }: Props) {
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const wasLoading = useRef(false);
+
+  useEffect(() => {
+    if (wasLoading.current && !isLoading) {
+      setLastUpdated(new Date());
+    }
+    wasLoading.current = isLoading;
+  }, [isLoading]);
+
+  const lastUpdatedStr = lastUpdated
+    ? lastUpdated.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    : null;
+
   return (
     <div className="topbar">
       <button className="topbar-hamburger" onClick={onToggleNav} aria-label="Toggle menu">
@@ -36,7 +52,17 @@ export default function TopBar({
         >
           {isLoading
             ? <span className="nav-spinner" />
-            : <span className="topbar-countdown">↻ {Math.max(countdown, 1)}s</span>
+            : (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <span className="topbar-countdown">↻ {Math.max(countdown, 1)}s</span>
+                {lastUpdatedStr && (
+                  <>
+                    <span style={{ fontSize: '11px', color: 'rgba(232,230,255,0.3)' }}>·</span>
+                    <span style={{ fontSize: '11px', color: 'rgba(232,230,255,0.3)' }}>Last updated: {lastUpdatedStr}</span>
+                  </>
+                )}
+              </span>
+            )
           }
         </div>
 
