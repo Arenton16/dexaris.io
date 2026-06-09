@@ -98,13 +98,13 @@ interface ScoreDistEntry {
   colour: string;
 }
 
-interface StatCardData {
-  id: string;
-  label: string;
-  value: string;
-  sub?: string;
-  logo?: string;
-  primaryStat?: boolean;
+interface InsightData {
+  avgApy: number;
+  avgScore: number;
+  poolCount: number;
+  protocolCount: number;
+  chainCount: number;
+  bestChain: { chain: string; avg: number } | null;
 }
 
 // ── Sub-components ─────────────────────────────────────────────
@@ -273,12 +273,13 @@ export default function Analytics({ displayPools }: Props) {
     return map;
   }, [displayPools]);
 
-  const stats = useMemo<StatCardData[]>(() => {
-    if (displayPools.length === 0) return [];
+  const insightData = useMemo<InsightData | null>(() => {
+    if (displayPools.length === 0) return null;
     const avgApy = displayPools.reduce((s, p) => s + (p.apy ?? 0), 0) / displayPools.length;
     const scoreVals = [...scoreMap.values()];
     const avgScore = scoreVals.length > 0 ? Math.round(scoreVals.reduce((s, n) => s + n, 0) / scoreVals.length) : 0;
     const protocolCount = new Set(displayPools.map(p => p.project)).size;
+    const chainCount = new Set(displayPools.map(p => p.chain)).size;
     const chainApyMap: Record<string, { sum: number; count: number }> = {};
     for (const p of displayPools) {
       if (!chainApyMap[p.chain]) chainApyMap[p.chain] = { sum: 0, count: 0 };
@@ -287,35 +288,8 @@ export default function Analytics({ displayPools }: Props) {
     }
     const bestChain = Object.entries(chainApyMap)
       .map(([chain, { sum, count }]) => ({ chain, avg: sum / count }))
-      .sort((a, b) => b.avg - a.avg)[0];
-    return [
-      {
-        id: 'avg-apy',
-        label: 'Average APY',
-        value: `${avgApy.toFixed(2)}%`,
-        sub: `${displayPools.length.toLocaleString()} pools`,
-        primaryStat: true,
-      },
-      {
-        id: 'avg-score',
-        label: 'Avg Dexaris Score',
-        value: String(avgScore),
-        sub: getDexarisScoreTier(avgScore),
-      },
-      {
-        id: 'protocols',
-        label: 'Protocols Tracked',
-        value: String(protocolCount),
-        sub: `${new Set(displayPools.map(p => p.chain)).size} chains`,
-      },
-      {
-        id: 'best-chain',
-        label: 'Best Performing Chain',
-        value: bestChain?.chain ?? '—',
-        sub: bestChain ? `${bestChain.avg.toFixed(2)}% avg APY` : '',
-        logo: CHAIN_LOGOS[bestChain?.chain ?? ''],
-      },
-    ];
+      .sort((a, b) => b.avg - a.avg)[0] ?? null;
+    return { avgApy, avgScore, poolCount: displayPools.length, protocolCount, chainCount, bestChain };
   }, [displayPools, scoreMap]);
 
   const topByApy = useMemo<BarEntry[]>(() =>
@@ -451,24 +425,82 @@ export default function Analytics({ displayPools }: Props) {
       {header}
 
       <div className="analytics-dashboard">
-        {/* Row 1 — Stat cards */}
-        <div className="analytics-stat-row">
-          {stats.map(s => (
-            <div key={s.id} className="stat-card">
-              <span className="stat-card-label">{s.label}</span>
-              <div className="stat-card-value-row">
-                {s.logo && (
-                  <img src={s.logo} alt={s.value} width={20} height={20} className="stat-card-chain-logo" />
-                )}
-                <span className="stat-card-value">{s.value}</span>
-                {s.primaryStat && (
-                  <span style={{ color: '#4ECDA4', fontSize: 13, fontWeight: 500, alignSelf: 'flex-end', paddingBottom: 5 }}>+</span>
-                )}
+        {/* Hero insight strip */}
+        {insightData && (() => {
+          const scoreColor = getDexarisScoreColour(insightData.avgScore);
+          const scoreTier  = getDexarisScoreTier(insightData.avgScore);
+          const labelStyle: React.CSSProperties = {
+            fontSize: '10px', fontWeight: 600, letterSpacing: '0.08em',
+            textTransform: 'uppercase', color: 'rgba(232,230,255,0.35)',
+            display: 'block', marginBottom: '6px',
+          };
+          const secondaryCard: React.CSSProperties = {
+            flex: '1 1 0',
+            background: 'rgba(232,230,255,0.03)',
+            border: '0.5px solid rgba(232,230,255,0.08)',
+            borderRadius: '12px',
+            padding: '16px 20px',
+          };
+          return (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '24px' }}>
+              {/* Hero card */}
+              <div style={{ flex: '3 1 240px', background: '#111028', border: '0.5px solid rgba(107,79,255,0.25)', borderLeft: '2px solid #6B4FFF', borderRadius: '12px', padding: '28px' }}>
+                <span style={{ ...labelStyle, marginBottom: '12px' }}>Avg Dexaris Score</span>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '56px', fontWeight: 600, lineHeight: 1, color: scoreColor }}>
+                    {insightData.avgScore}
+                  </span>
+                  <span style={{ fontSize: '14px', color: scoreColor, opacity: 0.7 }}>
+                    {scoreTier}
+                  </span>
+                </div>
+                <span style={{ fontSize: '12px', color: 'rgba(232,230,255,0.3)' }}>
+                  Across {insightData.poolCount.toLocaleString()} scored pools
+                </span>
               </div>
-              {s.sub && <span className="stat-card-sub">{s.sub}</span>}
+
+              {/* Secondary stats */}
+              <div style={{ flex: '2 1 180px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={secondaryCard}>
+                  <span style={labelStyle}>Average APY</span>
+                  <span style={{ fontSize: '24px', fontWeight: 600, color: '#E8E6FF' }}>
+                    {insightData.avgApy.toFixed(2)}%
+                  </span>
+                </div>
+                <div style={secondaryCard}>
+                  <span style={labelStyle}>Protocols Tracked</span>
+                  <span style={{ fontSize: '24px', fontWeight: 600, color: '#E8E6FF' }}>
+                    {insightData.protocolCount}
+                  </span>
+                  <span style={{ fontSize: '11px', color: 'rgba(232,230,255,0.3)', marginLeft: '8px' }}>
+                    {insightData.chainCount} chains
+                  </span>
+                </div>
+                <div style={secondaryCard}>
+                  <span style={labelStyle}>Best Performing Chain</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {insightData.bestChain && CHAIN_LOGOS[insightData.bestChain.chain] && (
+                      <img
+                        src={CHAIN_LOGOS[insightData.bestChain.chain]}
+                        alt={insightData.bestChain.chain}
+                        width={20} height={20}
+                        onError={e => { e.currentTarget.style.display = 'none'; }}
+                      />
+                    )}
+                    <span style={{ fontSize: '24px', fontWeight: 600, color: '#E8E6FF' }}>
+                      {insightData.bestChain?.chain ?? '—'}
+                    </span>
+                  </div>
+                  {insightData.bestChain && (
+                    <span style={{ fontSize: '11px', color: 'rgba(232,230,255,0.3)', display: 'block', marginTop: '2px' }}>
+                      {insightData.bestChain.avg.toFixed(2)}% avg APY
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
-          ))}
-        </div>
+          );
+        })()}
 
         {/* Row 1 — Risk vs Reward (60%) + Top 10 APY (40%) */}
         <div className="analytics-chart-row analytics-chart-row-wide">
