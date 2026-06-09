@@ -13,15 +13,6 @@ interface Props {
   displayPools: Pool[];
 }
 
-const CHAIN_COLORS: Record<string, { bg: string; text: string }> = {
-  Ethereum: { bg: '#1a3a5c', text: '#3B9EFF' },
-  Base:     { bg: '#1a1a4a', text: '#6B7FFF' },
-  Solana:   { bg: '#2d1a4a', text: '#9945FF' },
-  Arbitrum: { bg: '#1a2d4a', text: '#2D9CDB' },
-  Avalanche:{ bg: '#4a1a1a', text: '#E84142' },
-  Polygon:  { bg: '#2d1a4a', text: '#8247E5' },
-};
-
 const SCATTER_CHAIN_COLORS: Record<string, string> = {
   Ethereum: '#8B73FF',
   Solana:   '#4ECDA4',
@@ -55,12 +46,10 @@ const TOOLTIP_STYLE = {
 };
 
 const CHART_INFO: Record<string, string> = {
-  riskReward: 'This chart plots every pool by TVL (trust proxy, X axis) against APY (reward, Y axis). High TVL + high APY is the sweet spot; low TVL + high APY is high risk. Click a chain in the legend to hide it.',
-  topApy:     "The top 10 highest APY pools right now, coloured by their Dexaris Score. The ghost bar shows the 30-day mean APY — when it's shorter than the live bar, yield has recently spiked.",
-  chainPerf:  'Compares the average APY and average Dexaris Score across each chain. Use this to identify which ecosystems are currently offering the best risk-adjusted yield.',
-  scoreDist:  'Shows how many pools fall into each Dexaris Score tier across all tracked pools. A heavy Weak skew indicates most current yields are low-confidence or high-risk.',
+  riskReward: 'Every pool with TVL ≥ $10M plotted by TVL (trust proxy, X) vs APY (reward, Y). High TVL + high APY is the sweet spot; low TVL + high APY is high risk. Click a chain legend item to hide it.',
+  topScore:   'The 10 highest-scoring protocol·asset pairs right now, ranked by overall quality — combining APY, TVL, consistency, and organic yield signals. Duplicate protocol/asset pairs are deduplicated; only the highest score is shown.',
+  scoreDist:  'Distribution of all scored pools across 10-point score bands (0–9 through 90–100). A right-skewed distribution indicates fewer high-confidence yield opportunities in the current market.',
   apyVsScore: 'Each dot is a pool plotted by its Dexaris Score (X axis) and current APY (Y axis). Strong pools (top-right) offer both high APY and high confidence. High-APY/low-score pools deserve extra scrutiny.',
-  topScore:   'The 10 highest-scoring pools on Dexaris right now. Unlike the main yield table, these are ranked by overall quality — not just raw APY — combining TVL, consistency, and organic yield signals.',
 };
 
 // ── Types ──────────────────────────────────────────────────────
@@ -78,23 +67,14 @@ interface ScoreScatterPoint {
   symbol: string;
 }
 
-interface BarEntry {
-  name: string;
-  apy: number;
-  mean30d: number | null;
-  scoreColour: string;
+interface ScoreBarEntry {
+  label: string;
   score: number;
-  scoreTier: string;
+  colour: string;
 }
 
-interface ChainPerfEntry {
-  chain: string;
-  avgApy: number;
-  avgScore: number;
-}
-
-interface ScoreDistEntry {
-  tier: string;
+interface ScoreHistEntry {
+  band: string;
   count: number;
   colour: string;
 }
@@ -117,16 +97,24 @@ interface ChartCardProps {
   info: string;
   openInfo: string | null;
   onInfo: (id: string | null) => void;
+  style?: React.CSSProperties;
   children: ReactNode;
 }
 
-function ChartCard({ id, title, subtitle, info, openInfo, onInfo, children }: ChartCardProps) {
+const CARD_STYLE: React.CSSProperties = {
+  background: '#111028',
+  border: '0.5px solid rgba(232,230,255,0.08)',
+  borderRadius: '12px',
+  padding: '20px',
+};
+
+function ChartCard({ id, title, subtitle, info, openInfo, onInfo, style, children }: ChartCardProps) {
   const isOpen = openInfo === id;
   return (
-    <div className="chart-card">
+    <div className="chart-card" style={{ ...CARD_STYLE, ...style }}>
       <div className="chart-card-header">
         <div>
-          <h3 className="chart-title">{title}</h3>
+          <h3 className="chart-title" style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(232,230,255,0.45)', margin: 0 }}>{title}</h3>
           {subtitle && <p style={{ margin: '3px 0 0', fontSize: '12px', color: 'rgba(232,230,255,0.3)', fontWeight: 400 }}>{subtitle}</p>}
         </div>
         <button
@@ -203,13 +191,12 @@ function QuadrantOverlay() {
   const thresholdX = xScale(TVL_THRESHOLD);
   const thresholdY = yScale(APY_THRESHOLD);
   if (thresholdX == null || thresholdY == null) return null;
-  const ap = { fontSize: 8, fontFamily: 'Space Grotesk, sans-serif', fill: 'rgba(232,230,255,0.2)' } as const;
+  const ap = { fontSize: 9, fontFamily: 'Space Grotesk, sans-serif', fill: 'rgba(232,230,255,0.3)' } as const;
   return (
     <g>
       <line x1={thresholdX} y1={top}       x2={thresholdX} y2={top + h}   stroke="rgba(107,79,255,0.2)"  strokeDasharray="4 4" strokeWidth={1} />
       <line x1={left}       y1={thresholdY} x2={left + w}   y2={thresholdY} stroke="rgba(107,79,255,0.3)" strokeDasharray="4 4" strokeWidth={1} />
-      <text x={left + 4}    y={thresholdY - 4} textAnchor="start"  {...ap}>15% APY</text>
-      <text x={thresholdX}  y={top + h - 4}    textAnchor="middle" {...ap}>$50M TVL</text>
+      <text x={left + w - 4} y={thresholdY - 4} textAnchor="end" {...ap}>15% APY</text>
     </g>
   );
 }
@@ -228,29 +215,16 @@ function ApyScoreQuadrant() {
     <g>
       <line x1={thresholdX} y1={top}       x2={thresholdX} y2={top + h}   stroke="rgba(107,79,255,0.15)" strokeDasharray="4 4" strokeWidth={1} />
       <line x1={left}       y1={thresholdY} x2={left + w}   y2={thresholdY} stroke="rgba(107,79,255,0.15)" strokeDasharray="4 4" strokeWidth={1} />
-      <text x={left + 3}    y={thresholdY - 3} textAnchor="start"  {...ap}>15% APY</text>
-      <text x={thresholdX}  y={top + h - 4}    textAnchor="middle" {...ap}>Score 50</text>
+      <text x={left + w - 4} y={thresholdY - 4} textAnchor="end" {...ap}>15% APY</text>
+      <text x={thresholdX}   y={top + h - 4}    textAnchor="middle" {...ap}>Score 50</text>
     </g>
   );
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function ScoreDistBar(props: any) {
+function ColourBar(props: any) {
   const { x, y, width, height, payload } = props;
-  return <rect x={x} y={y} width={width} height={height} rx={3} fill={payload?.colour ?? '#8B73FF'} />;
-}
-
-function ProtocolLogo({ logo, name }: { logo?: string; name: string }) {
-  const [err, setErr] = useState(false);
-  if (!logo || err) return <span className="protocol-logo-placeholder">{name[0]}</span>;
-  return <img src={logo} alt={name} width={20} height={20} className="protocol-logo" onError={() => setErr(true)} />;
-}
-
-function formatTvl(val: number): string {
-  if (val >= 1e9) return (val / 1e9).toFixed(2) + 'B';
-  if (val >= 1e6) return (val / 1e6).toFixed(2) + 'M';
-  if (val >= 1e3) return (val / 1e3).toFixed(2) + 'K';
-  return val.toFixed(0);
+  return <rect x={x} y={y} width={width} height={height} rx={3} fill={payload?.colour ?? '#8B73FF'} fillOpacity={0.85} />;
 }
 
 function formatTvlLog(v: number) {
@@ -298,23 +272,6 @@ export default function Analytics({ displayPools }: Props) {
     return { avgApy, avgScore, poolCount: displayPools.length, protocolCount, chainCount, bestChain };
   }, [displayPools, scoreMap]);
 
-  const topByApy = useMemo<BarEntry[]>(() =>
-    [...displayPools]
-      .sort((a, b) => (b.apy ?? 0) - (a.apy ?? 0))
-      .slice(0, 10)
-      .map(p => {
-        const score = calculateDexarisScore(p);
-        return {
-          name: p.project,
-          apy: parseFloat((p.apy ?? 0).toFixed(2)),
-          mean30d: p.apyMean30d != null ? parseFloat(p.apyMean30d.toFixed(2)) : null,
-          scoreColour: getDexarisScoreColour(score),
-          score,
-          scoreTier: getDexarisScoreTier(score),
-        };
-      }),
-  [displayPools]);
-
   const { chainGroups, legendChains } = useMemo(() => {
     const groups: Record<string, ScatterPoint[]> = {};
     for (const p of displayPools) {
@@ -325,35 +282,33 @@ export default function Analytics({ displayPools }: Props) {
     return { chainGroups: groups, legendChains: Object.keys(groups).sort() };
   }, [displayPools, scoreMap]);
 
-  const chainPerformance = useMemo<ChainPerfEntry[]>(() => {
-    const groups: Record<string, { apySum: number; scoreSum: number; count: number }> = {};
+  const topByScoreDeduped = useMemo<ScoreBarEntry[]>(() => {
+    const best = new Map<string, { score: number; label: string; colour: string }>();
     for (const p of displayPools) {
-      if (!groups[p.chain]) groups[p.chain] = { apySum: 0, scoreSum: 0, count: 0 };
-      groups[p.chain].apySum += (p.apy ?? 0);
-      groups[p.chain].scoreSum += scoreMap.get(p.pool) ?? 0;
-      groups[p.chain].count++;
+      const score = scoreMap.get(p.pool) ?? 0;
+      const key = `${p.project}|${p.symbol}`;
+      const existing = best.get(key);
+      if (!existing || score > existing.score) {
+        best.set(key, { score, label: `${p.project} · ${p.symbol}`, colour: getDexarisScoreColour(score) });
+      }
     }
-    return Object.entries(groups)
-      .map(([chain, { apySum, scoreSum, count }]) => ({
-        chain,
-        avgApy: parseFloat((apySum / count).toFixed(2)),
-        avgScore: Math.round(scoreSum / count),
-      }))
-      .sort((a, b) => b.avgApy - a.avgApy);
+    return [...best.values()]
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 10)
+      .map(v => ({ label: v.label, score: v.score, colour: v.colour }));
   }, [displayPools, scoreMap]);
 
-  const scoreDistribution = useMemo<ScoreDistEntry[]>(() => {
-    const tiers = { Weak: 0, Moderate: 0, Solid: 0, Strong: 0 };
+  const scoreHistogram = useMemo<ScoreHistEntry[]>(() => {
+    const bands: ScoreHistEntry[] = Array.from({ length: 10 }, (_, i) => ({
+      band: `${i * 10}–${i === 9 ? 100 : i * 10 + 9}`,
+      count: 0,
+      colour: getDexarisScoreColour(i * 10 + 5),
+    }));
     for (const score of scoreMap.values()) {
-      const tier = getDexarisScoreTier(score) as keyof typeof tiers;
-      tiers[tier]++;
+      const idx = Math.min(Math.floor(score / 10), 9);
+      bands[idx].count++;
     }
-    return [
-      { tier: 'Weak',     count: tiers.Weak,     colour: 'rgba(107,79,255,0.25)' },
-      { tier: 'Moderate', count: tiers.Moderate, colour: 'rgba(107,79,255,0.45)' },
-      { tier: 'Solid',    count: tiers.Solid,    colour: 'rgba(107,79,255,0.7)'  },
-      { tier: 'Strong',   count: tiers.Strong,   colour: '#6B4FFF'               },
-    ];
+    return bands;
   }, [scoreMap]);
 
   const { apyVsScoreGroups, apyScoreLegendChains } = useMemo(() => {
@@ -366,39 +321,19 @@ export default function Analytics({ displayPools }: Props) {
     return { apyVsScoreGroups: groups, apyScoreLegendChains: Object.keys(groups).sort() };
   }, [displayPools, scoreMap]);
 
-  const topByScore = useMemo(() =>
-    [...displayPools]
-      .sort((a, b) => (scoreMap.get(b.pool) ?? 0) - (scoreMap.get(a.pool) ?? 0))
-      .slice(0, 10),
-  [displayPools, scoreMap]);
-
-  const barShape = useCallback((props: {
+  const scoreBarShape = useCallback((props: {
     x?: number; y?: number; width?: number; height?: number; index?: number;
   }) => {
     const { x = 0, y = 0, width = 0, height = 0, index } = props;
-    const entry = index != null ? topByApy[index] : null;
+    const entry = index != null ? topByScoreDeduped[index] : null;
     if (!entry) return <g />;
-    const n = topByApy.length > 1 ? topByApy.length - 1 : 1;
-    const opacity = 1.0 - ((index ?? 0) / n) * 0.55;
-    const fill = `rgba(107,79,255,${opacity.toFixed(2)})`;
-    const meanWidth = entry.mean30d != null && entry.apy > 0
-      ? Math.max(0, (entry.mean30d / entry.apy) * width)
-      : null;
     return (
       <g>
-        {meanWidth != null && (
-          <rect
-            x={x} y={y + height * 0.15}
-            width={meanWidth} height={height * 0.7}
-            rx={3}
-            fill="rgba(255,255,255,0.08)"
-          />
-        )}
-        <rect x={x} y={y} width={width} height={height} rx={3} fill={fill} />
+        <rect x={x} y={y} width={width} height={height} rx={3} fill={entry.colour} fillOpacity={0.8} />
         <text
           x={x + width + 6} y={y + height / 2}
           dominantBaseline="middle"
-          fill="rgba(232,230,255,0.6)"
+          fill={entry.colour}
           fontSize={10}
           fontFamily="Space Grotesk, sans-serif"
         >
@@ -406,19 +341,15 @@ export default function Analytics({ displayPools }: Props) {
         </text>
       </g>
     );
-  }, [topByApy]);
+  }, [topByScoreDeduped]);
 
-  const header = (
-    <div className="analytics-header">
-      <h2 className="analytics-title">Analytics</h2>
-      <p className="analytics-subtitle">Macro yield intelligence across DeFi</p>
-    </div>
-  );
-
-  if (topByApy.length === 0) {
+  if (displayPools.length === 0) {
     return (
       <div className="analytics-page">
-        {header}
+        <div className="analytics-header" style={{ marginBottom: '32px' }}>
+          <h2 className="analytics-title">Analytics</h2>
+          <p className="analytics-subtitle">Macro yield intelligence across DeFi</p>
+        </div>
         <div className="empty-state">
           <p className="empty-state-main">No pool data available</p>
           <p className="empty-state-sub">Charts will appear once yield data loads</p>
@@ -429,10 +360,14 @@ export default function Analytics({ displayPools }: Props) {
 
   return (
     <div className="analytics-page">
-      {header}
+      {/* Row 1 — Header */}
+      <div className="analytics-header" style={{ marginBottom: '32px' }}>
+        <h2 className="analytics-title">Analytics</h2>
+        <p className="analytics-subtitle">Macro yield intelligence across DeFi</p>
+      </div>
 
-      <div className="analytics-dashboard">
-        {/* Hero insight strip */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        {/* Row 2 — Hero stats strip */}
         {insightData && (() => {
           const scoreColor = getDexarisScoreColour(insightData.avgScore);
           const scoreTier  = getDexarisScoreTier(insightData.avgScore);
@@ -449,59 +384,35 @@ export default function Analytics({ displayPools }: Props) {
             padding: '16px 20px',
           };
           return (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '24px' }}>
-              {/* Hero card */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
               <div style={{ flex: '3 1 240px', background: '#111028', border: '0.5px solid rgba(107,79,255,0.25)', borderLeft: '2px solid #6B4FFF', borderRadius: '12px', padding: '28px' }}>
                 <span style={{ ...labelStyle, marginBottom: '12px' }}>Avg Dexaris Score</span>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginBottom: '8px' }}>
-                  <span style={{ fontSize: '56px', fontWeight: 600, lineHeight: 1, color: scoreColor }}>
-                    {insightData.avgScore}
-                  </span>
-                  <span style={{ fontSize: '14px', color: scoreColor, opacity: 0.7 }}>
-                    {scoreTier}
-                  </span>
+                  <span style={{ fontSize: '56px', fontWeight: 600, lineHeight: 1, color: scoreColor }}>{insightData.avgScore}</span>
+                  <span style={{ fontSize: '14px', color: scoreColor, opacity: 0.7 }}>{scoreTier}</span>
                 </div>
-                <span style={{ fontSize: '12px', color: 'rgba(232,230,255,0.3)' }}>
-                  Across {insightData.poolCount.toLocaleString()} scored pools
-                </span>
+                <span style={{ fontSize: '12px', color: 'rgba(232,230,255,0.3)' }}>Across {insightData.poolCount.toLocaleString()} scored pools</span>
               </div>
-
-              {/* Secondary stats */}
               <div style={{ flex: '2 1 180px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <div style={secondaryCard}>
                   <span style={labelStyle}>Average APY</span>
-                  <span style={{ fontSize: '24px', fontWeight: 600, color: '#E8E6FF' }}>
-                    {insightData.avgApy.toFixed(2)}%
-                  </span>
+                  <span style={{ fontSize: '24px', fontWeight: 600, color: '#E8E6FF' }}>{insightData.avgApy.toFixed(2)}%</span>
                 </div>
                 <div style={secondaryCard}>
                   <span style={labelStyle}>Protocols Tracked</span>
-                  <span style={{ fontSize: '24px', fontWeight: 600, color: '#E8E6FF' }}>
-                    {insightData.protocolCount}
-                  </span>
-                  <span style={{ fontSize: '11px', color: 'rgba(232,230,255,0.3)', marginLeft: '8px' }}>
-                    {insightData.chainCount} chains
-                  </span>
+                  <span style={{ fontSize: '24px', fontWeight: 600, color: '#E8E6FF' }}>{insightData.protocolCount}</span>
+                  <span style={{ fontSize: '11px', color: 'rgba(232,230,255,0.3)', marginLeft: '8px' }}>{insightData.chainCount} chains</span>
                 </div>
                 <div style={secondaryCard}>
                   <span style={labelStyle}>Best Performing Chain</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     {insightData.bestChain && CHAIN_LOGOS[insightData.bestChain.chain] && (
-                      <img
-                        src={CHAIN_LOGOS[insightData.bestChain.chain]}
-                        alt={insightData.bestChain.chain}
-                        width={20} height={20}
-                        onError={e => { e.currentTarget.style.display = 'none'; }}
-                      />
+                      <img src={CHAIN_LOGOS[insightData.bestChain.chain]} alt={insightData.bestChain.chain} width={20} height={20} onError={e => { e.currentTarget.style.display = 'none'; }} />
                     )}
-                    <span style={{ fontSize: '24px', fontWeight: 600, color: '#E8E6FF' }}>
-                      {insightData.bestChain?.chain ?? '—'}
-                    </span>
+                    <span style={{ fontSize: '24px', fontWeight: 600, color: '#E8E6FF' }}>{insightData.bestChain?.chain ?? '—'}</span>
                   </div>
                   {insightData.bestChain && (
-                    <span style={{ fontSize: '11px', color: 'rgba(232,230,255,0.3)', display: 'block', marginTop: '2px' }}>
-                      {insightData.bestChain.avg.toFixed(2)}% avg APY
-                    </span>
+                    <span style={{ fontSize: '11px', color: 'rgba(232,230,255,0.3)', display: 'block', marginTop: '2px' }}>{insightData.bestChain.avg.toFixed(2)}% avg APY</span>
                   )}
                 </div>
               </div>
@@ -509,7 +420,7 @@ export default function Analytics({ displayPools }: Props) {
           );
         })()}
 
-        {/* Risk vs Reward — full width centrepiece */}
+        {/* Row 3 — Risk vs Reward (full width) */}
         <ChartCard
           id="riskReward"
           title="Risk vs Reward"
@@ -556,145 +467,105 @@ export default function Analytics({ displayPools }: Props) {
           </div>
         </ChartCard>
 
-        {/* Top 10 APY + Chain Performance + Score Distribution */}
-        <div className="analytics-chart-row analytics-chart-row-wide">
-          <ChartCard id="topApy" title="Top 10 by APY" info={CHART_INFO.topApy} openInfo={openInfo} onInfo={setOpenInfo}>
-            <ResponsiveContainer width="100%" height={400}>
-              <BarChart data={topByApy} layout="vertical" margin={{ top: 4, right: 90, bottom: 4, left: 0 }}>
+        {/* Row 4 — 50/50 grid */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
+          {/* Left: Top 10 by Dexaris Score */}
+          <ChartCard
+            id="topScore"
+            title="Top 10 by Dexaris Score"
+            subtitle="The highest quality yield opportunities right now"
+            info={CHART_INFO.topScore}
+            openInfo={openInfo}
+            onInfo={setOpenInfo}
+            style={{ flex: '1 1 400px', minWidth: 0 }}
+          >
+            <ResponsiveContainer width="100%" height={380}>
+              <BarChart data={topByScoreDeduped} layout="vertical" margin={{ top: 4, right: 56, bottom: 4, left: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(232,230,255,0.06)" horizontal={false} />
-                <XAxis type="number" domain={[0, 'auto']} tickFormatter={v => `${v}%`} tick={AXIS_TICK} tickLine={false} axisLine={false} />
-                <YAxis type="category" dataKey="name" tick={AXIS_TICK} tickLine={false} axisLine={false} width={140} />
-                <Tooltip {...TOOLTIP_STYLE} formatter={(value) => [`${value}%`, 'APY']} />
+                <XAxis type="number" domain={[0, 100]} tick={AXIS_TICK} tickLine={false} axisLine={false} />
+                <YAxis type="category" dataKey="label" tick={{ ...AXIS_TICK, fontSize: 10 }} tickLine={false} axisLine={false} width={170} />
+                <Tooltip {...TOOLTIP_STYLE} formatter={(value) => [value, 'Score']} />
                 <Bar
-                  dataKey="apy"
+                  dataKey="score"
                   maxBarSize={22}
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  shape={barShape as any}
+                  shape={scoreBarShape as any}
                 />
               </BarChart>
             </ResponsiveContainer>
           </ChartCard>
 
-        </div>
-
-        {/* Row 2 — Chain Performance + Score Distribution */}
-        <div className="analytics-chart-row">
-          <ChartCard id="chainPerf" title="Chain Performance" info={CHART_INFO.chainPerf} openInfo={openInfo} onInfo={setOpenInfo}>
-            <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={chainPerformance} margin={{ top: 8, right: 16, bottom: 4, left: 0 }}>
+          {/* Right: Score Distribution histogram */}
+          <ChartCard
+            id="scoreDist"
+            title="Score Distribution"
+            subtitle="How yield quality is distributed across every scored pool"
+            info={CHART_INFO.scoreDist}
+            openInfo={openInfo}
+            onInfo={setOpenInfo}
+            style={{ flex: '1 1 400px', minWidth: 0 }}
+          >
+            <ResponsiveContainer width="100%" height={380}>
+              <BarChart data={scoreHistogram} margin={{ top: 8, right: 16, bottom: 4, left: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(232,230,255,0.06)" vertical={false} />
-                <XAxis dataKey="chain" tick={AXIS_TICK} tickLine={false} axisLine={false} />
-                <YAxis yAxisId="left" orientation="left" tickFormatter={v => `${v}%`} tick={AXIS_TICK} tickLine={false} axisLine={false} />
-                <YAxis yAxisId="right" orientation="right" domain={[0, 100]} tick={AXIS_TICK} tickLine={false} axisLine={false} />
-                <Tooltip
-                  {...TOOLTIP_STYLE}
-                  formatter={(value, name) => [
-                    name === 'Avg APY' ? `${value}%` : value,
-                    name,
-                  ]}
-                />
-                <Bar yAxisId="left"  dataKey="avgApy"   name="Avg APY"   fill="#6B4FFF"               maxBarSize={18} />
-                <Bar yAxisId="right" dataKey="avgScore" name="Avg Score" fill="rgba(107,79,255,0.35)" maxBarSize={18} />
-              </BarChart>
-            </ResponsiveContainer>
-            <div className="chain-perf-legend">
-              <span className="chain-perf-legend-item"><span className="chain-perf-dot" style={{ background: '#6B4FFF' }} />Avg APY</span>
-              <span className="chain-perf-legend-item"><span className="chain-perf-dot" style={{ background: 'rgba(107,79,255,0.35)' }} />Avg Score</span>
-            </div>
-          </ChartCard>
-
-          <ChartCard id="scoreDist" title="Score Distribution" info={CHART_INFO.scoreDist} openInfo={openInfo} onInfo={setOpenInfo}>
-            <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={scoreDistribution} margin={{ top: 8, right: 16, bottom: 4, left: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(232,230,255,0.06)" vertical={false} />
-                <XAxis dataKey="tier" tick={AXIS_TICK} tickLine={false} axisLine={false} />
+                <XAxis dataKey="band" tick={{ ...AXIS_TICK, fontSize: 10 }} tickLine={false} axisLine={false} />
                 <YAxis tick={AXIS_TICK} tickLine={false} axisLine={false} />
                 <Tooltip {...TOOLTIP_STYLE} formatter={(value) => [value, 'Pools']} />
                 <Bar
                   dataKey="count"
-                  maxBarSize={56}
+                  maxBarSize={48}
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  shape={ScoreDistBar as any}
+                  shape={ColourBar as any}
                 />
               </BarChart>
             </ResponsiveContainer>
           </ChartCard>
         </div>
 
-        {/* Row 3 — full-width charts */}
-        <ChartCard id="apyVsScore" title="APY vs Dexaris Score" info={CHART_INFO.apyVsScore} openInfo={openInfo} onInfo={setOpenInfo}>
-            <ResponsiveContainer width="100%" height={340}>
-              <ScatterChart margin={{ top: 4, right: 16, bottom: 24, left: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(232,230,255,0.06)" />
-                <XAxis
-                  type="number" dataKey="score" name="Score" domain={[0, 100]}
-                  tick={AXIS_TICK} tickLine={false} axisLine={false}
-                  label={{ value: 'Dexaris Score', position: 'insideBottom', offset: -14, fill: 'rgba(232,230,255,0.45)', fontSize: 9, fontFamily: 'Space Grotesk, sans-serif' }}
-                />
-                <YAxis
-                  type="number" dataKey="apy" name="APY"
-                  tickFormatter={v => `${v}%`} tick={AXIS_TICK} tickLine={false} axisLine={false}
-                  label={{ value: 'APY %', angle: -90, position: 'insideLeft', offset: 10, fill: 'rgba(232,230,255,0.45)', fontSize: 9, fontFamily: 'Space Grotesk, sans-serif' }}
-                />
-                <ZAxis range={[1, 1]} />
-                <ApyScoreQuadrant />
-                <Tooltip content={<ScoreScatterTooltip />} wrapperStyle={{ overflow: 'visible', zIndex: 100 }} />
-                {Object.entries(apyVsScoreGroups)
-                  .filter(([chain]) => !hiddenChains.has(chain))
-                  .map(([chain, points]) => (
-                    <Scatter key={chain} name={chain} data={points} fill={SCATTER_CHAIN_COLORS[chain] ?? 'rgba(232,230,255,0.3)'} shape={ScatterDot} />
-                  ))}
-              </ScatterChart>
-            </ResponsiveContainer>
-            <div className="scatter-legend">
-              {apyScoreLegendChains.map(chain => {
-                const active = !hiddenChains.has(chain);
-                return (
-                  <span key={chain} className="scatter-legend-item" onClick={() => toggleChain(chain)}
-                    style={{ cursor: 'pointer', opacity: active ? 1 : 0.3, textDecoration: active ? 'none' : 'line-through', transition: 'opacity 0.15s ease', userSelect: 'none' }}>
-                    <span className="scatter-legend-dot" style={{ background: SCATTER_CHAIN_COLORS[chain] ?? 'rgba(232,230,255,0.3)' }} />
-                    {chain}
-                  </span>
-                );
-              })}
-            </div>
-          </ChartCard>
-
-        <ChartCard id="topScore" title="Top 10 by Dexaris Score" info={CHART_INFO.topScore} openInfo={openInfo} onInfo={setOpenInfo}>
-            <div className="score-table">
-              {topByScore.map((pool, i) => {
-                const score = scoreMap.get(pool.pool) ?? 0;
-                const scoreTier = getDexarisScoreTier(score);
-                return (
-                  <div key={pool.pool} className="score-table-row">
-                    <span className="score-table-rank">{i + 1}</span>
-                    <ProtocolLogo logo={pool.logo} name={pool.project} />
-                    <div className="score-table-info">
-                      <span className="score-table-name">{pool.project}</span>
-                      <span className="score-table-symbol">{pool.symbol}</span>
-                    </div>
-                    <span
-                      className="chain-badge"
-                      style={{
-                        backgroundColor: CHAIN_COLORS[pool.chain]?.bg ?? 'rgba(107,79,255,0.1)',
-                        color: CHAIN_COLORS[pool.chain]?.text ?? 'rgba(232,230,255,0.45)',
-                        fontSize: 9,
-                        padding: '2px 5px',
-                      }}
-                    >
-                      {CHAIN_LOGOS[pool.chain] && (
-                        <img src={CHAIN_LOGOS[pool.chain]} alt={pool.chain} width={12} height={12} className="chain-logo" onError={e => { e.currentTarget.style.display = 'none'; }} />
-                      )}
-                      {pool.chain}
-                    </span>
-                    <span className="score-table-apy">{(pool.apy ?? 0).toFixed(2)}%</span>
-                    <span className="score-table-tvl">${formatTvl(pool.tvlUsd)}</span>
-                    <span className="score-table-score-num">{score}</span>
-                    <span className="score-table-score-tier">{scoreTier}</span>
-                  </div>
-                );
-              })}
-            </div>
+        {/* Row 5 — APY vs Dexaris Score (full width) */}
+        <ChartCard
+          id="apyVsScore"
+          title="APY vs Dexaris Score"
+          subtitle="High score + high APY is the target zone — high APY alone is not enough"
+          info={CHART_INFO.apyVsScore}
+          openInfo={openInfo}
+          onInfo={setOpenInfo}
+        >
+          <ResponsiveContainer width="100%" height={420}>
+            <ScatterChart margin={{ top: 4, right: 16, bottom: 24, left: 8 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(232,230,255,0.06)" />
+              <XAxis
+                type="number" dataKey="score" name="Score" domain={[0, 100]}
+                tick={AXIS_TICK} tickLine={false} axisLine={false}
+                label={{ value: 'Dexaris Score', position: 'insideBottom', offset: -14, fill: 'rgba(232,230,255,0.45)', fontSize: 9, fontFamily: 'Space Grotesk, sans-serif' }}
+              />
+              <YAxis
+                type="number" dataKey="apy" name="APY"
+                tickFormatter={v => `${v}%`} tick={AXIS_TICK} tickLine={false} axisLine={false}
+                label={{ value: 'APY %', angle: -90, position: 'insideLeft', offset: 10, fill: 'rgba(232,230,255,0.45)', fontSize: 9, fontFamily: 'Space Grotesk, sans-serif' }}
+              />
+              <ZAxis range={[1, 1]} />
+              <ApyScoreQuadrant />
+              <Tooltip content={<ScoreScatterTooltip />} wrapperStyle={{ overflow: 'visible', zIndex: 100 }} />
+              {Object.entries(apyVsScoreGroups)
+                .filter(([chain]) => !hiddenChains.has(chain))
+                .map(([chain, points]) => (
+                  <Scatter key={chain} name={chain} data={points} fill={SCATTER_CHAIN_COLORS[chain] ?? 'rgba(232,230,255,0.3)'} shape={ScatterDot} />
+                ))}
+            </ScatterChart>
+          </ResponsiveContainer>
+          <div className="scatter-legend">
+            {apyScoreLegendChains.map(chain => {
+              const active = !hiddenChains.has(chain);
+              return (
+                <span key={chain} className="scatter-legend-item" onClick={() => toggleChain(chain)}
+                  style={{ cursor: 'pointer', opacity: active ? 1 : 0.3, textDecoration: active ? 'none' : 'line-through', transition: 'opacity 0.15s ease', userSelect: 'none' }}>
+                  <span className="scatter-legend-dot" style={{ background: SCATTER_CHAIN_COLORS[chain] ?? 'rgba(232,230,255,0.3)' }} />
+                  {chain}
+                </span>
+              );
+            })}
+          </div>
         </ChartCard>
       </div>
     </div>
