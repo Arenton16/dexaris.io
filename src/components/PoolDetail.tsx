@@ -33,6 +33,23 @@ const AXIS_TICK = {
   fontSize: 9,
 } as const;
 
+const CARD = {
+  background: 'rgba(232,230,255,0.03)',
+  border: '0.5px solid rgba(232,230,255,0.08)',
+  borderRadius: '10px',
+  padding: '16px',
+};
+
+const SEC_LABEL = {
+  fontSize: 10,
+  fontWeight: 600,
+  letterSpacing: '0.1em',
+  textTransform: 'uppercase' as const,
+  color: 'rgba(232,230,255,0.4)',
+  display: 'block',
+  marginBottom: 12,
+};
+
 function getRisk(apy: number): { label: string; color: string } {
   if (apy < 10)  return { label: 'Low',    color: '#22c55e' };
   if (apy <= 50) return { label: 'Medium', color: '#f59e0b' };
@@ -88,12 +105,13 @@ function ChangeLabel({ value }: { value: number | null }) {
 }
 
 function TokenPricesSection({
-  poolSymbol, poolApy, prices, loading,
+  poolSymbol, poolApy, prices, loading, noMargin,
 }: {
   poolSymbol: string;
   poolApy: number;
   prices: ReturnType<typeof import('../hooks/useTokenPrices').useTokenPrices>['prices'];
   loading: boolean;
+  noMargin?: boolean;
 }) {
   const symbols = parsePoolSymbols(poolSymbol);
   if (!symbols.length) return null;
@@ -108,7 +126,7 @@ function TokenPricesSection({
 
   return (
     <div style={{
-      margin: '16px 0',
+      margin: noMargin ? 0 : '16px 0',
       background: 'rgba(107,79,255,0.07)',
       border: '1px solid rgba(107,79,255,0.2)',
       borderRadius: 10,
@@ -141,7 +159,6 @@ function TokenPricesSection({
             Price data unavailable for this pool's tokens.
           </p>
         ) : loading ? (
-          // Skeleton rows
           symbols.map(sym => (
             <div key={sym} style={{
               display: 'flex', alignItems: 'center', gap: 10,
@@ -165,25 +182,10 @@ function TokenPricesSection({
                 padding: '9px 14px',
                 borderBottom: '1px solid rgba(107,79,255,0.06)',
               }}>
-                {/* Symbol */}
-                <span style={{
-                  fontSize: 12,
-                  fontWeight: 600,
-                  color: '#E8E6FF',
-                  minWidth: 48,
-                  flex: 'none',
-                }}>
+                <span style={{ fontSize: 12, fontWeight: 600, color: '#E8E6FF', minWidth: 48, flex: 'none' }}>
                   {sym}
                 </span>
-
-                {/* Price */}
-                <span style={{
-                  fontSize: 13,
-                  fontWeight: 500,
-                  color: '#E8E6FF',
-                  flex: 1,
-                  fontVariantNumeric: 'tabular-nums',
-                }}>
+                <span style={{ fontSize: 13, fontWeight: 500, color: '#E8E6FF', flex: 1, fontVariantNumeric: 'tabular-nums' }}>
                   {p.price !== null
                     ? p.isStable
                       ? `$${p.price.toFixed(4)}`
@@ -193,32 +195,20 @@ function TokenPricesSection({
                     : '—'
                   }
                 </span>
-
                 {p.isStable ? (
-                  <span style={{
-                    fontSize: 10,
-                    color: 'rgba(232,230,255,0.3)',
-                    letterSpacing: '0.06em',
-                    textTransform: 'uppercase',
-                    flex: 'none',
-                  }}>
+                  <span style={{ fontSize: 10, color: 'rgba(232,230,255,0.3)', letterSpacing: '0.06em', textTransform: 'uppercase', flex: 'none' }}>
                     Stablecoin
                   </span>
                 ) : (
                   <>
-                    {/* 24h */}
                     <span style={{ fontSize: 11, flex: 'none', minWidth: 52, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
                       <span style={{ fontSize: 9, color: 'rgba(232,230,255,0.3)', display: 'block', marginBottom: 1 }}>24h</span>
                       <ChangeLabel value={p.change24h} />
                     </span>
-
-                    {/* 7d */}
                     <span style={{ fontSize: 11, flex: 'none', minWidth: 52, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
                       <span style={{ fontSize: 9, color: 'rgba(232,230,255,0.3)', display: 'block', marginBottom: 1 }}>7d</span>
                       <ChangeLabel value={p.change7d} />
                     </span>
-
-                    {/* Sparkline */}
                     <SparklineChart data={p.sparkline} color={positive7d ? '#4ECDA4' : '#FF6B6B'} />
                   </>
                 )}
@@ -228,7 +218,6 @@ function TokenPricesSection({
         )}
       </div>
 
-      {/* Depreciation warnings */}
       {warnings.map(sym => {
         const p = prices[sym];
         return (
@@ -256,6 +245,13 @@ export default function PoolDetail({ pool, onClose }: Props) {
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState(false);
   const { prices, loading: pricesLoading } = useTokenPrices(pool?.symbol ?? '');
+  const [panelWide, setPanelWide] = useState(() => window.innerWidth >= 1100);
+
+  useEffect(() => {
+    const onResize = () => setPanelWide(window.innerWidth >= 1100);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   useEffect(() => {
     if (!pool) {
@@ -309,7 +305,10 @@ export default function PoolDetail({ pool, onClose }: Props) {
         className={`detail-overlay${isOpen ? ' visible' : ''}`}
         onClick={onClose}
       />
-      <aside className={`detail-panel${isOpen ? ' open' : ''}`}>
+      <aside
+        className={`detail-panel${isOpen ? ' open' : ''}`}
+        style={panelWide ? { width: '640px' } : undefined}
+      >
         <button className="detail-close" onClick={onClose}>✕</button>
 
         {pool && (() => {
@@ -327,28 +326,198 @@ export default function PoolDetail({ pool, onClose }: Props) {
             ilRisk?: string | null;
             exposure?: string | null;
           };
+
+          // ── Shared render fragments ──────────────────────────────────────
+
+          const headerEl = (
+            <div className="detail-header">
+              <h2 className="detail-protocol">{pool.project}</h2>
+              <p className="detail-asset">{pool.symbol}</p>
+              <span className="chain-badge" style={{ backgroundColor: chain.bg, color: chain.text }}>
+                {CHAIN_LOGOS[pool.chain] && (
+                  <img
+                    src={CHAIN_LOGOS[pool.chain]}
+                    alt={pool.chain}
+                    width={16}
+                    height={16}
+                    className="chain-logo"
+                    onError={e => { e.currentTarget.style.display = 'none'; }}
+                  />
+                )}
+                {pool.chain}
+              </span>
+            </div>
+          );
+
+          const breakdownRows = breakdown.components.map(comp => (
+            <div key={comp.label} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+              <span style={{ fontSize: 11, color: 'rgba(232,230,255,0.45)', minWidth: 92, flex: 'none' }}>{comp.label}</span>
+              <div style={{ flex: 1, height: 4, background: 'rgba(232,230,255,0.08)', borderRadius: 2, overflow: 'hidden' }}>
+                <div style={{ width: `${(comp.score / 10) * 100}%`, height: '100%', background: scoreColour, borderRadius: 2 }} />
+              </div>
+              <span style={{ fontSize: 11, color: 'rgba(232,230,255,0.45)', minWidth: 36, textAlign: 'right', flex: 'none', fontVariantNumeric: 'tabular-nums' }}>{comp.score.toFixed(1)}/10</span>
+            </div>
+          ));
+
+          const yieldCompBody = pool.apyBase == null ? (
+            <p style={{ margin: 0, fontSize: 12, color: 'rgba(232,230,255,0.35)', fontStyle: 'italic' }}>Composition data unavailable</p>
+          ) : (!extPool.apyReward) ? (
+            <>
+              <div style={{ height: 8, background: '#4ECDA4', borderRadius: 4, marginBottom: 10 }} />
+              <p style={{ margin: 0, fontSize: 11, color: 'rgba(232,230,255,0.45)' }}>100% organic yield</p>
+            </>
+          ) : (
+            <>
+              <div style={{ display: 'flex', height: 8, borderRadius: 4, overflow: 'hidden', marginBottom: 10 }}>
+                <div style={{ width: `${(pool.apyBase / Math.max(apy, 0.001)) * 100}%`, background: '#4ECDA4' }} />
+                <div style={{ flex: 1, background: '#FFB347' }} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: 2, background: '#4ECDA4', flex: 'none', display: 'inline-block' }} />
+                  <span style={{ fontSize: 11, color: 'rgba(232,230,255,0.45)' }}>Organic {pool.apyBase.toFixed(2)}%</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: 2, background: '#FFB347', flex: 'none', display: 'inline-block' }} />
+                  <span style={{ fontSize: 11, color: 'rgba(232,230,255,0.45)' }}>Incentive {extPool.apyReward.toFixed(2)}%</span>
+                </div>
+              </div>
+            </>
+          );
+
+          const historyChart = (chartHeight: number) => (
+            <>
+              {historyLoading && <div className="history-skeleton-chart skeleton-bar" />}
+              {!historyLoading && historyError && <p className="history-no-data">Historical data unavailable</p>}
+              {!historyLoading && !historyError && historyData.length > 0 && (
+                <ResponsiveContainer width="100%" height={chartHeight}>
+                  <AreaChart data={historyData} margin={{ top: 4, right: 4, bottom: 0, left: -8 }}>
+                    <defs>
+                      <linearGradient id="apyGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%"  stopColor="#6B4FFF" stopOpacity={0.2} />
+                        <stop offset="95%" stopColor="#6B4FFF" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(107,79,255,0.08)" />
+                    <XAxis dataKey="date" tick={AXIS_TICK} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+                    <YAxis tickFormatter={v => `${v}%`} tick={AXIS_TICK} tickLine={false} axisLine={false} width={36} />
+                    <Tooltip
+                      contentStyle={{ background: '#111028', border: '0.5px solid rgba(107,79,255,0.25)', borderRadius: 6, fontFamily: 'Space Grotesk, sans-serif', fontSize: 12 }}
+                      labelStyle={{ color: '#8B73FF', fontFamily: 'Space Grotesk, sans-serif' }}
+                      itemStyle={{ color: '#E8E6FF' }}
+                      formatter={(v) => [`${Number(v).toFixed(2)}%`, 'APY']}
+                    />
+                    <Area type="monotone" dataKey="apy" stroke="#6B4FFF" strokeWidth={1.5} fill="url(#apyGrad)" dot={false} activeDot={{ r: 3, fill: '#6B4FFF' }} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              )}
+            </>
+          );
+
+          const factsChips = (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {extPool.stablecoin != null && (
+                <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 20, background: 'rgba(232,230,255,0.06)', border: '0.5px solid rgba(232,230,255,0.15)', color: 'rgba(232,230,255,0.55)' }}>
+                  {extPool.stablecoin ? 'Stablecoin pool' : 'Volatile pair'}
+                </span>
+              )}
+              {extPool.ilRisk != null && (
+                <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 20, background: 'rgba(232,230,255,0.06)', border: '0.5px solid rgba(232,230,255,0.15)', color: 'rgba(232,230,255,0.55)' }}>
+                  IL risk: {extPool.ilRisk}
+                </span>
+              )}
+              {extPool.exposure != null && (
+                <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 20, background: 'rgba(232,230,255,0.06)', border: '0.5px solid rgba(232,230,255,0.15)', color: 'rgba(232,230,255,0.55)' }}>
+                  {extPool.exposure === 'single' ? 'Single asset' : extPool.exposure === 'multi' ? 'Multi asset' : extPool.exposure}
+                </span>
+              )}
+              <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 20, background: chain.bg, border: `0.5px solid ${chain.text}40`, color: chain.text }}>
+                {pool.chain}
+              </span>
+            </div>
+          );
+
+          // ── Wide layout (≥ 1100px viewport) ─────────────────────────────
+
+          if (panelWide) {
+            return (
+              <div className="detail-content" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {headerEl}
+
+                {/* Row 1 — Stats strip */}
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <div style={{ ...CARD, flex: '1 1 0' }}>
+                    <span className="detail-label">APY</span>
+                    <span className="detail-value detail-value--apy">{apy.toFixed(2)}%</span>
+                    {apyDiff != null && (
+                      <span style={{ fontSize: 11, color: apyDiff >= 0 ? '#4ECDA4' : '#FF6B6B', marginTop: 2, display: 'block' }}>
+                        vs 30d avg: {apyDiff >= 0 ? '+' : ''}{apyDiff.toFixed(2)}%
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ ...CARD, flex: '1 1 0' }}>
+                    <span className="detail-label">TVL</span>
+                    <span className="detail-value detail-value--tvl">{formatTvl(pool.tvlUsd)}</span>
+                  </div>
+                  <div style={{ ...CARD, flex: '1 1 0' }}>
+                    <span className="detail-label">Risk Level</span>
+                    <span className="detail-value" style={{ color: risk.color }}>
+                      <span className="detail-risk-dot">●</span>
+                      {risk.label}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Row 2 — Two columns */}
+                <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+                  {/* Left: Score + Breakdown */}
+                  <div style={{ ...CARD, flex: '1 1 0', minWidth: 0 }}>
+                    <span style={SEC_LABEL}>Score Breakdown</span>
+                    <div className="detail-score-main">
+                      <span className="detail-score-num" style={{ color: scoreColour }}>{score}</span>
+                      <span className="score-badge" style={{ background: `${scoreColour}1a`, color: scoreColour, border: `1px solid ${scoreColour}40`, fontSize: 12, padding: '2px 10px' }}>{scoreTier}</span>
+                    </div>
+                    <div className="score-bar-track" style={{ marginBottom: 14 }}>
+                      <div className="score-bar-fill" style={{ width: `${score}%`, background: scoreColour }} />
+                    </div>
+                    {breakdownRows}
+                  </div>
+                  {/* Right: Token Prices + Yield Composition */}
+                  <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <TokenPricesSection
+                      poolSymbol={pool.symbol}
+                      poolApy={apy}
+                      prices={prices}
+                      loading={pricesLoading}
+                      noMargin
+                    />
+                    <div style={CARD}>
+                      <span style={SEC_LABEL}>Yield Composition</span>
+                      {yieldCompBody}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Row 3 — APY history */}
+                <div style={CARD}>
+                  <span style={SEC_LABEL}>30 Day APY History</span>
+                  {historyChart(180)}
+                </div>
+
+                {/* Row 4 — Pool Facts */}
+                <div style={CARD}>
+                  <span style={SEC_LABEL}>Pool Facts</span>
+                  {factsChips}
+                </div>
+              </div>
+            );
+          }
+
+          // ── Narrow layout (< 1100px viewport, existing structure) ────────
+
           return (
             <div className="detail-content">
-              <div className="detail-header">
-                <h2 className="detail-protocol">{pool.project}</h2>
-                <p className="detail-asset">{pool.symbol}</p>
-                <span
-                  className="chain-badge"
-                  style={{ backgroundColor: chain.bg, color: chain.text }}
-                >
-                  {CHAIN_LOGOS[pool.chain] && (
-                    <img
-                      src={CHAIN_LOGOS[pool.chain]}
-                      alt={pool.chain}
-                      width={16}
-                      height={16}
-                      className="chain-logo"
-                      onError={e => { e.currentTarget.style.display = 'none'; }}
-                    />
-                  )}
-                  {pool.chain}
-                </span>
-              </div>
+              {headerEl}
 
               <div className="detail-stats">
                 <div className="detail-stat">
@@ -360,12 +529,10 @@ export default function PoolDetail({ pool, onClose }: Props) {
                     </span>
                   )}
                 </div>
-
                 <div className="detail-stat">
                   <span className="detail-label">TVL</span>
                   <span className="detail-value detail-value--tvl">{formatTvl(pool.tvlUsd)}</span>
                 </div>
-
                 <div className="detail-stat">
                   <span className="detail-label">Risk Level</span>
                   <span className="detail-value" style={{ color: risk.color }}>
@@ -375,7 +542,6 @@ export default function PoolDetail({ pool, onClose }: Props) {
                 </div>
               </div>
 
-              {/* Token Prices */}
               <TokenPricesSection
                 poolSymbol={pool.symbol}
                 poolApy={apy}
@@ -396,15 +562,7 @@ export default function PoolDetail({ pool, onClose }: Props) {
                   <div className="score-bar-track" style={{ marginBottom: 16 }}>
                     <div className="score-bar-fill" style={{ width: `${score}%`, background: scoreColour }} />
                   </div>
-                  {breakdown.components.map(comp => (
-                    <div key={comp.label} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                      <span style={{ fontSize: 11, color: 'rgba(232,230,255,0.45)', minWidth: 92, flex: 'none' }}>{comp.label}</span>
-                      <div style={{ flex: 1, height: 4, background: 'rgba(232,230,255,0.08)', borderRadius: 2, overflow: 'hidden' }}>
-                        <div style={{ width: `${(comp.score / 10) * 100}%`, height: '100%', background: scoreColour, borderRadius: 2 }} />
-                      </div>
-                      <span style={{ fontSize: 11, color: 'rgba(232,230,255,0.45)', minWidth: 36, textAlign: 'right', flex: 'none', fontVariantNumeric: 'tabular-nums' }}>{comp.score.toFixed(1)}/10</span>
-                    </div>
-                  ))}
+                  {breakdownRows}
                 </div>
               </div>
 
@@ -414,91 +572,14 @@ export default function PoolDetail({ pool, onClose }: Props) {
                   <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(232,230,255,0.4)' }}>Yield Composition</span>
                 </div>
                 <div style={{ padding: '14px 14px 12px' }}>
-                  {pool.apyBase == null ? (
-                    <p style={{ margin: 0, fontSize: 12, color: 'rgba(232,230,255,0.35)', fontStyle: 'italic' }}>Composition data unavailable</p>
-                  ) : (!extPool.apyReward) ? (
-                    <>
-                      <div style={{ height: 8, background: '#4ECDA4', borderRadius: 4, marginBottom: 10 }} />
-                      <p style={{ margin: 0, fontSize: 11, color: 'rgba(232,230,255,0.45)' }}>100% organic yield</p>
-                    </>
-                  ) : (
-                    <>
-                      <div style={{ display: 'flex', height: 8, borderRadius: 4, overflow: 'hidden', marginBottom: 10 }}>
-                        <div style={{ width: `${(pool.apyBase / Math.max(apy, 0.001)) * 100}%`, background: '#4ECDA4' }} />
-                        <div style={{ flex: 1, background: '#FFB347' }} />
-                      </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <span style={{ width: 8, height: 8, borderRadius: 2, background: '#4ECDA4', flex: 'none', display: 'inline-block' }} />
-                          <span style={{ fontSize: 11, color: 'rgba(232,230,255,0.45)' }}>Organic {pool.apyBase.toFixed(2)}%</span>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <span style={{ width: 8, height: 8, borderRadius: 2, background: '#FFB347', flex: 'none', display: 'inline-block' }} />
-                          <span style={{ fontSize: 11, color: 'rgba(232,230,255,0.45)' }}>Incentive {extPool.apyReward.toFixed(2)}%</span>
-                        </div>
-                      </div>
-                    </>
-                  )}
+                  {yieldCompBody}
                 </div>
               </div>
 
               {/* 30-day APY history */}
               <div className="detail-history">
                 <p className="detail-history-title">30 Day APY History</p>
-                {historyLoading && (
-                  <div className="history-skeleton-chart skeleton-bar" />
-                )}
-                {!historyLoading && historyError && (
-                  <p className="history-no-data">Historical data unavailable</p>
-                )}
-                {!historyLoading && !historyError && historyData.length > 0 && (
-                  <ResponsiveContainer width="100%" height={150}>
-                    <AreaChart data={historyData} margin={{ top: 4, right: 4, bottom: 0, left: -8 }}>
-                      <defs>
-                        <linearGradient id="apyGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%"  stopColor="#6B4FFF" stopOpacity={0.2} />
-                          <stop offset="95%" stopColor="#6B4FFF" stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(107,79,255,0.08)" />
-                      <XAxis
-                        dataKey="date"
-                        tick={AXIS_TICK}
-                        tickLine={false}
-                        axisLine={false}
-                        interval="preserveStartEnd"
-                      />
-                      <YAxis
-                        tickFormatter={v => `${v}%`}
-                        tick={AXIS_TICK}
-                        tickLine={false}
-                        axisLine={false}
-                        width={36}
-                      />
-                      <Tooltip
-                        contentStyle={{
-                          background: '#111028',
-                          border: '0.5px solid rgba(107,79,255,0.25)',
-                          borderRadius: 6,
-                          fontFamily: 'Space Grotesk, sans-serif',
-                          fontSize: 12,
-                        }}
-                        labelStyle={{ color: '#8B73FF', fontFamily: 'Space Grotesk, sans-serif' }}
-                        itemStyle={{ color: '#E8E6FF' }}
-                        formatter={(v) => [`${Number(v).toFixed(2)}%`, 'APY']}
-                      />
-                      <Area
-                        type="monotone"
-                        dataKey="apy"
-                        stroke="#6B4FFF"
-                        strokeWidth={1.5}
-                        fill="url(#apyGrad)"
-                        dot={false}
-                        activeDot={{ r: 3, fill: '#6B4FFF' }}
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                )}
+                {historyChart(150)}
               </div>
 
               {/* Pool Facts */}
@@ -506,25 +587,8 @@ export default function PoolDetail({ pool, onClose }: Props) {
                 <div style={{ padding: '10px 14px 8px', borderBottom: '1px solid rgba(107,79,255,0.1)' }}>
                   <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(232,230,255,0.4)' }}>Pool Facts</span>
                 </div>
-                <div style={{ padding: '12px 14px', display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                  {extPool.stablecoin != null && (
-                    <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 20, background: 'rgba(232,230,255,0.06)', border: '0.5px solid rgba(232,230,255,0.15)', color: 'rgba(232,230,255,0.55)' }}>
-                      {extPool.stablecoin ? 'Stablecoin pool' : 'Volatile pair'}
-                    </span>
-                  )}
-                  {extPool.ilRisk != null && (
-                    <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 20, background: 'rgba(232,230,255,0.06)', border: '0.5px solid rgba(232,230,255,0.15)', color: 'rgba(232,230,255,0.55)' }}>
-                      IL risk: {extPool.ilRisk}
-                    </span>
-                  )}
-                  {extPool.exposure != null && (
-                    <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 20, background: 'rgba(232,230,255,0.06)', border: '0.5px solid rgba(232,230,255,0.15)', color: 'rgba(232,230,255,0.55)' }}>
-                      {extPool.exposure === 'single' ? 'Single asset' : extPool.exposure === 'multi' ? 'Multi asset' : extPool.exposure}
-                    </span>
-                  )}
-                  <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 20, background: chain.bg, border: `0.5px solid ${chain.text}40`, color: chain.text }}>
-                    {pool.chain}
-                  </span>
+                <div style={{ padding: '12px 14px' }}>
+                  {factsChips}
                 </div>
               </div>
             </div>
