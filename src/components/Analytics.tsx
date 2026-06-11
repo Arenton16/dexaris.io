@@ -52,6 +52,19 @@ const CHART_INFO: Record<string, string> = {
   apyVsScore: 'Each dot is a pool plotted by its Dexaris Score (X axis) and current APY (Y axis). Strong pools (top-right) offer both high APY and high confidence. High-APY/low-score pools deserve extra scrutiny.',
 };
 
+const HIST_COLOURS = [
+  'rgba(255,107,107,0.7)',  // 0–9
+  'rgba(255,107,107,0.7)',  // 10–19
+  '#FF6B6B',                 // 20–29
+  '#FF6B6B',                 // 30–39
+  '#FFB347',                 // 40–49
+  '#FFB347',                 // 50–59
+  'rgba(78,205,164,0.7)',   // 60–69
+  'rgba(78,205,164,0.7)',   // 70–79
+  '#4ECDA4',                 // 80–89
+  '#4ECDA4',                 // 90–100
+];
+
 const TIER_SEGMENTS = [
   getDexarisScoreColour(10),
   getDexarisScoreColour(30),
@@ -310,7 +323,7 @@ export default function Analytics({ displayPools }: Props) {
     const bands: ScoreHistEntry[] = Array.from({ length: 10 }, (_, i) => ({
       band: `${i * 10}–${i === 9 ? 100 : i * 10 + 9}`,
       count: 0,
-      colour: getDexarisScoreColour(i * 10 + 5),
+      colour: HIST_COLOURS[i],
     }));
     for (const score of scoreMap.values()) {
       const idx = Math.min(Math.floor(score / 10), 9);
@@ -590,7 +603,7 @@ export default function Analytics({ displayPools }: Props) {
               />
               <ZAxis range={[1, 1]} />
               <ApyScoreQuadrant />
-              <Tooltip content={<ScoreScatterTooltip />} wrapperStyle={{ overflow: 'visible', zIndex: 100 }} />
+              <Tooltip content={<ScoreScatterTooltip />} wrapperStyle={{ overflow: 'visible', zIndex: 100 }} cursor={{ stroke: 'rgba(232,230,255,0.2)', strokeWidth: 1 }} />
               {Object.entries(apyVsScoreGroups)
                 .filter(([chain]) => !hiddenChains.has(chain))
                 .map(([chain, points]) => (
