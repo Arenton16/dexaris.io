@@ -1,6 +1,14 @@
 import type { Pool } from '../types';
 
-export function calculateDexarisScore(pool: Pool): number {
+interface SubScores {
+  consistencySubScore: number;
+  apyLevelSubScore: number;
+  tvlSizeSubScore: number;
+  organicRatioSubScore: number;
+  ageProxySubScore: number;
+}
+
+function computeSubScores(pool: Pool): SubScores {
   const tvl = pool.tvlUsd;
   const apy = pool.apy ?? 0;
 
@@ -69,13 +77,40 @@ export function calculateDexarisScore(pool: Pool): number {
     ageProxySubScore = 5; // neutral when no trust signals available
   }
 
+  return { consistencySubScore, apyLevelSubScore, tvlSizeSubScore, organicRatioSubScore, ageProxySubScore };
+}
+
+function totalFromSubScores(s: SubScores): number {
   return Math.round(Math.min(100, Math.max(0,
-    consistencySubScore  * 3 +   // 30%
-    apyLevelSubScore     * 2 +   // 20%
-    tvlSizeSubScore      * 2 +   // 20%
-    organicRatioSubScore * 2 +   // 20%
-    ageProxySubScore     * 1     // 10%
+    s.consistencySubScore  * 3 +   // 30%
+    s.apyLevelSubScore     * 2 +   // 20%
+    s.tvlSizeSubScore      * 2 +   // 20%
+    s.organicRatioSubScore * 2 +   // 20%
+    s.ageProxySubScore     * 1     // 10%
   )));
+}
+
+export function calculateDexarisScore(pool: Pool): number {
+  return totalFromSubScores(computeSubScores(pool));
+}
+
+export interface ScoreBreakdownResult {
+  total: number;
+  components: Array<{ label: string; weight: number; score: number }>;
+}
+
+export function calculateDexarisScoreBreakdown(pool: Pool): ScoreBreakdownResult {
+  const s = computeSubScores(pool);
+  return {
+    total: totalFromSubScores(s),
+    components: [
+      { label: 'Consistency',   weight: 30, score: s.consistencySubScore },
+      { label: 'APY Level',     weight: 20, score: s.apyLevelSubScore },
+      { label: 'TVL Depth',     weight: 20, score: parseFloat(s.tvlSizeSubScore.toFixed(1)) },
+      { label: 'Organic Yield', weight: 20, score: s.organicRatioSubScore },
+      { label: 'Maturity',      weight: 10, score: s.ageProxySubScore },
+    ],
+  };
 }
 
 export function getDexarisScoreTier(score: number): string {

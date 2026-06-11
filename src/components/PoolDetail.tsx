@@ -5,7 +5,7 @@ import {
 } from 'recharts';
 import type { Pool } from '../types';
 import { CHAIN_LOGOS } from '../types';
-import { calculateDexarisScore, getDexarisScoreColour, getDexarisScoreTier } from '../utils/dexarisScore';
+import { calculateDexarisScoreBreakdown, getDexarisScoreColour, getDexarisScoreTier } from '../utils/dexarisScore';
 import { useTokenPrices, parsePoolSymbols } from '../hooks/useTokenPrices';
 
 interface Props {
@@ -316,9 +316,17 @@ export default function PoolDetail({ pool, onClose }: Props) {
           const apy = pool.apy ?? 0;
           const risk = getRisk(apy);
           const chain = CHAIN_COLORS[pool.chain] ?? { bg: 'rgba(107,79,255,0.1)', text: 'rgba(232,230,255,0.45)' };
-          const score = calculateDexarisScore(pool);
+          const breakdown = calculateDexarisScoreBreakdown(pool);
+          const score = breakdown.total;
           const scoreColour = getDexarisScoreColour(score);
           const scoreTier = getDexarisScoreTier(score);
+          const apyDiff = pool.apyMean30d != null ? apy - pool.apyMean30d : null;
+          const extPool = pool as Pool & {
+            apyReward?: number | null;
+            stablecoin?: boolean | null;
+            ilRisk?: string | null;
+            exposure?: string | null;
+          };
           return (
             <div className="detail-content">
               <div className="detail-header">
@@ -346,6 +354,11 @@ export default function PoolDetail({ pool, onClose }: Props) {
                 <div className="detail-stat">
                   <span className="detail-label">APY</span>
                   <span className="detail-value detail-value--apy">{apy.toFixed(2)}%</span>
+                  {apyDiff != null && (
+                    <span style={{ fontSize: 11, color: apyDiff >= 0 ? '#4ECDA4' : '#FF6B6B', marginTop: 2, display: 'block' }}>
+                      vs 30d avg: {apyDiff >= 0 ? '+' : ''}{apyDiff.toFixed(2)}%
+                    </span>
+                  )}
                 </div>
 
                 <div className="detail-stat">
@@ -370,21 +383,62 @@ export default function PoolDetail({ pool, onClose }: Props) {
                 loading={pricesLoading}
               />
 
-              {/* Dexaris Score */}
-              <div className="detail-score-section">
-                <span className="detail-label">Dexaris Score</span>
-                <div className="detail-score-main">
-                  <span className="detail-score-num" style={{ color: scoreColour }}>{score}</span>
-                  <span className="score-badge" style={{
-                    background: `${scoreColour}1a`,
-                    color: scoreColour,
-                    border: `1px solid ${scoreColour}40`,
-                    fontSize: 12,
-                    padding: '2px 10px',
-                  }}>{scoreTier}</span>
+              {/* Score Breakdown */}
+              <div style={{ margin: '16px 0', background: 'rgba(107,79,255,0.07)', border: '1px solid rgba(107,79,255,0.2)', borderRadius: 10, overflow: 'hidden' }}>
+                <div style={{ padding: '10px 14px 8px', borderBottom: '1px solid rgba(107,79,255,0.1)' }}>
+                  <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(232,230,255,0.4)' }}>Score Breakdown</span>
                 </div>
-                <div className="score-bar-track">
-                  <div className="score-bar-fill" style={{ width: `${score}%`, background: scoreColour }} />
+                <div style={{ padding: '14px 14px 10px' }}>
+                  <div className="detail-score-main" style={{ marginBottom: 10 }}>
+                    <span className="detail-score-num" style={{ color: scoreColour }}>{score}</span>
+                    <span className="score-badge" style={{ background: `${scoreColour}1a`, color: scoreColour, border: `1px solid ${scoreColour}40`, fontSize: 12, padding: '2px 10px' }}>{scoreTier}</span>
+                  </div>
+                  <div className="score-bar-track" style={{ marginBottom: 16 }}>
+                    <div className="score-bar-fill" style={{ width: `${score}%`, background: scoreColour }} />
+                  </div>
+                  {breakdown.components.map(comp => (
+                    <div key={comp.label} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                      <span style={{ fontSize: 11, color: 'rgba(232,230,255,0.45)', minWidth: 92, flex: 'none' }}>{comp.label}</span>
+                      <div style={{ flex: 1, height: 4, background: 'rgba(232,230,255,0.08)', borderRadius: 2, overflow: 'hidden' }}>
+                        <div style={{ width: `${(comp.score / 10) * 100}%`, height: '100%', background: scoreColour, borderRadius: 2 }} />
+                      </div>
+                      <span style={{ fontSize: 11, color: 'rgba(232,230,255,0.45)', minWidth: 36, textAlign: 'right', flex: 'none', fontVariantNumeric: 'tabular-nums' }}>{comp.score.toFixed(1)}/10</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Yield Composition */}
+              <div style={{ margin: '16px 0', background: 'rgba(107,79,255,0.07)', border: '1px solid rgba(107,79,255,0.2)', borderRadius: 10, overflow: 'hidden' }}>
+                <div style={{ padding: '10px 14px 8px', borderBottom: '1px solid rgba(107,79,255,0.1)' }}>
+                  <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(232,230,255,0.4)' }}>Yield Composition</span>
+                </div>
+                <div style={{ padding: '14px 14px 12px' }}>
+                  {pool.apyBase == null ? (
+                    <p style={{ margin: 0, fontSize: 12, color: 'rgba(232,230,255,0.35)', fontStyle: 'italic' }}>Composition data unavailable</p>
+                  ) : (!extPool.apyReward) ? (
+                    <>
+                      <div style={{ height: 8, background: '#4ECDA4', borderRadius: 4, marginBottom: 10 }} />
+                      <p style={{ margin: 0, fontSize: 11, color: 'rgba(232,230,255,0.45)' }}>100% organic yield</p>
+                    </>
+                  ) : (
+                    <>
+                      <div style={{ display: 'flex', height: 8, borderRadius: 4, overflow: 'hidden', marginBottom: 10 }}>
+                        <div style={{ width: `${(pool.apyBase / Math.max(apy, 0.001)) * 100}%`, background: '#4ECDA4' }} />
+                        <div style={{ flex: 1, background: '#FFB347' }} />
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <span style={{ width: 8, height: 8, borderRadius: 2, background: '#4ECDA4', flex: 'none', display: 'inline-block' }} />
+                          <span style={{ fontSize: 11, color: 'rgba(232,230,255,0.45)' }}>Organic {pool.apyBase.toFixed(2)}%</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <span style={{ width: 8, height: 8, borderRadius: 2, background: '#FFB347', flex: 'none', display: 'inline-block' }} />
+                          <span style={{ fontSize: 11, color: 'rgba(232,230,255,0.45)' }}>Incentive {extPool.apyReward.toFixed(2)}%</span>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -445,6 +499,33 @@ export default function PoolDetail({ pool, onClose }: Props) {
                     </AreaChart>
                   </ResponsiveContainer>
                 )}
+              </div>
+
+              {/* Pool Facts */}
+              <div style={{ margin: '16px 0 0', background: 'rgba(107,79,255,0.07)', border: '1px solid rgba(107,79,255,0.2)', borderRadius: 10, overflow: 'hidden' }}>
+                <div style={{ padding: '10px 14px 8px', borderBottom: '1px solid rgba(107,79,255,0.1)' }}>
+                  <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(232,230,255,0.4)' }}>Pool Facts</span>
+                </div>
+                <div style={{ padding: '12px 14px', display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {extPool.stablecoin != null && (
+                    <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 20, background: 'rgba(232,230,255,0.06)', border: '0.5px solid rgba(232,230,255,0.15)', color: 'rgba(232,230,255,0.55)' }}>
+                      {extPool.stablecoin ? 'Stablecoin pool' : 'Volatile pair'}
+                    </span>
+                  )}
+                  {extPool.ilRisk != null && (
+                    <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 20, background: 'rgba(232,230,255,0.06)', border: '0.5px solid rgba(232,230,255,0.15)', color: 'rgba(232,230,255,0.55)' }}>
+                      IL risk: {extPool.ilRisk}
+                    </span>
+                  )}
+                  {extPool.exposure != null && (
+                    <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 20, background: 'rgba(232,230,255,0.06)', border: '0.5px solid rgba(232,230,255,0.15)', color: 'rgba(232,230,255,0.55)' }}>
+                      {extPool.exposure === 'single' ? 'Single asset' : extPool.exposure === 'multi' ? 'Multi asset' : extPool.exposure}
+                    </span>
+                  )}
+                  <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 20, background: chain.bg, border: `0.5px solid ${chain.text}40`, color: chain.text }}>
+                    {pool.chain}
+                  </span>
+                </div>
               </div>
             </div>
           );
