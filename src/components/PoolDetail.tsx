@@ -64,6 +64,55 @@ function formatTvl(val: number): string {
   return '$' + val.toFixed(0);
 }
 
+const getYieldSource = (pool: any): { label: string; description: string } => {
+  const { project, apy, apyBase, apyReward, stablecoin, exposure, symbol } = pool;
+
+  const hasRewards = apyReward && apyReward > 0;
+  const hasBase = apyBase && apyBase > 0;
+  const rewardRatio = apy > 0 ? (apyReward ?? 0) / apy : 0;
+
+  const stakingKeywords = ['staking', 'stake', 'lido', 'rocketpool', 'jito', 'binance-staked', 'marinade', 'frax-ether', 'ether.fi', 'kelp', 'renzo', 'sanctum', 'jupiter-staked', 'doublezero'];
+  const isStaking = stakingKeywords.some((k: string) => project?.toLowerCase().includes(k)) || symbol?.toLowerCase().includes('sol') && exposure === 'single';
+
+  if (isStaking) return {
+    label: 'Staking reward',
+    description: 'Yield comes from validator or protocol staking economics. Naturally capped by network conditions — generally the most reliable yield type.',
+  };
+
+  const lendingKeywords = ['aave', 'compound', 'morpho', 'spark', 'euler', 'maple', 'clearpool', 'sky-lending', 'radiant', 'benqi', 'venus'];
+  const isLending = lendingKeywords.some((k: string) => project?.toLowerCase().includes(k));
+
+  if (isLending) return {
+    label: 'Lending spread',
+    description: 'Yield comes from borrower demand. Rates fluctuate with utilisation — sustainable as long as borrow demand exists.',
+  };
+
+  if (stablecoin && hasBase && rewardRatio < 0.3) return {
+    label: 'Stablecoin LP fees',
+    description: 'Organic trading fees from stablecoin swaps. Low volatility, no IL risk, yield scales with swap volume.',
+  };
+
+  if (rewardRatio > 0.7) return {
+    label: 'Token incentives',
+    description: 'Majority of yield is reward token emissions. APY may compress when incentives reduce — treat headline figure with caution.',
+  };
+
+  if (hasBase && hasRewards && rewardRatio >= 0.3 && rewardRatio <= 0.7) return {
+    label: 'Fees + incentives',
+    description: 'Mix of organic trading fees and reward token emissions. Organic portion is sustainable; incentive portion may change.',
+  };
+
+  if (hasBase && !hasRewards) return {
+    label: 'Trading fees',
+    description: 'Yield comes entirely from LP trading fees. Sustainable as long as swap volume holds — no reliance on token emissions.',
+  };
+
+  return {
+    label: 'Mixed sources',
+    description: 'Yield comes from a combination of sources. Check the organic ratio below for a breakdown.',
+  };
+};
+
 // ── Token Prices Section ───────────────────────────────────────────────────
 
 function SparklineChart({ data, color }: { data: number[]; color: string }) {
@@ -476,6 +525,15 @@ export default function PoolDetail({ pool, onClose }: Props) {
             </div>
           );
 
+          const yieldSource = getYieldSource(extPool);
+          const yieldSourceEl = (
+            <div style={{ borderTop: '0.5px solid rgba(232,230,255,0.06)', marginTop: '12px', paddingTop: '12px' }}>
+              <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: 'rgba(232,230,255,0.4)', display: 'block', marginBottom: 4 }}>Yield Source</span>
+              <span style={{ fontSize: 13, color: '#E8E6FF', fontWeight: 500, display: 'block', marginBottom: 4 }}>{yieldSource.label}</span>
+              <span style={{ fontSize: 11, color: 'rgba(232,230,255,0.45)', lineHeight: 1.5, display: 'block' }}>{yieldSource.description}</span>
+            </div>
+          );
+
           const insightText = generateInsight(extPool, breakdown);
 
           let insightSynthesis: string;
@@ -554,6 +612,7 @@ export default function PoolDetail({ pool, onClose }: Props) {
                       <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                         {yieldCompBody}
                       </div>
+                      {yieldSourceEl}
                     </div>
                     <div style={CARD}>
                       <span style={SEC_LABEL}>Quick Stats</span>
@@ -667,6 +726,7 @@ export default function PoolDetail({ pool, onClose }: Props) {
                 </div>
                 <div style={{ padding: '14px 14px 12px' }}>
                   {yieldCompBody}
+                  {yieldSourceEl}
                 </div>
               </div>
 
