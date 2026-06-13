@@ -414,22 +414,17 @@ export default function PoolDetail({ pool, onClose }: Props) {
             </>
           );
 
+          const chipStyle = { fontSize: 11, padding: '3px 10px', borderRadius: 20, background: 'rgba(232,230,255,0.06)', border: '0.5px solid rgba(232,230,255,0.15)', color: 'rgba(232,230,255,0.55)' };
+          const isSingle = extPool.exposure === 'single';
           const factsChips = (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-              {extPool.stablecoin != null && (
-                <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 20, background: 'rgba(232,230,255,0.06)', border: '0.5px solid rgba(232,230,255,0.15)', color: 'rgba(232,230,255,0.55)' }}>
-                  {extPool.stablecoin ? 'Stablecoin pool' : 'Volatile pair'}
-                </span>
-              )}
+              {isSingle ? (
+                <span style={chipStyle}>Single asset</span>
+              ) : extPool.exposure != null ? (
+                <span style={chipStyle}>{extPool.stablecoin ? 'Stablecoin pair' : 'Volatile pair'}</span>
+              ) : null}
               {extPool.ilRisk != null && (
-                <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 20, background: 'rgba(232,230,255,0.06)', border: '0.5px solid rgba(232,230,255,0.15)', color: 'rgba(232,230,255,0.55)' }}>
-                  IL risk: {extPool.ilRisk}
-                </span>
-              )}
-              {extPool.exposure != null && (
-                <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 20, background: 'rgba(232,230,255,0.06)', border: '0.5px solid rgba(232,230,255,0.15)', color: 'rgba(232,230,255,0.55)' }}>
-                  {extPool.exposure === 'single' ? 'Single asset' : extPool.exposure === 'multi' ? 'Multi asset' : extPool.exposure}
-                </span>
+                <span style={chipStyle}>IL risk: {extPool.ilRisk}</span>
               )}
               <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 20, background: chain.bg, border: `0.5px solid ${chain.text}40`, color: chain.text }}>
                 {pool.chain}
@@ -483,7 +478,7 @@ export default function PoolDetail({ pool, onClose }: Props) {
                     {breakdownRows}
                   </div>
                   {/* Right: Token Prices + Yield Composition */}
-                  <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column', gap: '16px', height: '100%' }}>
                     <TokenPricesSection
                       poolSymbol={pool.symbol}
                       poolApy={apy}
@@ -491,9 +486,11 @@ export default function PoolDetail({ pool, onClose }: Props) {
                       loading={pricesLoading}
                       noMargin
                     />
-                    <div style={CARD}>
+                    <div style={{ ...CARD, flex: 1 }}>
                       <span style={SEC_LABEL}>Yield Composition</span>
-                      {yieldCompBody}
+                      <div style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                        {yieldCompBody}
+                      </div>
                     </div>
                   </div>
                 </div>
