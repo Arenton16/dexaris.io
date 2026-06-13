@@ -1,12 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer,
 } from 'recharts';
 import type { Pool } from '../types';
 import { CHAIN_LOGOS } from '../types';
-import { calculateDexarisScoreBreakdown, getDexarisScoreColour, getDexarisScoreTier } from '../utils/dexarisScore';
+import { calculateDexarisScore, calculateDexarisScoreBreakdown, getDexarisScoreColour, getDexarisScoreTier, type ScoreBreakdownResult } from '../utils/dexarisScore';
 import { useTokenPrices, parsePoolSymbols } from '../hooks/useTokenPrices';
+import { usePools } from '../contexts/PoolsContext';
 
 interface Props {
   pool: Pool | null;
@@ -239,6 +240,29 @@ function TokenPricesSection({
   );
 }
 
+function generateInsight(
+  p: { stablecoin?: boolean | null; ilRisk?: string | null },
+  breakdown: ScoreBreakdownResult,
+): string {
+  const consistency = breakdown.components.find(c => c.label === 'Consistency')?.score ?? 0;
+  const organic = breakdown.components.find(c => c.label === 'Organic Yield')?.score ?? 0;
+  const tvlScore = breakdown.components.find(c => c.label === 'TVL Depth')?.score ?? 0;
+  const lines: string[] = [];
+  if (consistency >= 9) lines.push('Highly consistent yield over 30 days.');
+  else if (consistency >= 6) lines.push('Moderately stable yield with some variance.');
+  else lines.push('APY has been volatile — treat the headline figure with caution.');
+  if (organic >= 9) lines.push('Yield is fully organic, not reliant on token incentives.');
+  else if (organic >= 5) lines.push('Mix of organic fees and token incentives.');
+  else lines.push('Yield is primarily incentive-driven and may not persist.');
+  if (tvlScore >= 9) lines.push('Deep liquidity reduces slippage and exit risk.');
+  else if (tvlScore >= 5) lines.push('Adequate liquidity for most position sizes.');
+  else lines.push('Shallow pool — large positions may face slippage.');
+  if (p.stablecoin) lines.push('Stablecoin pool eliminates price exposure.');
+  else if (p.ilRisk === 'no') lines.push('No impermanent loss risk.');
+  else if (p.ilRisk === 'yes') lines.push('Volatile pair — impermanent loss is a real risk here.');
+  return lines.join(' ');
+}
+
 export default function PoolDetail({ pool, onClose }: Props) {
   const isOpen = pool !== null;
   const [historyData, setHistoryData] = useState<HistoryPoint[]>([]);
@@ -247,11 +271,31 @@ export default function PoolDetail({ pool, onClose }: Props) {
   const { prices, loading: pricesLoading } = useTokenPrices(pool?.symbol ?? '');
   const [panelWide, setPanelWide] = useState(() => window.innerWidth >= 1100);
 
+  const [nowTick, setNowTick] = useState(Date.now);
+  const { allPools, fetchedAt } = usePools();
+
   useEffect(() => {
     const onResize = () => setPanelWide(window.innerWidth >= 1100);
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, []);
+
+  useEffect(() => {
+    const id = setInterval(() => setNowTick(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const scoreMap = useMemo(
+    () => new Map(allPools.map(p => [p.pool, calculateDexarisScore(p)])),
+    [allPools],
+  );
+  const scoreRank = useMemo(() => {
+    if (!pool) return null;
+    const sorted = [...scoreMap.entries()].sort((a, b) => b[1] - a[1]);
+    const idx = sorted.findIndex(([id]) => id === pool.pool);
+    return idx >= 0 ? idx + 1 : null;
+  }, [scoreMap, pool]);
+  const totalPools = allPools.length;
 
   useEffect(() => {
     if (!pool) {
@@ -432,6 +476,16 @@ export default function PoolDetail({ pool, onClose }: Props) {
             </div>
           );
 
+          const insightText = generateInsight(extPool, breakdown);
+
+          let yieldType: string;
+          if (extPool.stablecoin) yieldType = 'Stablecoin LP';
+          else if (extPool.ilRisk === 'no' && extPool.exposure === 'single') yieldType = 'Single asset staking';
+          else if (extPool.exposure != null && extPool.exposure !== 'single') yieldType = 'Multi asset LP';
+          else yieldType = 'Liquidity pool';
+
+          const elapsedSec = fetchedAt != null ? Math.round((nowTick - fetchedAt.getTime()) / 1000) : null;
+
           // ── Wide layout (≥ 1100px viewport) ─────────────────────────────
 
           if (panelWide) {
@@ -486,7 +540,7 @@ export default function PoolDetail({ pool, onClose }: Props) {
                     </div>
                     {breakdownRows}
                   </div>
-                  {/* Right: Token Prices + Yield Composition */}
+                  {/* Right: Token Prices + Yield Composition + Pool Insight + Quick Stats */}
                   <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column', gap: '16px', height: '100%' }}>
                     <TokenPricesSection
                       poolSymbol={pool.symbol}
@@ -495,11 +549,42 @@ export default function PoolDetail({ pool, onClose }: Props) {
                       loading={pricesLoading}
                       noMargin
                     />
-                    <div style={{ ...CARD, flex: 1 }}>
+                    <div style={CARD}>
                       <span style={SEC_LABEL}>Yield Composition</span>
-                      <div style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                         {yieldCompBody}
                       </div>
+                    </div>
+                    <div style={{ background: 'rgba(107,79,255,0.07)', border: '0.5px solid rgba(107,79,255,0.2)', borderRadius: '10px', padding: '16px' }}>
+                      <span style={{ ...SEC_LABEL, color: 'rgba(139,115,255,0.7)' }}>Pool Insight</span>
+                      <p style={{ margin: 0, fontSize: '12px', lineHeight: 1.6, color: 'rgba(232,230,255,0.65)' }}>{insightText}</p>
+                    </div>
+                    <div style={{ ...CARD, flex: 1 }}>
+                      <span style={SEC_LABEL}>Quick Stats</span>
+                      {(() => {
+                        const rowStyle = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0' };
+                        const labelStyle = { fontSize: '11px', color: 'rgba(232,230,255,0.4)' };
+                        const valueStyle = { fontSize: '11px', color: 'rgba(232,230,255,0.8)', fontWeight: 500 };
+                        const divStyle = { height: '0.5px', background: 'rgba(232,230,255,0.06)' };
+                        return (
+                          <>
+                            <div style={rowStyle}>
+                              <span style={labelStyle}>Score Rank</span>
+                              <span style={valueStyle}>{scoreRank != null ? `#${scoreRank} of ${totalPools}` : '—'}</span>
+                            </div>
+                            <div style={divStyle} />
+                            <div style={rowStyle}>
+                              <span style={labelStyle}>Yield Type</span>
+                              <span style={valueStyle}>{yieldType}</span>
+                            </div>
+                            <div style={divStyle} />
+                            <div style={rowStyle}>
+                              <span style={labelStyle}>Last Refreshed</span>
+                              <span style={valueStyle}>{elapsedSec != null ? `${elapsedSec}s ago` : '—'}</span>
+                            </div>
+                          </>
+                        );
+                      })()}
                     </div>
                   </div>
                 </div>
