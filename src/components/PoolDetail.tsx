@@ -527,10 +527,10 @@ export default function PoolDetail({ pool, onClose }: Props) {
 
           const yieldSource = getYieldSource(extPool);
           const yieldSourceEl = (
-            <div style={{ borderTop: '0.5px solid rgba(232,230,255,0.06)', marginTop: '12px', paddingTop: '12px' }}>
-              <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: 'rgba(232,230,255,0.4)', display: 'block', marginBottom: 4 }}>Yield Source</span>
-              <span style={{ fontSize: 13, color: '#E8E6FF', fontWeight: 500, display: 'block', marginBottom: 4 }}>{yieldSource.label}</span>
-              <span style={{ fontSize: 11, color: 'rgba(232,230,255,0.45)', lineHeight: 1.5, display: 'block' }}>{yieldSource.description}</span>
+            <div style={{ background: 'rgba(232,230,255,0.03)', border: '0.5px solid rgba(232,230,255,0.08)', borderRadius: '10px', padding: '14px 16px' }}>
+              <span style={SEC_LABEL}>Yield Source</span>
+              <span style={{ fontSize: '15px', fontWeight: 600, color: '#E8E6FF', display: 'block', marginBottom: '6px' }}>{yieldSource.label}</span>
+              <span style={{ fontSize: '12px', color: 'rgba(232,230,255,0.45)', lineHeight: 1.6, display: 'block' }}>{yieldSource.description}</span>
             </div>
           );
 
@@ -612,8 +612,8 @@ export default function PoolDetail({ pool, onClose }: Props) {
                       <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                         {yieldCompBody}
                       </div>
-                      {yieldSourceEl}
                     </div>
+                    {yieldSourceEl}
                     <div style={CARD}>
                       <span style={SEC_LABEL}>Quick Stats</span>
                       {(() => {
@@ -726,8 +726,12 @@ export default function PoolDetail({ pool, onClose }: Props) {
                 </div>
                 <div style={{ padding: '14px 14px 12px' }}>
                   {yieldCompBody}
-                  {yieldSourceEl}
                 </div>
+              </div>
+
+              {/* Yield Source */}
+              <div style={{ margin: '0 0 16px' }}>
+                {yieldSourceEl}
               </div>
 
               {/* 30-day APY history */}
