@@ -593,21 +593,22 @@ export default function PoolDetail({ pool, onClose }: Props) {
 
                 {/* Row 2 — Two columns */}
                 <div style={{ display: 'flex', gap: '16px', alignItems: 'stretch' }}>
-                  {/* Left: Score Breakdown */}
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ ...CARD, flex: 1 }}>
-                    <span style={SEC_LABEL}>Score Breakdown</span>
-                    <div className="detail-score-main">
-                      <span className="detail-score-num" style={{ color: scoreColour }}>{score}</span>
-                      <span className="score-badge" style={{ background: `${scoreColour}1a`, color: scoreColour, border: `1px solid ${scoreColour}40`, fontSize: 12, padding: '2px 10px' }}>{scoreTier}</span>
+                  {/* Left: Score Breakdown + Yield Source */}
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div style={CARD}>
+                      <span style={SEC_LABEL}>Score Breakdown</span>
+                      <div className="detail-score-main">
+                        <span className="detail-score-num" style={{ color: scoreColour }}>{score}</span>
+                        <span className="score-badge" style={{ background: `${scoreColour}1a`, color: scoreColour, border: `1px solid ${scoreColour}40`, fontSize: 12, padding: '2px 10px' }}>{scoreTier}</span>
+                      </div>
+                      <div className="score-bar-track" style={{ marginBottom: 14 }}>
+                        <div className="score-bar-fill" style={{ width: `${score}%`, background: scoreColour }} />
+                      </div>
+                      {breakdownRows}
                     </div>
-                    <div className="score-bar-track" style={{ marginBottom: 14 }}>
-                      <div className="score-bar-fill" style={{ width: `${score}%`, background: scoreColour }} />
-                    </div>
-                    {breakdownRows}
+                    {yieldSourceEl}
                   </div>
-                  </div>
-                  {/* Right: Yield Composition + Yield Source + Quick Stats */}
+                  {/* Right: Yield Composition + Quick Stats */}
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     <div style={CARD}>
                       <span style={SEC_LABEL}>Yield Composition</span>
@@ -615,7 +616,6 @@ export default function PoolDetail({ pool, onClose }: Props) {
                         {yieldCompBody}
                       </div>
                     </div>
-                    {yieldSourceEl}
                     <div style={CARD}>
                       <span style={SEC_LABEL}>Quick Stats</span>
                       {(() => {
