@@ -440,27 +440,36 @@ export default function PoolDetail({ pool, onClose }: Props) {
                 {headerEl}
 
                 {/* Row 1 — Stats strip */}
-                <div style={{ display: 'flex', gap: '12px' }}>
-                  <div style={{ ...CARD, flex: '1 1 0' }}>
-                    <span className="detail-label">APY</span>
-                    <span className="detail-value detail-value--apy">{apy.toFixed(2)}%</span>
-                    {apyDiff != null && (
-                      <span style={{ fontSize: 11, color: apyDiff >= 0 ? '#4ECDA4' : '#FF6B6B', marginTop: 2, display: 'block' }}>
-                        vs 30d avg: {apyDiff >= 0 ? '+' : ''}{apyDiff.toFixed(2)}%
-                      </span>
-                    )}
-                  </div>
-                  <div style={{ ...CARD, flex: '1 1 0' }}>
-                    <span className="detail-label">TVL</span>
-                    <span className="detail-value detail-value--tvl">{formatTvl(pool.tvlUsd)}</span>
-                  </div>
-                  <div style={{ ...CARD, flex: '1 1 0' }}>
-                    <span className="detail-label">Risk Level</span>
-                    <span className="detail-value" style={{ color: risk.color }}>
-                      <span className="detail-risk-dot">●</span>
-                      {risk.label}
-                    </span>
-                  </div>
+                <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
+                  {(() => {
+                    const statCard = { flex: 1, background: 'rgba(232,230,255,0.03)', border: '0.5px solid rgba(232,230,255,0.08)', borderRadius: '10px', padding: '14px 16px', display: 'flex', flexDirection: 'column' as const, gap: '6px' };
+                    const statLabel = { fontSize: '10px', fontWeight: 400, color: 'rgba(232,230,255,0.4)', textTransform: 'uppercase' as const, letterSpacing: '0.5px' };
+                    const statValue = { fontSize: '22px', fontWeight: 600, lineHeight: 1.2 };
+                    return (
+                      <>
+                        <div style={statCard}>
+                          <span style={statLabel}>APY</span>
+                          <span style={{ ...statValue, color: 'var(--accent-text)' }}>{apy.toFixed(2)}%</span>
+                          {apyDiff != null && (
+                            <span style={{ fontSize: '11px', fontWeight: 400, marginTop: '2px', color: apyDiff >= 0 ? '#4ECDA4' : '#FF6B6B' }}>
+                              vs 30d avg: {apyDiff >= 0 ? '+' : ''}{apyDiff.toFixed(2)}%
+                            </span>
+                          )}
+                        </div>
+                        <div style={statCard}>
+                          <span style={statLabel}>TVL</span>
+                          <span style={{ ...statValue, color: 'var(--accent-text)' }}>{formatTvl(pool.tvlUsd)}</span>
+                        </div>
+                        <div style={statCard}>
+                          <span style={statLabel}>Risk Level</span>
+                          <span style={{ ...statValue, color: risk.color, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span style={{ width: 8, height: 8, borderRadius: '50%', background: risk.color, flex: 'none', display: 'inline-block' }} />
+                            {risk.label}
+                          </span>
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
 
                 {/* Row 2 — Two columns */}
