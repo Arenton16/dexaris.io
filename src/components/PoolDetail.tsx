@@ -592,9 +592,10 @@ export default function PoolDetail({ pool, onClose }: Props) {
                 </div>
 
                 {/* Row 2 — Two columns */}
-                <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+                <div style={{ display: 'flex', gap: '16px', alignItems: 'stretch' }}>
                   {/* Left: Score Breakdown */}
-                  <div style={{ ...CARD, flex: '1 1 0', minWidth: 0 }}>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ ...CARD, flex: 1 }}>
                     <span style={SEC_LABEL}>Score Breakdown</span>
                     <div className="detail-score-main">
                       <span className="detail-score-num" style={{ color: scoreColour }}>{score}</span>
@@ -605,8 +606,9 @@ export default function PoolDetail({ pool, onClose }: Props) {
                     </div>
                     {breakdownRows}
                   </div>
-                  {/* Right: Yield Composition + Quick Stats */}
-                  <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  </div>
+                  {/* Right: Yield Composition + Yield Source + Quick Stats */}
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     <div style={CARD}>
                       <span style={SEC_LABEL}>Yield Composition</span>
                       <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
