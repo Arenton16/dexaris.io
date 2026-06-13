@@ -478,6 +478,13 @@ export default function PoolDetail({ pool, onClose }: Props) {
 
           const insightText = generateInsight(extPool, breakdown);
 
+          let insightSynthesis: string;
+          if (score >= 80) insightSynthesis = 'Overall this is one of the stronger yield opportunities in the current market. Suitable for allocators prioritising yield quality over headline APY.';
+          else if (score >= 60) insightSynthesis = 'A solid yield opportunity with manageable risk. Worth monitoring APY consistency before committing a large position.';
+          else if (score >= 40) insightSynthesis = 'Moderate quality — the yield exists but comes with trade-offs. Understand the incentive structure before entering.';
+          else if (score >= 20) insightSynthesis = 'Below average yield quality. High APY here likely reflects elevated risk or unsustainable incentives.';
+          else insightSynthesis = 'Poor quality signal across most metrics. Approach with significant caution regardless of the headline APY.';
+
           let yieldType: string;
           if (extPool.stablecoin) yieldType = 'Stablecoin LP';
           else if (extPool.ilRisk === 'no' && extPool.exposure === 'single') yieldType = 'Single asset staking';
@@ -528,7 +535,7 @@ export default function PoolDetail({ pool, onClose }: Props) {
 
                 {/* Row 2 — Two columns */}
                 <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
-                  {/* Left: Score + Breakdown */}
+                  {/* Left: Score Breakdown */}
                   <div style={{ ...CARD, flex: '1 1 0', minWidth: 0 }}>
                     <span style={SEC_LABEL}>Score Breakdown</span>
                     <div className="detail-score-main">
@@ -540,26 +547,15 @@ export default function PoolDetail({ pool, onClose }: Props) {
                     </div>
                     {breakdownRows}
                   </div>
-                  {/* Right: Token Prices + Yield Composition + Pool Insight + Quick Stats */}
-                  <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column', gap: '16px', height: '100%' }}>
-                    <TokenPricesSection
-                      poolSymbol={pool.symbol}
-                      poolApy={apy}
-                      prices={prices}
-                      loading={pricesLoading}
-                      noMargin
-                    />
+                  {/* Right: Yield Composition + Quick Stats */}
+                  <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     <div style={CARD}>
                       <span style={SEC_LABEL}>Yield Composition</span>
                       <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                         {yieldCompBody}
                       </div>
                     </div>
-                    <div style={{ background: 'rgba(107,79,255,0.07)', border: '0.5px solid rgba(107,79,255,0.2)', borderRadius: '10px', padding: '16px' }}>
-                      <span style={{ ...SEC_LABEL, color: 'rgba(139,115,255,0.7)' }}>Pool Insight</span>
-                      <p style={{ margin: 0, fontSize: '12px', lineHeight: 1.6, color: 'rgba(232,230,255,0.65)' }}>{insightText}</p>
-                    </div>
-                    <div style={{ ...CARD, flex: 1 }}>
+                    <div style={CARD}>
                       <span style={SEC_LABEL}>Quick Stats</span>
                       {(() => {
                         const rowStyle = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0' };
@@ -589,13 +585,20 @@ export default function PoolDetail({ pool, onClose }: Props) {
                   </div>
                 </div>
 
-                {/* Row 3 — APY history */}
+                {/* Row 3 — Pool Insight */}
+                <div style={{ background: 'rgba(107,79,255,0.07)', border: '0.5px solid rgba(107,79,255,0.2)', borderRadius: '10px', padding: '16px' }}>
+                  <span style={{ ...SEC_LABEL, color: 'rgba(139,115,255,0.7)' }}>Pool Insight</span>
+                  <p style={{ margin: 0, fontSize: '13px', lineHeight: 1.7, color: 'rgba(232,230,255,0.65)' }}>{insightText}</p>
+                  <p style={{ margin: 0, marginTop: '10px', fontSize: '13px', lineHeight: 1.7, color: 'rgba(232,230,255,0.65)' }}>{insightSynthesis}</p>
+                </div>
+
+                {/* Row 4 — APY history */}
                 <div style={CARD}>
                   <span style={SEC_LABEL}>30 Day APY History</span>
                   {historyChart(180)}
                 </div>
 
-                {/* Row 4 — Pool Facts */}
+                {/* Row 5 — Pool Facts */}
                 <div style={CARD}>
                   <span style={SEC_LABEL}>Pool Facts</span>
                   {factsChips}
