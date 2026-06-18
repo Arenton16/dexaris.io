@@ -1460,7 +1460,7 @@ body {
 .search-input {
   width: 100%;
   max-width: 360px;
-  padding: 9px 14px;
+  padding: 7px 14px;
   background: rgba(107,79,255,0.06);
   border: 0.5px solid rgba(107,79,255,0.2);
   border-radius: 6px;
@@ -1506,7 +1506,7 @@ body {
 
 .yield-table th {
   text-align: left;
-  padding: 10px 14px;
+  padding: 5px 10px;
   font-family: 'Inter', sans-serif;
   font-size: 9px;
   font-weight: 500;
@@ -1531,7 +1531,7 @@ body {
 }
 
 .yield-table td {
-  padding: 11px 14px;
+  padding: 6px 10px;
   border-bottom: 1px solid rgba(107,79,255,0.07);
   vertical-align: middle;
 }
@@ -2002,7 +2002,7 @@ body {
 
   .yield-table th,
   .yield-table td {
-    padding: 9px 8px;
+    padding: 5px 6px;
   }
 
   /* Combined APY / TVL cell */
