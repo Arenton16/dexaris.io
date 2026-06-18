@@ -1,16 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
-import { CHAIN_LABELS, CHAIN_LOGOS, type ChainKey, type Pool } from '../types';
+import { CHAIN_LABELS, type ChainKey, type Pool } from '../types';
 import { calculateDexarisScore, getDexarisScoreColour, getDexarisScoreTier } from '../utils/dexarisScore';
 import PoolDetail from './PoolDetail';
 import StatsBar from './StatsBar';
 
-const CHAIN_COLORS: Record<string, { bg: string; text: string }> = {
-  Ethereum: { bg: '#1a3a5c', text: '#3B9EFF' },
-  Base:     { bg: '#1a1a4a', text: '#6B7FFF' },
-  Solana:   { bg: '#2d1a4a', text: '#9945FF' },
-  Arbitrum: { bg: '#1a2d4a', text: '#2D9CDB' },
-  Avalanche:{ bg: '#4a1a1a', text: '#E84142' },
-  Polygon:  { bg: '#2d1a4a', text: '#8247E5' },
+const CHAIN_COLOURS: Record<string, string> = {
+  Ethereum: '#3B9EFF',
+  Solana:   '#A879FF',
+  Base:     '#7B92D9',
+  Arbitrum: '#3B9EFF',
+  Avalanche:'#FF6B6B',
+  Polygon:  '#FFB347',
 };
 
 interface Props {
@@ -143,7 +143,7 @@ export default function YieldTable({
           </div>
         ) : (
           <>
-            <table className="yield-table">
+            <table className="yield-table" style={{ fontVariantNumeric: 'tabular-nums' }}>
               <thead>
                 <tr>
                   <th style={{ width: 32 }} />
@@ -213,25 +213,17 @@ export default function YieldTable({
                       </td>
                       <td>{pool.symbol}</td>
                       <td>
-                        <span
-                          className="chain-badge"
-                          style={{
-                            backgroundColor: CHAIN_COLORS[pool.chain]?.bg ?? 'rgba(107,79,255,0.1)',
-                            color: CHAIN_COLORS[pool.chain]?.text ?? 'rgba(232,230,255,0.45)',
-                          }}
-                        >
-                          {CHAIN_LOGOS[pool.chain] && (
-                            <img
-                              src={CHAIN_LOGOS[pool.chain]}
-                              alt={pool.chain}
-                              width={16}
-                              height={16}
-                              className="chain-logo"
-                              onError={e => { e.currentTarget.style.display = 'none'; }}
-                            />
-                          )}
-                          {pool.chain}
-                        </span>
+                        {(() => {
+                          const cc = CHAIN_COLOURS[pool.chain] ?? 'rgba(232,230,255,0.4)';
+                          return (
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '10px', padding: '3px 9px', borderRadius: '10px', background: 'rgba(232,230,255,0.04)', border: '0.5px solid rgba(232,230,255,0.12)', color: 'rgba(232,230,255,0.55)' }}>
+                              <span style={{ width: '13px', height: '13px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', fontWeight: 700, flexShrink: 0, background: `${cc}33`, color: cc }}>
+                                {pool.chain[0]}
+                              </span>
+                              {pool.chain}
+                            </span>
+                          );
+                        })()}
                       </td>
                       <td className="apy hide-mobile">{pool.apy!.toFixed(2)}%</td>
                       <td className="tvl hide-mobile">${formatTvl(pool.tvlUsd)}</td>
