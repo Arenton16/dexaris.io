@@ -158,9 +158,8 @@ export default function App() {
                 minHeight: '100%',
                 overflow: 'hidden',
                 transition: 'width 0.2s ease, min-width 0.2s ease',
-                borderTop: '0.5px solid rgba(232,230,255,0.08)',
-                borderBottom: '0.5px solid rgba(232,230,255,0.08)',
-                borderRight: '0.5px solid rgba(232,230,255,0.08)',
+                background: '#0F0E22',
+                borderRight: sidebarOpen ? '0.5px solid rgba(232,230,255,0.08)' : 'none',
               }}>
                 <div style={{ paddingTop: '12px', paddingLeft: '4px' }}>
                   <button
