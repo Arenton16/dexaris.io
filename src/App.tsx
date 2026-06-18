@@ -159,7 +159,7 @@ export default function App() {
                 overflow: 'hidden',
                 transition: 'width 0.2s ease, min-width 0.2s ease',
                 background: '#0F0E22',
-                borderRight: sidebarOpen ? '0.5px solid rgba(232,230,255,0.08)' : 'none',
+                borderBottom: sidebarOpen ? '0.5px solid rgba(232,230,255,0.08)' : 'none',
               }}>
                 <div style={{
                   opacity: sidebarOpen ? 1 : 0,
@@ -184,15 +184,15 @@ export default function App() {
                   />
                 </div>
               </div>
-              <main className="content" style={{ position: 'relative' }}>
+              <main className="content">
                 <button
                   onClick={() => setSidebarOpen(o => !o)}
                   aria-label={sidebarOpen ? 'Collapse filters' : 'Expand filters'}
                   style={{
-                    position: 'absolute',
-                    left: '8px',
-                    top: '16px',
-                    zIndex: 10,
+                    position: 'relative',
+                    marginLeft: '8px',
+                    marginTop: '16px',
+                    marginBottom: '12px',
                     width: '28px',
                     height: '28px',
                     borderRadius: '6px',
@@ -205,6 +205,7 @@ export default function App() {
                     cursor: 'pointer',
                     fontSize: '14px',
                     flexShrink: 0,
+                    zIndex: 5,
                   }}
                 >
                   {sidebarOpen ? '‹' : '›'}
