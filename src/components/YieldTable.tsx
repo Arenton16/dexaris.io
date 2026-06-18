@@ -217,9 +217,19 @@ export default function YieldTable({
                           const cc = CHAIN_COLOURS[pool.chain] ?? 'rgba(232,230,255,0.4)';
                           return (
                             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '10px', padding: '3px 9px', borderRadius: '10px', background: 'rgba(232,230,255,0.04)', border: '0.5px solid rgba(232,230,255,0.12)', color: 'rgba(232,230,255,0.55)' }}>
-                              <span style={{ width: '13px', height: '13px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', fontWeight: 700, flexShrink: 0, background: `${cc}33`, color: cc }}>
-                                {pool.chain[0]}
-                              </span>
+                              <img
+                                src={`/logos/chains/${pool.chain.toLowerCase()}.png`}
+                                alt={pool.chain}
+                                style={{ width: '13px', height: '13px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                                onError={e => {
+                                  const t = e.currentTarget;
+                                  t.style.display = 'none';
+                                  const fb = document.createElement('span');
+                                  fb.textContent = pool.chain[0];
+                                  Object.assign(fb.style, { width: '13px', height: '13px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', fontWeight: '700', flexShrink: '0', background: `${cc}33`, color: cc });
+                                  t.parentNode?.insertBefore(fb, t);
+                                }}
+                              />
                               {pool.chain}
                             </span>
                           );
