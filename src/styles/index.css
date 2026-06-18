@@ -731,6 +731,7 @@ body {
 .layout {
   display: flex;
   flex: 1;
+  align-items: stretch;
 }
 
 /* Filter sidebar (chain / APY / sort) */
