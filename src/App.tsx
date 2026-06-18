@@ -152,8 +152,8 @@ export default function App() {
               )}
               <div style={{
                 flexShrink: 0,
-                width: sidebarOpen ? '190px' : '36px',
-                minWidth: sidebarOpen ? '190px' : '36px',
+                width: sidebarOpen ? '190px' : '0px',
+                minWidth: sidebarOpen ? '190px' : '0px',
                 height: '100%',
                 minHeight: '100%',
                 overflow: 'hidden',
@@ -161,34 +161,12 @@ export default function App() {
                 background: '#0F0E22',
                 borderRight: sidebarOpen ? '0.5px solid rgba(232,230,255,0.08)' : 'none',
               }}>
-                <div style={{ paddingTop: '12px', paddingLeft: '4px' }}>
-                  <button
-                    onClick={() => setSidebarOpen(o => !o)}
-                    aria-label={sidebarOpen ? 'Collapse filters' : 'Expand filters'}
-                    style={{
-                      width: '28px',
-                      height: '28px',
-                      borderRadius: '6px',
-                      background: 'rgba(232,230,255,0.04)',
-                      border: '0.5px solid rgba(232,230,255,0.1)',
-                      color: 'rgba(232,230,255,0.4)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      cursor: 'pointer',
-                      fontSize: '14px',
-                      marginBottom: '10px',
-                      flexShrink: 0,
-                    }}
-                  >
-                    {sidebarOpen ? '‹' : '›'}
-                  </button>
-                </div>
                 <div style={{
                   opacity: sidebarOpen ? 1 : 0,
                   pointerEvents: sidebarOpen ? 'auto' : 'none',
                   transition: 'opacity 0.15s ease',
                   width: '190px',
+                  paddingTop: '12px',
                   paddingBottom: '24px',
                 }}>
                   <Sidebar
@@ -206,7 +184,31 @@ export default function App() {
                   />
                 </div>
               </div>
-              <main className="content">
+              <main className="content" style={{ position: 'relative' }}>
+                <button
+                  onClick={() => setSidebarOpen(o => !o)}
+                  aria-label={sidebarOpen ? 'Collapse filters' : 'Expand filters'}
+                  style={{
+                    position: 'absolute',
+                    left: '8px',
+                    top: '16px',
+                    zIndex: 10,
+                    width: '28px',
+                    height: '28px',
+                    borderRadius: '6px',
+                    background: 'rgba(232,230,255,0.04)',
+                    border: '0.5px solid rgba(232,230,255,0.1)',
+                    color: 'rgba(232,230,255,0.4)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    flexShrink: 0,
+                  }}
+                >
+                  {sidebarOpen ? '‹' : '›'}
+                </button>
                 <YieldTable
                   allPools={allPools}
                   loading={isLoading}
