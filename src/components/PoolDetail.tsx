@@ -290,14 +290,19 @@ function TokenPricesSection({
 }
 
 function generateInsight(
-  p: { apy?: number | null; apyReward?: number | null; stablecoin?: boolean | null; ilRisk?: string | null },
+  p: { apy?: number | null; apyBase?: number | null; apyReward?: number | null; stablecoin?: boolean | null; ilRisk?: string | null },
   breakdown: ScoreBreakdownResult,
 ): string {
   const consistency = breakdown.components.find(c => c.label === 'Consistency')?.score ?? 0;
   const organic = breakdown.components.find(c => c.label === 'Organic Yield')?.score ?? 0;
   const tvlScore = breakdown.components.find(c => c.label === 'TVL Depth')?.score ?? 0;
   const apy = p.apy ?? 0;
-  const rewardRatio = apy > 0 ? (p.apyReward ?? 0) / apy : 0;
+  const apyBase = p.apyBase ?? 0;
+  // Use the same incentive proportion as the Yield Composition bar: (apy - apyBase) / apy.
+  // Only non-zero when apyReward is truthy — the same condition the bar uses to enter its
+  // incentive branch — so the warning never fires when Yield Composition shows 100% organic.
+  const rewardRatio = apy > 0 && p.apyReward ? (apy - apyBase) / Math.max(apy, 0.001) : 0;
+  console.log('[generateInsight]', { apy, apyReward: p.apyReward, apyBase, rewardRatio });
   const lines: string[] = [];
   if (consistency >= 9) lines.push('Highly consistent yield over 30 days.');
   else if (consistency >= 6) lines.push('Moderately stable yield with some variance.');
@@ -306,7 +311,7 @@ function generateInsight(
   else if (organic >= 5) lines.push('Mix of organic fees and token incentives.');
   else lines.push('Yield is primarily incentive-driven and may not persist.');
   if (rewardRatio > 0.7) {
-    lines.push('More than ' + Math.round(rewardRatio * 100) + '% of this yield comes from token emissions. Check whether the reward token has a known unlock schedule or high inflation before assuming this return is durable — the real return after token price decline can be far lower than the headline APY.');
+    lines.push('More than ' + Math.min(100, Math.round(rewardRatio * 100)) + '% of this yield comes from token emissions. Check whether the reward token has a known unlock schedule or high inflation before assuming this return is durable — the real return after token price decline can be far lower than the headline APY.');
   }
   if (tvlScore >= 9) lines.push('Deep liquidity reduces slippage and exit risk.');
   else if (tvlScore >= 5) lines.push('Adequate liquidity for most position sizes.');
