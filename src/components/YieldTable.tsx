@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { CHAIN_LABELS, type ChainKey, type Pool } from '../types';
-import { calculateDexarisScore, getDexarisScoreColour, getDexarisScoreTier } from '../utils/dexarisScore';
+import { calculateDexarisScore, calculateDexarisScoreBreakdown, getDexarisScoreColour, getDexarisScoreTier } from '../utils/dexarisScore';
 import PoolDetail from './PoolDetail';
 import StatsBar from './StatsBar';
 
@@ -34,6 +34,48 @@ interface Props {
 
 const PAGE_SIZE = 100;
 
+type Component = { label: string; score: number };
+
+function generateCaption(components: Component[]): string {
+  const weak = components.filter(c => c.score < 4);
+  const strong = components.filter(c => c.score >= 7);
+  const organicComp = components.find(c => c.label === 'Organic Yield');
+  const consistencyComp = components.find(c => c.label === 'Consistency');
+  const tvlComp = components.find(c => c.label === 'TVL Depth');
+  if (organicComp && organicComp.score < 3 && weak.length >= 2) return 'mostly incentives';
+  if (strong.length >= 4) return 'deep, consistent';
+  if (consistencyComp && consistencyComp.score >= 7 && organicComp && organicComp.score >= 7) return 'stable, organic';
+  if (weak.length >= 2 && strong.length === 0) return 'high risk';
+  if (weak.length >= 1 && strong.length >= 1) return 'mixed signal';
+  if (tvlComp && tvlComp.score < 3) return 'shallow pool';
+  return 'moderate quality';
+}
+
+function ReasonBar({ components }: { components: Component[] }) {
+  const getColour = (score: number) => {
+    if (score >= 7) return '#4ECDA4';
+    if (score >= 4) return '#FFB347';
+    return '#FF6B6B';
+  };
+  return (
+    <div>
+      <div style={{ display: 'flex', gap: '1.5px', width: '64px' }}>
+        {components.map((c, i) => (
+          <div key={i} style={{
+            height: '5px',
+            flex: 1,
+            borderRadius: '1px',
+            background: c.score > 0 ? getColour(c.score) : 'rgba(232,230,255,0.07)',
+          }} />
+        ))}
+      </div>
+      <div style={{ fontSize: '8px', color: 'rgba(232,230,255,0.32)', marginTop: '2px' }}>
+        {generateCaption(components)}
+      </div>
+    </div>
+  );
+}
+
 export default function YieldTable({
   allPools, loading, error, fetchedAt, isFlashing, apyDelta, onRetry,
   selectedChains, selectedProtocols, minApy, sortKey, sortDir, onSortChange,
@@ -52,6 +94,12 @@ export default function YieldTable({
   const scoreMap = useMemo(() => {
     const map = new Map<string, number>();
     for (const pool of allPools) map.set(pool.pool, calculateDexarisScore(pool));
+    return map;
+  }, [allPools]);
+
+  const breakdownMap = useMemo(() => {
+    const map = new Map<string, Component[]>();
+    for (const pool of allPools) map.set(pool.pool, calculateDexarisScoreBreakdown(pool).components);
     return map;
   }, [allPools]);
 
@@ -177,6 +225,7 @@ export default function YieldTable({
                       >ⓘ</button>
                     </span>
                   </th>
+                  <th className="hide-mobile" style={{ width: 80 }}>Why</th>
                   <th className="show-mobile">APY / TVL</th>
                 </tr>
               </thead>
@@ -186,6 +235,7 @@ export default function YieldTable({
                   const score = scoreMap.get(pool.pool) ?? 0;
                   const scoreColour = getDexarisScoreColour(score);
                   const scoreTier = getDexarisScoreTier(score);
+                  const breakdown = breakdownMap.get(pool.pool) ?? [];
                   return (
                     <tr
                       key={pool.pool}
@@ -246,6 +296,9 @@ export default function YieldTable({
                             border: `1px solid ${scoreColour}40`,
                           }}>{scoreTier}</span>
                         </span>
+                      </td>
+                      <td className="hide-mobile" style={{ width: 80 }}>
+                        <ReasonBar components={breakdown} />
                       </td>
                       <td className="show-mobile">
                         <div className="mobile-apy-tvl">
