@@ -290,12 +290,14 @@ function TokenPricesSection({
 }
 
 function generateInsight(
-  p: { stablecoin?: boolean | null; ilRisk?: string | null },
+  p: { apy?: number | null; apyReward?: number | null; stablecoin?: boolean | null; ilRisk?: string | null },
   breakdown: ScoreBreakdownResult,
 ): string {
   const consistency = breakdown.components.find(c => c.label === 'Consistency')?.score ?? 0;
   const organic = breakdown.components.find(c => c.label === 'Organic Yield')?.score ?? 0;
   const tvlScore = breakdown.components.find(c => c.label === 'TVL Depth')?.score ?? 0;
+  const apy = p.apy ?? 0;
+  const rewardRatio = apy > 0 ? (p.apyReward ?? 0) / apy : 0;
   const lines: string[] = [];
   if (consistency >= 9) lines.push('Highly consistent yield over 30 days.');
   else if (consistency >= 6) lines.push('Moderately stable yield with some variance.');
@@ -303,6 +305,9 @@ function generateInsight(
   if (organic >= 9) lines.push('Yield is fully organic, not reliant on token incentives.');
   else if (organic >= 5) lines.push('Mix of organic fees and token incentives.');
   else lines.push('Yield is primarily incentive-driven and may not persist.');
+  if (rewardRatio > 0.7) {
+    lines.push('More than ' + Math.round(rewardRatio * 100) + '% of this yield comes from token emissions. Check whether the reward token has a known unlock schedule or high inflation before assuming this return is durable — the real return after token price decline can be far lower than the headline APY.');
+  }
   if (tvlScore >= 9) lines.push('Deep liquidity reduces slippage and exit risk.');
   else if (tvlScore >= 5) lines.push('Adequate liquidity for most position sizes.');
   else lines.push('Shallow pool — large positions may face slippage.');
