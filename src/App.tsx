@@ -25,6 +25,7 @@ export default function App() {
   const [countdown, setCountdown] = useState(60);
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [filterSidebarOpen, setFilterSidebarOpen] = useState(true);
   const [navCollapsed, setNavCollapsed] = useState(true);
   const [bannerVisible, setBannerVisible] = useState(true);
   const [currentPage, setCurrentPage] = useState<Page>('yields');
@@ -149,19 +150,52 @@ export default function App() {
               {isSidebarOpen && (
                 <div className="sidebar-backdrop" onClick={closeSidebar} />
               )}
-              <Sidebar
-                selected={selectedChains}
-                onChange={setSelectedChains}
-                minApy={minApy}
-                onMinApyChange={setMinApy}
-                sortKey={sortKey}
-                onSortKeyChange={handleSortKeyChange}
-                isOpen={isSidebarOpen}
-                onClose={closeSidebar}
-                allPools={allPools}
-                selectedProtocols={selectedProtocols}
-                onProtocolsChange={setSelectedProtocols}
-              />
+              <div style={{
+                flexShrink: 0,
+                width: filterSidebarOpen ? '148px' : '40px',
+                transition: 'width 0.2s ease',
+                overflow: 'hidden',
+                position: 'relative',
+                borderRight: filterSidebarOpen ? undefined : '1px solid var(--border)',
+              }}>
+                <Sidebar
+                  selected={selectedChains}
+                  onChange={setSelectedChains}
+                  minApy={minApy}
+                  onMinApyChange={setMinApy}
+                  sortKey={sortKey}
+                  onSortKeyChange={handleSortKeyChange}
+                  isOpen={isSidebarOpen}
+                  onClose={closeSidebar}
+                  allPools={allPools}
+                  selectedProtocols={selectedProtocols}
+                  onProtocolsChange={setSelectedProtocols}
+                />
+                <button
+                  onClick={() => setFilterSidebarOpen(o => !o)}
+                  aria-label={filterSidebarOpen ? 'Collapse filters' : 'Expand filters'}
+                  style={{
+                    position: 'absolute',
+                    top: '16px',
+                    right: '6px',
+                    zIndex: 10,
+                    width: '28px',
+                    height: '28px',
+                    borderRadius: '6px',
+                    background: 'rgba(232,230,255,0.04)',
+                    border: '0.5px solid rgba(232,230,255,0.1)',
+                    color: 'rgba(232,230,255,0.45)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    flexShrink: 0,
+                  }}
+                >
+                  {filterSidebarOpen ? '‹' : '›'}
+                </button>
+              </div>
               <main className="content">
                 <YieldTable
                   allPools={allPools}
