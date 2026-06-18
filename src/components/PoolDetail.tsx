@@ -462,8 +462,27 @@ export default function PoolDetail({ pool, onClose }: Props) {
             </div>
           ));
 
+          const yieldSource = getYieldSource(extPool);
+          const compositionFallback = (() => {
+            const isWarning = yieldSource.label === 'Token incentives';
+            const isOrganic = yieldSource.label === 'Staking reward' || yieldSource.label === 'Lending spread' || yieldSource.label === 'Trading fees';
+            const text = isWarning
+              ? 'Detailed breakdown unavailable, but this pool is classified as incentive-driven based on protocol type and reward structure.'
+              : isOrganic
+                ? 'Detailed breakdown unavailable, but this pool is classified as organic yield based on protocol type.'
+                : 'Yield composition data is not available for this pool.';
+            return { text, isWarning };
+          })();
+
           const yieldCompBody = pool.apyBase == null ? (
-            <p style={{ margin: 0, fontSize: 12, color: 'rgba(232,230,255,0.35)', fontStyle: 'italic' }}>Composition data unavailable</p>
+            <p style={{
+              margin: 0,
+              fontSize: '12px',
+              color: 'rgba(232,230,255,0.5)',
+              ...(compositionFallback.isWarning ? { borderLeft: '2px solid #FFB347', paddingLeft: '10px' } : {}),
+            }}>
+              {compositionFallback.text}
+            </p>
           ) : (!extPool.apyReward) ? (
             <>
               <div style={{ height: 8, background: '#4ECDA4', borderRadius: 4, marginBottom: 10 }} />
@@ -535,7 +554,6 @@ export default function PoolDetail({ pool, onClose }: Props) {
             </div>
           );
 
-          const yieldSource = getYieldSource(extPool);
           const yieldSourceEl = (
             <div style={{ background: 'rgba(232,230,255,0.03)', border: '0.5px solid rgba(232,230,255,0.08)', borderRadius: '10px', padding: '14px 16px' }}>
               <span style={SEC_LABEL}>Yield Source</span>
