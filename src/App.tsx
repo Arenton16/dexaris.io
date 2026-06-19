@@ -128,6 +128,7 @@ export default function App() {
           onManualRefresh={triggerRefresh}
           onToggleNav={toggleNav}
           onToggleFilters={toggleFilters}
+          currentPage={currentPage}
         />
 
         {bannerVisible && <NewsBanner onDismiss={dismissBanner} />}

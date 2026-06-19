@@ -191,6 +191,7 @@ export default function YieldTable({
           </div>
         ) : (
           <>
+            <style>{`.yield-table td { vertical-align: middle; line-height: 1.4; }`}</style>
             <table className="yield-table" style={{ fontVariantNumeric: 'tabular-nums' }}>
               <thead>
                 <tr>
@@ -256,9 +257,7 @@ export default function YieldTable({
                         <div className="protocol-cell">
                           <ProtocolLogo logo={pool.logo} name={pool.project} />
                           {pool.project}
-                          {pool.pool === bestPickId && (
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', fontSize: '10px', fontWeight: 600, padding: '2px 7px', borderRadius: '10px', background: 'rgba(107,79,255,0.15)', border: '0.5px solid rgba(107,79,255,0.4)', color: '#8B73FF', marginLeft: '8px', letterSpacing: '0.3px', textTransform: 'uppercase' }}>✦ Best Pick</span>
-                          )}
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', fontSize: '10px', fontWeight: 600, padding: '2px 7px', borderRadius: '10px', background: 'rgba(107,79,255,0.15)', border: '0.5px solid rgba(107,79,255,0.4)', color: '#8B73FF', marginLeft: '8px', letterSpacing: '0.3px', textTransform: 'uppercase', visibility: pool.pool === bestPickId ? 'visible' : 'hidden' }}>✦ Best Pick</span>
                         </div>
                       </td>
                       <td>{pool.symbol}</td>

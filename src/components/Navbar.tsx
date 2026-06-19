@@ -1,11 +1,20 @@
 import { useEffect, useRef, useState } from 'react';
 
+const PAGE_TITLES: Record<string, string> = {
+  yields: 'Yield Explorer',
+  watchlist: 'Watchlist',
+  analytics: 'Analytics',
+  portfolio: 'Portfolio',
+  alerts: 'Alerts',
+};
+
 interface Props {
   countdown: number;
   isLoading: boolean;
   onManualRefresh: () => void;
   onToggleNav: () => void;
   onToggleFilters: () => void;
+  currentPage: string;
 }
 
 export default function TopBar({
@@ -14,6 +23,7 @@ export default function TopBar({
   onManualRefresh,
   onToggleNav,
   onToggleFilters,
+  currentPage,
 }: Props) {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const wasLoading = useRef(false);
@@ -35,7 +45,7 @@ export default function TopBar({
         <span /><span /><span />
       </button>
 
-      <h1 className="topbar-title">Yield Explorer</h1>
+      <h1 className="topbar-title">{PAGE_TITLES[currentPage] ?? 'Yield Explorer'}</h1>
 
       <div className="topbar-right">
         <button className="topbar-filter-btn" onClick={onToggleFilters} aria-label="Toggle filters">
