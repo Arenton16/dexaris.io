@@ -69,7 +69,7 @@ function ReasonBar({ components }: { components: Component[] }) {
           }} />
         ))}
       </div>
-      <div style={{ fontSize: '8px', color: 'rgba(232,230,255,0.32)', marginTop: '2px' }}>
+      <div style={{ fontSize: '8px', color: 'rgba(232,230,255,0.32)', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', width: '64px' }}>
         {generateCaption(components)}
       </div>
     </div>
@@ -242,6 +242,7 @@ export default function YieldTable({
                       key={pool.pool}
                       className="tr-clickable"
                       onClick={() => setSelectedPool(pool)}
+                      style={{ height: '44px' }}
                     >
                       <td onClick={e => e.stopPropagation()}>
                         <button
