@@ -15,15 +15,6 @@ import { createClient } from '@supabase/supabase-js';
 const LLAMA_URL = 'https://yields.llama.fi/pools';
 const SNAPSHOT_LIMIT = 500;
 
-// ── Supabase client (server-side env vars, no VITE_ prefix) ──────────────────
-// Service role key is required: pool_snapshots has RLS enabled and no INSERT
-// policy for anon. The service role bypasses RLS entirely for trusted server ops.
-
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY,
-);
-
 // ── Dexaris Score — inlined from src/utils/dexarisScore.ts ───────────────────
 
 function calculateDexarisScore(pool) {
@@ -98,6 +89,15 @@ function calculateDexarisScore(pool) {
 
 export default async function handler(req, res) {
   try {
+    // Validate env vars before doing anything — missing keys cause a module-level
+    // crash if createClient is called at top level, hiding the real error.
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error(`Missing env vars: SUPABASE_URL=${!!supabaseUrl} SUPABASE_SERVICE_ROLE_KEY=${!!supabaseKey}`);
+    }
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
     // Fetch pool data from DeFiLlama
     const llamaRes = await fetch(LLAMA_URL);
     if (!llamaRes.ok) {
