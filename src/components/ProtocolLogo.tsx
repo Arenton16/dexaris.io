@@ -14,7 +14,7 @@ export function ProtocolLogo({ project, size = 20 }: Props) {
 
   return (
     <img
-      src={`https://icons.llama.fi/${project}.png`}
+      src={`https://icons.llamao.fi/icons/protocols/${project}?w=48&h=48`}
       alt={project}
       width={size}
       height={size}
