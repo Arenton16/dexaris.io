@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { CHAIN_LABELS, type ChainKey, type Pool } from '../types';
 import { calculateDexarisScore, calculateDexarisScoreBreakdown, getDexarisScoreColour, getDexarisScoreTier } from '../utils/dexarisScore';
 import PoolDetail from './PoolDetail';
+import { ProtocolLogo } from './ProtocolLogo';
 import StatsBar from './StatsBar';
 
 const CHAIN_COLOURS: Record<string, string> = {
@@ -256,7 +257,7 @@ export default function YieldTable({
                       <td className="dim hide-mobile">{i + 1}</td>
                       <td className="protocol">
                         <div className="protocol-cell">
-                          <ProtocolLogo logo={pool.logo} name={pool.project} />
+                          <ProtocolLogo project={pool.project} />
                           {pool.project}
                           <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', fontSize: '10px', fontWeight: 600, padding: '2px 7px', borderRadius: '10px', background: 'rgba(107,79,255,0.15)', border: '0.5px solid rgba(107,79,255,0.4)', color: '#8B73FF', marginLeft: '8px', letterSpacing: '0.3px', textTransform: 'uppercase', visibility: pool.pool === bestPickId ? 'visible' : 'hidden' }}>✦ Best Pick</span>
                         </div>
@@ -459,22 +460,6 @@ function ScoreInfoModal({ open, onClose }: { open: boolean; onClose: () => void 
   );
 }
 
-function ProtocolLogo({ logo, name }: { logo?: string; name: string }) {
-  const [err, setErr] = useState(false);
-  if (!logo || err) {
-    return <span className="protocol-logo-placeholder">{name[0]}</span>;
-  }
-  return (
-    <img
-      src={logo}
-      alt={name}
-      width={20}
-      height={20}
-      className="protocol-logo"
-      onError={() => setErr(true)}
-    />
-  );
-}
 
 function SkeletonRow() {
   return (

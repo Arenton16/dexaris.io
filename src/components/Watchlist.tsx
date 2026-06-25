@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { CHAIN_LOGOS, type Pool } from '../types';
 import PoolDetail from './PoolDetail';
+import { ProtocolLogo } from './ProtocolLogo';
 
 const CHAIN_COLORS: Record<string, { bg: string; text: string }> = {
   Ethereum: { bg: '#1a3a5c', text: '#3B9EFF' },
@@ -112,7 +113,7 @@ export default function Watchlist({ allPools, watchlistedIds, onToggleWatchlist,
                     <td className="dim hide-mobile">{i + 1}</td>
                     <td className="protocol">
                       <div className="protocol-cell">
-                        <ProtocolLogo logo={pool.logo} name={pool.project} />
+                        <ProtocolLogo project={pool.project} />
                         {pool.project}
                       </div>
                     </td>
@@ -159,22 +160,6 @@ export default function Watchlist({ allPools, watchlistedIds, onToggleWatchlist,
   );
 }
 
-function ProtocolLogo({ logo, name }: { logo?: string; name: string }) {
-  const [err, setErr] = useState(false);
-  if (!logo || err) {
-    return <span className="protocol-logo-placeholder">{name[0]}</span>;
-  }
-  return (
-    <img
-      src={logo}
-      alt={name}
-      width={20}
-      height={20}
-      className="protocol-logo"
-      onError={() => setErr(true)}
-    />
-  );
-}
 
 function formatTvl(val: number): string {
   if (val >= 1e9) return (val / 1e9).toFixed(2) + 'B';
