@@ -8,6 +8,7 @@ import { CHAIN_LOGOS } from '../types';
 import { calculateDexarisScore, calculateDexarisScoreBreakdown, getDexarisScoreColour, getDexarisScoreTier, type ScoreBreakdownResult } from '../utils/dexarisScore';
 import { useTokenPrices, parsePoolSymbols } from '../hooks/useTokenPrices';
 import { usePools } from '../contexts/PoolsContext';
+import { supabase } from '../lib/supabase';
 
 interface Props {
   pool: Pool | null;
@@ -17,6 +18,11 @@ interface Props {
 interface HistoryPoint {
   date: string;
   apy: number;
+}
+
+interface ScoreHistoryPoint {
+  date: string;
+  score: number;
 }
 
 const CHAIN_COLORS: Record<string, { bg: string; text: string }> = {
@@ -327,6 +333,7 @@ export default function PoolDetail({ pool, onClose }: Props) {
   const [historyData, setHistoryData] = useState<HistoryPoint[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState(false);
+  const [scoreHistoryData, setScoreHistoryData] = useState<ScoreHistoryPoint[]>([]);
   const { prices, loading: pricesLoading } = useTokenPrices(pool?.symbol ?? '');
   const [panelWide, setPanelWide] = useState(() => window.innerWidth >= 1100);
 
@@ -402,6 +409,35 @@ export default function PoolDetail({ pool, onClose }: Props) {
     return () => { cancelled = true; };
   }, [pool?.pool]);
 
+  useEffect(() => {
+    if (!pool) {
+      setScoreHistoryData([]);
+      return;
+    }
+
+    let cancelled = false;
+    const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+
+    supabase
+      .from('pool_snapshots')
+      .select('timestamp, dexaris_score')
+      .eq('pool_id', pool.pool)
+      .gte('timestamp', cutoff)
+      .order('timestamp', { ascending: true })
+      .then(({ data }) => {
+        if (cancelled || !data) return;
+        const points = data
+          .filter(d => d.dexaris_score != null)
+          .map(d => ({
+            date: new Date(d.timestamp).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }),
+            score: Math.round(d.dexaris_score as number),
+          }));
+        setScoreHistoryData(points);
+      });
+
+    return () => { cancelled = true; };
+  }, [pool?.pool]);
+
   return (
     <>
       <div
@@ -461,6 +497,33 @@ export default function PoolDetail({ pool, onClose }: Props) {
               <span style={{ fontSize: 11, color: 'rgba(232,230,255,0.45)', minWidth: 36, textAlign: 'right', flex: 'none', fontVariantNumeric: 'tabular-nums' }}>{comp.score.toFixed(1)}/10</span>
             </div>
           ));
+
+          const MIN_SCORE_HISTORY = 5;
+          const scoreSparklineEl = (() => {
+            if (scoreHistoryData.length < MIN_SCORE_HISTORY) {
+              return (
+                <div style={{ marginTop: 14, paddingTop: 12, borderTop: '0.5px solid rgba(232,230,255,0.07)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(232,230,255,0.25)' }}>Score (30d)</span>
+                  <span style={{ fontSize: 10, color: 'rgba(232,230,255,0.25)', fontStyle: 'italic' }}>Building score history…</span>
+                </div>
+              );
+            }
+            const scores = scoreHistoryData.map(d => d.score);
+            const delta = scores[scores.length - 1] - scores[0];
+            const deltaColor = delta >= 0 ? '#4ECDA4' : '#FF6B6B';
+            const sparkColor = delta >= 0 ? '#4ECDA4' : '#FF6B6B';
+            return (
+              <div style={{ marginTop: 14, paddingTop: 12, borderTop: '0.5px solid rgba(232,230,255,0.07)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(232,230,255,0.4)' }}>Score (30d)</span>
+                  <span style={{ fontSize: 11, color: deltaColor, fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>
+                    {delta >= 0 ? '+' : ''}{delta}
+                  </span>
+                </div>
+                <SparklineChart data={scores} color={sparkColor} />
+              </div>
+            );
+          })();
 
           const yieldSource = getYieldSource(extPool);
           const compositionFallback = (() => {
@@ -633,6 +696,7 @@ export default function PoolDetail({ pool, onClose }: Props) {
                         <div className="score-bar-fill" style={{ width: `${score}%`, background: scoreColour }} />
                       </div>
                       {breakdownRows}
+                      {scoreSparklineEl}
                     </div>
                     {yieldSourceEl}
                   </div>
@@ -746,6 +810,7 @@ export default function PoolDetail({ pool, onClose }: Props) {
                     <div className="score-bar-fill" style={{ width: `${score}%`, background: scoreColour }} />
                   </div>
                   {breakdownRows}
+                  {scoreSparklineEl}
                 </div>
               </div>
 
