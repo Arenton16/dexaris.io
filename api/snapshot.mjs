@@ -16,10 +16,12 @@ const LLAMA_URL = 'https://yields.llama.fi/pools';
 const SNAPSHOT_LIMIT = 500;
 
 // ── Supabase client (server-side env vars, no VITE_ prefix) ──────────────────
+// Service role key is required: pool_snapshots has RLS enabled and no INSERT
+// policy for anon. The service role bypasses RLS entirely for trusted server ops.
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_ANON_KEY,
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
 );
 
 // ── Dexaris Score — inlined from src/utils/dexarisScore.ts ───────────────────
