@@ -726,6 +726,111 @@ body {
   color: #E8E6FF;
 }
 
+/* ─── Local data warning banner ──────────────────────────────── */
+
+.local-data-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(255,170,0,0.07);
+  border: 0.5px solid rgba(255,170,0,0.2);
+  border-radius: 8px;
+  margin: 0 0 20px;
+  font-family: 'Inter', sans-serif;
+}
+
+.local-data-banner-icon {
+  flex-shrink: 0;
+  font-size: 13px;
+  color: #FFB932;
+  line-height: 1.5;
+}
+
+.local-data-banner-text {
+  flex: 1;
+  font-size: 12px;
+  color: rgba(255,185,50,0.8);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.local-data-banner-close {
+  -webkit-appearance: none;
+  appearance: none;
+  background: none;
+  border: none;
+  color: rgba(255,185,50,0.35);
+  font-size: 16px;
+  line-height: 1;
+  padding: 0 2px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color 0.15s ease;
+}
+
+.local-data-banner-close:hover {
+  color: #FFB932;
+}
+
+/* ─── Local data first-add toast ─────────────────────────────── */
+
+.local-data-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  background: rgba(15,14,34,0.97);
+  border: 0.5px solid rgba(255,170,0,0.3);
+  border-radius: 10px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.45);
+  font-family: 'Inter', sans-serif;
+  max-width: 340px;
+  animation: toast-in 0.2s ease;
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.local-data-toast-icon {
+  flex-shrink: 0;
+  font-size: 14px;
+  color: #FFB932;
+  line-height: 1.4;
+}
+
+.local-data-toast-text {
+  flex: 1;
+  font-size: 12px;
+  color: rgba(255,185,50,0.85);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.local-data-toast-close {
+  -webkit-appearance: none;
+  appearance: none;
+  background: none;
+  border: none;
+  color: rgba(255,185,50,0.35);
+  font-size: 16px;
+  line-height: 1;
+  padding: 0 2px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color 0.15s ease;
+}
+
+.local-data-toast-close:hover {
+  color: #FFB932;
+}
+
 /* ─── Content layout (filter sidebar + main) ────────────────── */
 
 .layout {

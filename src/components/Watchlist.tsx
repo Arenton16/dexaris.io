@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { CHAIN_LOGOS, type Pool } from '../types';
 import PoolDetail from './PoolDetail';
 import { ProtocolLogo } from './ProtocolLogo';
+import LocalDataBanner from './LocalDataBanner';
 
 const CHAIN_COLORS: Record<string, { bg: string; text: string }> = {
   Ethereum: { bg: '#1a3a5c', text: '#3B9EFF' },
@@ -32,6 +33,7 @@ export default function Watchlist({ allPools, watchlistedIds, onToggleWatchlist,
 
   return (
     <div className={`watchlist-page${watchlistPools.length === 0 ? ' watchlist-page--empty' : ''}`} style={{ padding: '24px' }}>
+      <LocalDataBanner />
       {watchlistPools.length === 0 ? (
         <div style={{
           display: 'flex',

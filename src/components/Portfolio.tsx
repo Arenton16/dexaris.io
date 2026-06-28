@@ -10,6 +10,9 @@ import {
 } from '../utils/dexarisScore';
 import { supabase } from '../lib/supabase';
 import { getAnonymousId } from '../lib/anonymousId';
+import LocalDataBanner from './LocalDataBanner';
+
+const FIRST_ADD_TOAST_KEY = 'dexaris_portfolio_first_add_seen';
 
 interface Position {
   id: string;
@@ -437,6 +440,8 @@ function AddPositionForm({
 export default function Portfolio() {
   const { allPools } = usePools();
   const [positions, setPositions] = useState<Position[]>([]);
+  const [showFirstAddToast, setShowFirstAddToast] = useState(false);
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // On mount: load this user's positions from Supabase.
   // Fails silently — if Supabase is unreachable the portfolio renders empty.
@@ -515,6 +520,7 @@ export default function Portfolio() {
   // Optimistic add: update local state immediately, write to Supabase in background.
   // asset is stored in notes — the only available free-text column in the schema.
   function handleAdd(data: Pick<Position, 'protocol' | 'asset' | 'chain' | 'amountInvested'>) {
+    const isFirstAdd = positions.length === 0;
     const positionId = crypto.randomUUID();
     const dateAdded  = new Date().toISOString();
     const next: Position = { id: positionId, ...data, dateAdded };
@@ -532,6 +538,15 @@ export default function Portfolio() {
         notes:        data.asset,
       })
       .then(() => {});
+
+    try {
+      if (isFirstAdd && !localStorage.getItem(FIRST_ADD_TOAST_KEY)) {
+        localStorage.setItem(FIRST_ADD_TOAST_KEY, '1');
+        setShowFirstAddToast(true);
+        if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+        toastTimerRef.current = setTimeout(() => setShowFirstAddToast(false), 6000);
+      }
+    } catch { /* ignore */ }
   }
 
   // Optimistic remove: update local state immediately, delete from Supabase in background.
@@ -553,6 +568,14 @@ export default function Portfolio() {
           <h1 className="pf-page-title">Portfolio</h1>
           <p className="pf-page-subtitle">Track your DeFi positions with live Dexaris intelligence</p>
         </div>
+        <LocalDataBanner />
+        {showFirstAddToast && (
+          <div className="local-data-toast">
+            <span className="local-data-toast-icon">⚠</span>
+            <p className="local-data-toast-text">Position saved to this browser. Clearing browser data or switching devices will lose your portfolio.</p>
+            <button className="local-data-toast-close" onClick={() => setShowFirstAddToast(false)} aria-label="Dismiss">×</button>
+          </div>
+        )}
         <div className="pf-empty-state" style={{ textAlign: 'center', padding: '48px 0 32px' }}>
           <div style={{
             width: 72,
@@ -580,6 +603,14 @@ export default function Portfolio() {
         <h1 className="pf-page-title">Portfolio</h1>
         <p className="pf-page-subtitle">Track your DeFi positions with live Dexaris intelligence</p>
       </div>
+      <LocalDataBanner />
+      {showFirstAddToast && (
+        <div className="local-data-toast">
+          <span className="local-data-toast-icon">⚠</span>
+          <p className="local-data-toast-text">Position saved to this browser. Clearing browser data or switching devices will lose your portfolio.</p>
+          <button className="local-data-toast-close" onClick={() => setShowFirstAddToast(false)} aria-label="Dismiss">×</button>
+        </div>
+      )}
 
       {/* Stats strip */}
       <div className="pf-stats-strip">
