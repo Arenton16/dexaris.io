@@ -86,24 +86,21 @@ const SYMBOL_TO_ID = {
 };
 
 function cgHeaders() {
-  return { 'x-cg-demo-api-key': process.env.COINGECKO_API_KEY };
+  // Only attach the key header when one is actually configured — sending a
+  // literal "undefined" string causes CoinGecko to silently fall back to the
+  // (much more rate-limited) anonymous tier instead of rejecting outright.
+  const key = process.env.COINGECKO_API_KEY;
+  return key ? { 'x-cg-demo-api-key': key } : {};
 }
 
 export default async function handler(req, res) {
-  console.log('API key present:', !!process.env.COINGECKO_API_KEY);
-  console.log('API key prefix:', process.env.COINGECKO_API_KEY?.slice(0, 8));
-
   const rawSymbols = req.query?.symbols ?? '';
   const symbols = rawSymbols
     .split(',')
     .map(s => s.trim().toUpperCase())
     .filter(s => s && SYMBOL_TO_ID[s]);
 
-  console.log('[token-prices] incoming symbols raw:', rawSymbols);
-  console.log('[token-prices] recognised symbols:', symbols);
-
   if (!symbols.length) {
-    console.log('[token-prices] no recognised symbols — returning empty');
     res.setHeader('Cache-Control', 'public, max-age=300');
     return res.status(200).json({});
   }
@@ -116,62 +113,36 @@ export default async function handler(req, res) {
     ids.push(id);
   }
 
-  console.log('[token-prices] CoinGecko IDs to fetch:', ids);
-
   try {
-    // Batch price + change data
-    const priceUrl = `${COINGECKO_BASE}/simple/price?ids=${ids.join(',')}&vs_currencies=usd&include_24hr_change=true&include_7d_change=true`;
-    const priceRes = await fetch(priceUrl, { headers: cgHeaders() });
-    if (!priceRes.ok) throw new Error(`CoinGecko price fetch failed: ${priceRes.status}`);
-    const priceData = await priceRes.json();
-
-    console.log('[token-prices] CoinGecko price response:', JSON.stringify(priceData));
-
-    // Sparkline data — one request per token, run concurrently
-    const sparklineResults = await Promise.allSettled(
-      ids.map(id =>
-        fetch(
-          `${COINGECKO_BASE}/coins/${id}/market_chart?vs_currency=usd&days=7`,
-          { headers: cgHeaders() }
-        )
-          .then(r => r.ok ? r.json() : null)
-          .then(data => {
-            const sparkline = data?.prices
-              ? data.prices.map(([, price]) => price)
-              : [];
-            console.log('Sparkline for', id, '— points:', sparkline.length, 'sample:', sparkline[0]);
-            return { id, sparkline };
-          })
-          .catch(() => ({ id, sparkline: [] }))
-      )
-    );
-
-    const sparklineMap = {};
-    for (const result of sparklineResults) {
-      if (result.status === 'fulfilled' && result.value) {
-        sparklineMap[result.value.id] = result.value.sparkline;
-      }
-    }
-
-    console.log('[token-prices] sparklineMap keys:', Object.keys(sparklineMap));
-    console.log('[token-prices] sparklineMap point counts:', Object.fromEntries(Object.entries(sparklineMap).map(([k, v]) => [k, v.length])));
+    // Price, 24h/7d change, and the 7-day sparkline all come back in this one
+    // call. Previously sparklines were fetched with a separate request per
+    // token, fired concurrently — that fan-out routinely tripped CoinGecko's
+    // rate limit, and a rate-limited sparkline request was silently turned
+    // into an empty array (`r.ok ? r.json() : null` → `[]`), which is what
+    // produced the intermittent "—" sparklines. Folding everything into a
+    // single /coins/markets call removes the fan-out entirely.
+    const marketsUrl =
+      `${COINGECKO_BASE}/coins/markets?vs_currency=usd&ids=${ids.join(',')}` +
+      `&sparkline=true&price_change_percentage=24h,7d`;
+    const marketsRes = await fetch(marketsUrl, { headers: cgHeaders() });
+    if (!marketsRes.ok) throw new Error(`CoinGecko markets fetch failed: ${marketsRes.status}`);
+    const marketsData = await marketsRes.json();
 
     const output = {};
-    for (const id of ids) {
-      const sym       = idToSymbol[id];
-      const data      = priceData[id];
-      if (!data) continue;
-      const sparkline = Array.isArray(sparklineMap[id]) ? sparklineMap[id] : [];
-      console.log(`[token-prices] building output for ${sym} (${id}): sparkline points = ${sparkline.length}`);
+    for (const entry of marketsData) {
+      const sym = idToSymbol[entry.id];
+      if (!sym) continue;
+      const sparkline = Array.isArray(entry.sparkline_in_7d?.price)
+        ? entry.sparkline_in_7d.price
+        : [];
       output[sym] = {
-        price:     data.usd         ?? null,
-        change24h: data.usd_24h_change ?? null,
-        change7d:  data.usd_7d_change  ?? null,
+        price:     entry.current_price ?? null,
+        change24h: entry.price_change_percentage_24h_in_currency ?? null,
+        change7d:  entry.price_change_percentage_7d_in_currency  ?? null,
         sparkline,
       };
     }
 
-    console.log('[token-prices] final output keys:', Object.keys(output));
     res.setHeader('Cache-Control', 'public, max-age=300');
     res.status(200).json(output);
   } catch (err) {

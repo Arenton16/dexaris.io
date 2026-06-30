@@ -122,7 +122,23 @@ const getYieldSource = (pool: any): { label: string; description: string } => {
 // ── Token Prices Section ───────────────────────────────────────────────────
 
 function SparklineChart({ data, color }: { data: number[]; color: string }) {
-  if (!data || data.length < 2) return <span style={{ color: 'rgba(232,230,255,0.25)' }}>—</span>;
+  if (!data || data.length < 2) {
+    return (
+      <span style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: 56,
+        height: 24,
+        fontSize: 9,
+        color: 'rgba(232,230,255,0.3)',
+        letterSpacing: '0.02em',
+        flex: 'none',
+      }}>
+        No data
+      </span>
+    );
+  }
 
   const width = 56;
   const height = 24;
