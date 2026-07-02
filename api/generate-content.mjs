@@ -22,7 +22,7 @@ export default async function handler(req, res) {
   // the content type/tone for each post in code, but the recent history is
   // also surfaced here so the model actively avoids echoing the phrasing,
   // structure, or angle of what it (or a prior generation) just wrote.
-  let effectiveSystemPrompt = systemPrompt
+  let effectiveSystemPrompt = `Respond with raw JSON only. No markdown, no code fences, no explanation before or after the JSON.\n\n${systemPrompt}`
   if (Array.isArray(recentPostTypes) && recentPostTypes.length) {
     effectiveSystemPrompt += `\n\nAVOID REPETITION: these post types/tones were used in recent generations — ${recentPostTypes.join(', ')}. Do not repeat the same structure, opening line, or angle as those, even if today's assignment happens to reuse one of these types or tones.`
   }
@@ -49,6 +49,18 @@ export default async function handler(req, res) {
   }
 
   const data = await response.json()
-  const result = data.content?.[0]?.text || ''
-  return res.status(200).json({ result })
+  const rawText = data.content?.[0]?.text || ''
+
+  // Strip markdown code fences — the model occasionally wraps its response in
+  // ```json ... ``` (or adds stray commentary around the object) despite the
+  // system prompt asking for raw JSON.
+  const clean = rawText.replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim()
+
+  try {
+    JSON.parse(clean)
+  } catch (err) {
+    console.error('[generate-content] failed to parse AI response as JSON:', rawText)
+  }
+
+  return res.status(200).json({ result: clean })
 }
