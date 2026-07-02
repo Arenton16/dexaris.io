@@ -8,6 +8,7 @@ import DexarisLogo from './DexarisLogo';
 import type { Pool } from '../types';
 import {
   calculateDexarisScore,
+  calculateDexarisScoreBreakdown,
   getDexarisScoreColour,
   getDexarisScoreTier,
 } from '../utils/dexarisScore';
@@ -56,7 +57,7 @@ interface HistoricalPoint {
 const SESSION_KEY = 'nlgen_unlocked';
 const CORRECT     = 'DEXARIS2026';
 
-const X_SYSTEM_PROMPT = `You are writing X posts for @DexarisHQ — a DeFi yield intelligence platform run by a sharp, opinionated founder who knows the data cold.
+const X_VOICE_CONTRACT = `You are writing X posts for @DexarisHQ — a DeFi yield intelligence platform run by a sharp, opinionated founder who knows the data cold.
 
 VOICE:
 - Direct and confident. Never hedging, never vague.
@@ -68,7 +69,7 @@ VOICE:
 - Never starts a sentence with "The data" or "According to"
 - Never sounds like a press release or a bot
 
-GOOD POST EXAMPLES:
+GOOD POST EXAMPLES (tone/energy reference — today's actual format and angle are assigned below, don't default to these shapes):
 "Uniswap V3 WETH-USDC on Base. 8.4% APY. Dexaris Score: 84. Organic yield, stable 30d mean, $2.1B TVL. This is what boring and good looks like. → dexaris.io"
 
 "Most people chasing 180% APY right now are chasing incentives that disappear in 30 days. The pools scoring above 80 on Dexaris average 11% — and they're still there next month."
@@ -80,25 +81,228 @@ BAD POST EXAMPLES (never write like this):
 
 "Data shows that DeFi yields are currently presenting some noteworthy opportunities for investors looking to optimize their returns."
 
-POST TYPES:
-POST 1 — The Stat (8–9am): One number that makes someone stop scrolling. Set it up in one line, drop the number, say what it means. Under 240 characters. Must not start with "The" or "Data".
-
-POST 2 — The Insight (12–2pm): An observation that required the platform to spot — something a person scrolling wouldn't know without the data. Write it like you just noticed something and you're telling a friend. Under 260 characters.
-
-POST 3 — The Find (6–8pm): One specific pool. Name it. Give the stats. Tell them what the Dexaris Score means for it in one plain sentence. Under 280 characters. End with "→ dexaris.io"
-
-RULES:
-- Every post must reference a specific number from the live data
-- At least one post must end with "→ dexaris.io"
+GLOBAL RULES:
 - No hashtags unless genuinely necessary (avoid #DeFi #crypto spam)
 - No emojis
-- No financial advice framing
-- The opening line of every post must be strong enough to make someone stop scrolling — if it wouldn't make you pause, rewrite it
+- No financial advice framing — describe patterns and risks, never tell someone to buy or sell
+- The opening line of every post must be strong enough to make someone stop scrolling — if it wouldn't make you pause, rewrite it`;
+
+// ── Content type taxonomy & tone palette ────────────────────────────────────
+// The account was over-indexed on "data drop" style stat/ranking posts, all
+// in the same flat tone. These two lists are rotated together per generation
+// so consecutive batches — and consecutive generations — don't converge on
+// the same shape. Selection happens in code (not left to the model) so
+// variation is guaranteed rather than hoped for.
+
+type ContentTypeId =
+  | 'data_drop' | 'myth_bust' | 'score_explainer' | 'market_observation'
+  | 'red_flag_callout' | 'behind_the_build' | 'community_question' | 'contrarian_take';
+
+interface ContentTypeDef {
+  id: ContentTypeId;
+  label: string;
+  format: 'tweet' | 'thread';
+  needsDataPoint: boolean;
+  guidance: string;
+}
+
+const CONTENT_TYPES: ContentTypeDef[] = [
+  {
+    id: 'data_drop', label: 'Data Drop', format: 'tweet', needsDataPoint: true,
+    guidance: 'A specific stat or ranking pulled straight from live platform data. Set it up in one line, drop the number, say what it means. Example shape: "The highest organic-yield pool right now is X at Y% — Score 87. Here\'s why that matters."',
+  },
+  {
+    id: 'myth_bust', label: 'Myth Bust', format: 'thread', needsDataPoint: true,
+    guidance: 'Correct a common DeFi misconception directly, backed by a real number. Example shape: "High APY ≠ safe yield. Here\'s what to actually look at." State the myth, state the correction, back it with the data point.',
+  },
+  {
+    id: 'score_explainer', label: 'Score Explainer', format: 'thread', needsDataPoint: true,
+    guidance: 'Walk through why one specific pool scored the way it did, component by component (Consistency, APY Level, TVL Depth, Organic Yield, Maturity). Make the scoring model legible, not just the final number.',
+  },
+  {
+    id: 'market_observation', label: 'Market Observation', format: 'tweet', needsDataPoint: true,
+    guidance: 'A trend visible in the current data that required the platform to spot. Example shape: "14 of the top 20 pools by score are on Ethereum right now. That\'s unusually concentrated."',
+  },
+  {
+    id: 'red_flag_callout', label: 'Red Flag Callout', format: 'tweet', needsDataPoint: true,
+    guidance: 'Call out a specific incentive-heavy pool and explain the risk in plain terms (yield mostly from token incentives rather than organic fees). Do NOT frame this as a buy or sell recommendation — describe the risk pattern, not an instruction.',
+  },
+  {
+    id: 'behind_the_build', label: 'Behind the Build', format: 'thread', needsDataPoint: false,
+    guidance: 'A brief, first-person insight into how Dexaris works or why a product decision was made — e.g. why the scoring model is weighted the way it is, a tradeoff made while building it, something learned from watching the data every day. Builds founder credibility, not a product pitch.',
+  },
+  {
+    id: 'community_question', label: 'Community Question', format: 'tweet', needsDataPoint: true,
+    guidance: 'Pose a genuine, open question to the audience prompted by something specific in the current data. Should invite real replies, not be rhetorical.',
+  },
+  {
+    id: 'contrarian_take', label: 'Contrarian Take', format: 'tweet', needsDataPoint: true,
+    guidance: 'A data-backed opinion that pushes against conventional DeFi wisdom. Take a real position, back it with a number, don\'t hedge.',
+  },
+];
+
+type ToneId = 'analytical' | 'direct' | 'educational' | 'founder';
+
+interface ToneDef {
+  id: ToneId;
+  label: string;
+  guidance: string;
+}
+
+const TONES: ToneDef[] = [
+  { id: 'analytical', label: 'Analytical', guidance: 'Data-led and precise. Let the numbers carry the weight — no hype, no exclamation marks, no adjectives doing work the data should do.' },
+  { id: 'direct', label: 'Direct / Blunt', guidance: 'Short and punchy. No padding, no throat-clearing, no softening. Say the thing in as few words as possible.' },
+  { id: 'educational', label: 'Educational', guidance: 'Explain a concept clearly, assuming the reader is smart but doesn\'t know DeFi jargon. Define terms in plain language as you go.' },
+  { id: 'founder', label: 'Founder Voice', guidance: 'First person. "I noticed…", "I\'m thinking…", "I built this because…" — not "Dexaris does X". This is Antony talking, not the product.' },
+];
+
+const SLOT_META: Array<{ slot: XPost['slot']; time: string }> = [
+  { slot: 'Morning', time: '8–9am' },
+  { slot: 'Afternoon', time: '12–2pm' },
+  { slot: 'Evening', time: '6–8pm' },
+];
+
+interface ScoredPool {
+  pool: Pool;
+  score: number;
+}
+
+interface LiveSnapshot {
+  topScore: ScoredPool;
+  topApy: ScoredPool;
+  avgScore: number;
+  avgApy: number;
+  domChain: string;
+  domCount: number;
+  top20Count: number;
+  flaggedPool: ScoredPool | null;
+  flaggedCount: number;
+}
+
+interface SlotPlan {
+  slot: XPost['slot'];
+  time: string;
+  type: ContentTypeDef;
+  tone: ToneDef;
+  dataHint: string;
+}
+
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// Picks `count` distinct entries, preferring ones not in `recentIds` — falls
+// back to recent ones only if excluding them all would leave too few to pick.
+function pickDistinct<T extends { id: string }>(all: T[], recentIds: string[], count: number): T[] {
+  const fresh = shuffle(all.filter(t => !recentIds.includes(t.id)));
+  const stale = shuffle(all.filter(t => recentIds.includes(t.id)));
+  return [...fresh, ...stale].slice(0, count);
+}
+
+function buildLiveSnapshot(pools: Pool[]): LiveSnapshot {
+  const scored: ScoredPool[] = pools.map(p => ({ pool: p, score: calculateDexarisScore(p) }));
+  const byScore = [...scored].sort((a, b) => b.score - a.score);
+  const byApy = [...scored].sort((a, b) => (b.pool.apy ?? 0) - (a.pool.apy ?? 0));
+
+  const avgScore = Math.round(scored.reduce((s, e) => s + e.score, 0) / scored.length);
+  const avgApy = scored.reduce((s, e) => s + (e.pool.apy ?? 0), 0) / scored.length;
+
+  const top20 = byScore.slice(0, 20);
+  const chainCounts: Record<string, number> = {};
+  for (const e of top20) chainCounts[e.pool.chain] = (chainCounts[e.pool.chain] ?? 0) + 1;
+  const [domChain, domCount] = Object.entries(chainCounts).sort((a, b) => b[1] - a[1])[0] ?? ['—', 0];
+
+  const flagged = scored
+    .filter(e => {
+      const apy = e.pool.apy ?? 0;
+      const base = e.pool.apyBase;
+      return apy > 50 && base != null && apy > 0 && base / apy < 0.3;
+    })
+    .sort((a, b) => (b.pool.apy ?? 0) - (a.pool.apy ?? 0));
+
+  return {
+    topScore: byScore[0],
+    topApy: byApy[0],
+    avgScore,
+    avgApy,
+    domChain,
+    domCount,
+    top20Count: top20.length,
+    flaggedPool: flagged[0] ?? null,
+    flaggedCount: flagged.length,
+  };
+}
+
+function buildDataHint(typeId: ContentTypeId, snap: LiveSnapshot): string {
+  switch (typeId) {
+    case 'data_drop':
+      return `Live data point: ${snap.topScore.pool.project} (${snap.topScore.pool.symbol} on ${snap.topScore.pool.chain}) is the highest-scoring pool right now — Dexaris Score ${snap.topScore.score}, APY ${fmtApy(snap.topScore.pool.apy)}, TVL ${fmtTvl(snap.topScore.pool.tvlUsd)}.`;
+    case 'myth_bust':
+      return `Live data point: the average Dexaris Score across today's tracked pools is ${snap.avgScore} with average APY ${snap.avgApy.toFixed(2)}%. The single highest-APY pool right now, ${snap.topApy.pool.project} (${fmtApy(snap.topApy.pool.apy)}), only scores ${snap.topApy.score} on Dexaris. Use that gap to bust the "high APY = safe yield" myth.`;
+    case 'score_explainer': {
+      const breakdown = calculateDexarisScoreBreakdown(snap.topScore.pool);
+      const parts = breakdown.components.map(c => `${c.label} ${c.score}/10 (${c.weight}% weight)`).join(', ');
+      return `Live data point: ${snap.topScore.pool.project} (${snap.topScore.pool.symbol} on ${snap.topScore.pool.chain}) scored ${breakdown.total} overall. Component breakdown — ${parts}.`;
+    }
+    case 'market_observation':
+      return `Live data point: ${snap.domCount} of the top ${snap.top20Count} pools by Dexaris Score right now are on ${snap.domChain}.`;
+    case 'red_flag_callout':
+      return snap.flaggedPool
+        ? `Live data point: ${snap.flaggedPool.pool.project} (${snap.flaggedPool.pool.symbol} on ${snap.flaggedPool.pool.chain}) is showing ${fmtApy(snap.flaggedPool.pool.apy)} APY that's mostly incentive-driven rather than organic fees. ${snap.flaggedCount} pool(s) in today's tracked set show this same pattern.`
+        : `Live data point: ${snap.flaggedCount} pools in today's tracked set show incentive-heavy yield patterns (APY far above what organic fees support). Speak to the pattern generally rather than naming one.`;
+    case 'community_question':
+      return `Live data point to prompt the question: average Dexaris Score is ${snap.avgScore}, the top pool right now is ${snap.topScore.pool.project} at Score ${snap.topScore.score}, and ${snap.domCount}/${snap.top20Count} top pools are on ${snap.domChain}.`;
+    case 'contrarian_take':
+      return `Live data point: average Dexaris Score across tracked pools is ${snap.avgScore} while average APY is ${snap.avgApy.toFixed(2)}% — ground the contrarian angle in numbers like this.`;
+    case 'behind_the_build':
+      return '';
+  }
+}
+
+function formatConstraint(format: 'tweet' | 'thread'): string {
+  return format === 'tweet'
+    ? 'FORMAT: a single tweet. Under 280 characters, hard limit. No numbering, no thread markers.'
+    : 'FORMAT: a short thread of 2–4 tweets. Number each beat "1/", "2/", etc. Each numbered beat must be under 280 characters on its own. Separate beats with a blank line. Put the whole thread in the single "text" field.';
+}
+
+function buildXSystemPrompt(plans: SlotPlan[]): string {
+  const taxonomyBlock = CONTENT_TYPES.map(t => `- ${t.label}: ${t.guidance}`).join('\n');
+  const toneBlock = TONES.map(t => `- ${t.label}: ${t.guidance}`).join('\n');
+  const assignmentBlock = plans.map(p => [
+    `${p.slot} (${p.time}):`,
+    `- Content type: ${p.type.label} — ${p.type.guidance}`,
+    `- Tone: ${p.tone.label} — ${p.tone.guidance}`,
+    `- ${formatConstraint(p.type.format)}`,
+    p.dataHint ? `- ${p.dataHint}` : null,
+  ].filter(Boolean).join('\n')).join('\n\n');
+
+  return `${X_VOICE_CONTRACT}
+
+CONTENT TYPE TAXONOMY (for reference — today's per-slot assignment is below):
+${taxonomyBlock}
+
+TONE PALETTE (for reference — today's per-slot assignment is below):
+${toneBlock}
+
+TODAY'S ASSIGNMENT — one post per slot, each using its assigned content type AND tone. Do not swap them between slots, and do not blend two types into one post.
+
+${assignmentBlock}
+
+RULES:
+- Every post must reference a specific number from the live data provided in the user message.
+- Follow each slot's assigned content type, tone, and format exactly — the point is that these three posts read differently from each other.
+- No hashtags unless genuinely necessary. No emojis. No financial advice framing.
 
 Return valid JSON only, no markdown, no backticks:
-{"posts":[{"slot":"Morning","time":"8–9am","type":"The Stat","text":"...","chars":0},{"slot":"Afternoon","time":"12–2pm","type":"The Insight","text":"...","chars":0},{"slot":"Evening","time":"6–8pm","type":"The Find","text":"...","chars":0}]}
+{"posts":[{"slot":"Morning","time":"...","type":"...","text":"...","chars":0},{"slot":"Afternoon","time":"...","type":"...","text":"...","chars":0},{"slot":"Evening","time":"...","type":"...","text":"...","chars":0}]}
 
-Set chars to the actual character count of each text field.`;
+Set each "type" field to "<Content Type Label> · <Tone Label>" (e.g. "Data Drop · Analytical"). Set "chars" to the actual character count of that post's "text" field.`;
+}
 
 const NEWSLETTER_SYSTEM_PROMPT = `You are writing The Dexaris Brief — a weekly DeFi yield intelligence newsletter written by Antony, founder of Dexaris.
 
@@ -696,6 +900,18 @@ function ChartExportSection({ pools }: { pools: Pool[] }) {
 
 // ── X Content tab ─────────────────────────────────────────────────────────
 
+const RECENT_TYPES_KEY = 'nlgen_recent_post_types';
+const RECENT_TONES_KEY = 'nlgen_recent_post_tones';
+
+function loadRecentIds(key: string): string[] {
+  try {
+    const raw = sessionStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as string[]) : [];
+  } catch {
+    return [];
+  }
+}
+
 function XContentTab() {
   const [posts, setPosts]         = useState<XPost[]>([]);
   const [topPools, setTopPools]   = useState<Pool[]>([]);
@@ -703,6 +919,12 @@ function XContentTab() {
   const [error, setError]         = useState('');
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
   const [allCopied, setAllCopied] = useState(false);
+
+  // Last-used content types/tones, persisted across generations (and page
+  // reloads within the session) so the next generation automatically avoids
+  // repeating them — no manual input required.
+  const [recentTypeIds, setRecentTypeIds] = useState<string[]>(() => loadRecentIds(RECENT_TYPES_KEY));
+  const [recentToneIds, setRecentToneIds] = useState<string[]>(() => loadRecentIds(RECENT_TONES_KEY));
 
   async function handleGenerate() {
     setLoading(true);
@@ -738,13 +960,33 @@ function XContentTab() {
         `${i + 1}. ${p.project} | ${p.symbol} | ${p.chain} | APY: ${p.apy}% | TVL: $${p.tvlM}M | DexarisScore: ${p.score} (${p.scoreTier})`
       ).join('\n');
 
-      // 4. Call Anthropic via serverless proxy
+      // 4. Pick a distinct content type + tone per slot, avoiding whatever
+      // was used in recent generations, and pull the live data point each
+      // assigned type actually needs.
+      const chosenTypes = pickDistinct(CONTENT_TYPES, recentTypeIds, 3);
+      const chosenTones = pickDistinct(TONES, recentToneIds, 3);
+      const snapshot = buildLiveSnapshot(filtered);
+      const plans: SlotPlan[] = SLOT_META.map((meta, i) => ({
+        slot: meta.slot,
+        time: meta.time,
+        type: chosenTypes[i],
+        tone: chosenTones[i],
+        dataHint: chosenTypes[i].needsDataPoint ? buildDataHint(chosenTypes[i].id, snapshot) : '',
+      }));
+
+      const recentPostTypes = [
+        ...recentTypeIds.map(id => CONTENT_TYPES.find(t => t.id === id)?.label ?? id),
+        ...recentToneIds.map(id => TONES.find(t => t.id === id)?.label ?? id),
+      ];
+
+      // 5. Call Anthropic via serverless proxy
       const aiRes = await fetch('/api/generate-content', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          systemPrompt: X_SYSTEM_PROMPT,
-          userMessage: `Here is today's live DeFi yield data — top 30 pools by TVL (TVL > $1M, APY > 0):\n\n${poolSummary}\n\nGenerate the three X posts.`,
+          systemPrompt: buildXSystemPrompt(plans),
+          userMessage: `Here is today's live DeFi yield data — top 30 pools by TVL (TVL > $1M, APY > 0):\n\n${poolSummary}\n\nGenerate the three X posts following today's assignment above.`,
+          recentPostTypes,
         }),
       });
 
@@ -767,6 +1009,14 @@ function XContentTab() {
 
       // Recompute chars from actual text
       setPosts(parsed.posts.map(p => ({ ...p, chars: p.text.length })));
+
+      // Remember what was just used so the next generation rotates away from it
+      const updatedTypeIds = Array.from(new Set([...chosenTypes.map(t => t.id), ...recentTypeIds])).slice(0, 4);
+      const updatedToneIds = Array.from(new Set([...chosenTones.map(t => t.id), ...recentToneIds])).slice(0, 4);
+      setRecentTypeIds(updatedTypeIds);
+      setRecentToneIds(updatedToneIds);
+      sessionStorage.setItem(RECENT_TYPES_KEY, JSON.stringify(updatedTypeIds));
+      sessionStorage.setItem(RECENT_TONES_KEY, JSON.stringify(updatedToneIds));
 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Generation failed — please try again.');
