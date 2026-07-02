@@ -49,7 +49,12 @@ export default async function handler(req, res) {
   }
 
   const data = await response.json()
-  const rawText = data.content?.[0]?.text || ''
+
+  // claude-sonnet-5 runs adaptive thinking by default when `thinking` isn't
+  // set, so `content[0]` can be a thinking block rather than the text block —
+  // find the text block explicitly instead of assuming it's first.
+  const textBlock = data.content?.find(block => block.type === 'text')
+  const rawText = textBlock?.text || ''
 
   // Strip markdown code fences — the model occasionally wraps its response in
   // ```json ... ``` (or adds stray commentary around the object) despite the
