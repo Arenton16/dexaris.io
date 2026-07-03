@@ -91,23 +91,6 @@ export default function Alerts() {
     }}>
       <div style={{ maxWidth: 580, width: '100%' }}>
 
-        {/* Badge */}
-        <div style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 6,
-          background: 'rgba(107,79,255,0.12)',
-          border: '1px solid rgba(107,79,255,0.3)',
-          borderRadius: 20,
-          padding: '5px 14px',
-          marginBottom: 24,
-        }}>
-          <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#6B4FFF', display: 'inline-block' }} />
-          <span style={{ fontSize: 11, fontWeight: 600, color: '#8B73FF', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-            Coming Soon
-          </span>
-        </div>
-
         {/* Heading */}
         <h1 style={{
           fontSize: 32,
