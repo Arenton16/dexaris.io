@@ -22,7 +22,7 @@ export default async function handler(req, res) {
   // the content type/tone for each post in code, but the recent history is
   // also surfaced here so the model actively avoids echoing the phrasing,
   // structure, or angle of what it (or a prior generation) just wrote.
-  let effectiveSystemPrompt = `Respond with raw JSON only. No markdown, no code fences, no explanation before or after the JSON.\n\n${systemPrompt}`
+  let effectiveSystemPrompt = `Respond with raw JSON only. No markdown, no code fences, no preamble or explanation.\n\n${systemPrompt}`
   if (Array.isArray(recentPostTypes) && recentPostTypes.length) {
     effectiveSystemPrompt += `\n\nAVOID REPETITION: these post types/tones were used in recent generations — ${recentPostTypes.join(', ')}. Do not repeat the same structure, opening line, or angle as those, even if today's assignment happens to reuse one of these types or tones.`
   }
@@ -37,6 +37,12 @@ export default async function handler(req, res) {
     body: JSON.stringify({
       model: 'claude-sonnet-5',
       max_tokens: 2400,
+      // claude-sonnet-5 runs adaptive thinking by default when `thinking` is
+      // omitted, and thinking tokens count against max_tokens — on a simple
+      // formatting task like this, that occasionally exhausted the budget
+      // before any text block was ever emitted, producing an empty response.
+      // This task needs no reasoning, so disable it outright.
+      thinking: { type: 'disabled' },
       system: effectiveSystemPrompt,
       messages: [{ role: 'user', content: safeUserMessage }],
     }),
@@ -64,7 +70,8 @@ export default async function handler(req, res) {
   try {
     JSON.parse(clean)
   } catch (err) {
-    console.error('[generate-content] failed to parse AI response as JSON:', rawText)
+    console.error('[generate-content] failed to parse AI response as JSON. Raw text:', rawText)
+    console.error('[generate-content] stop_reason:', data.stop_reason, '— content block types:', data.content?.map(b => b.type))
   }
 
   return res.status(200).json({ result: clean })
