@@ -1,3 +1,25 @@
+// A thread is numbered beats ("1/", "2/", etc.) separated by blank lines —
+// detected from the text itself so this works regardless of which format the
+// model actually used, independent of what was requested.
+function splitThreadBeats(text) {
+  const segments = text.split(/\n\s*\n/).map(s => s.trim()).filter(Boolean)
+  const beatCount = segments.filter(s => /^\d+\//.test(s)).length
+  return beatCount >= 2 ? segments : null
+}
+
+function truncateAtWordBoundary(text, maxLen = 280) {
+  if (text.length <= maxLen) return text
+  const ellipsis = '…'
+  const limit = maxLen - ellipsis.length
+  let truncated = text.slice(0, limit)
+  const lastSpace = truncated.lastIndexOf(' ')
+  // Only back off to the word boundary if it doesn't discard a large chunk
+  // of the text (e.g. one long unbroken token near the start) — otherwise a
+  // hard cut at the limit beats truncating away almost everything.
+  if (lastSpace > limit * 0.6) truncated = truncated.slice(0, lastSpace)
+  return truncated.trim() + ellipsis
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
@@ -61,11 +83,32 @@ export default async function handler(req, res) {
   // system prompt asking for raw JSON.
   const clean = rawText.replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim()
 
+  let parsed
   try {
-    JSON.parse(clean)
+    parsed = JSON.parse(clean)
   } catch (err) {
     console.error('[generate-content] failed to parse AI response as JSON:', rawText)
+    return res.status(200).json({ result: clean })
   }
 
-  return res.status(200).json({ result: clean })
+  // Enforce X's character limits post-generation. Thread beats are checked
+  // and capped individually — never as a combined total — while single
+  // tweets get a hard 280-character cap regardless of what the model returned.
+  if (Array.isArray(parsed.posts)) {
+    for (const post of parsed.posts) {
+      if (typeof post.text !== 'string') continue
+
+      const beats = splitThreadBeats(post.text)
+      if (beats) {
+        const cappedBeats = beats.map(beat => truncateAtWordBoundary(beat, 280))
+        post.text = cappedBeats.join('\n\n')
+        post.chars = Math.max(...cappedBeats.map(b => b.length))
+      } else {
+        post.text = truncateAtWordBoundary(post.text, 280)
+        post.chars = post.text.length
+      }
+    }
+  }
+
+  return res.status(200).json({ result: JSON.stringify(parsed) })
 }

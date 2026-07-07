@@ -267,7 +267,25 @@ function buildDataHint(typeId: ContentTypeId, snap: LiveSnapshot): string {
 function formatConstraint(format: 'tweet' | 'thread'): string {
   return format === 'tweet'
     ? 'FORMAT: a single tweet. Under 280 characters, hard limit. No numbering, no thread markers.'
-    : 'FORMAT: a short thread of 2–4 tweets. Number each beat "1/", "2/", etc. Each numbered beat must be under 280 characters on its own. Separate beats with a blank line. Put the whole thread in the single "text" field.';
+    : 'FORMAT: a short thread of 2–4 tweets. Number each beat "1/", "2/", etc. Separate beats with a blank line. Put the whole thread in the single "text" field. For thread format posts, each numbered tweet must be under 280 characters individually — not the total combined length. Each tweet in the thread should be 180–260 characters — substantive but leaving breathing room under the 280 limit.';
+}
+
+// A thread is numbered beats ("1/", "2/", etc.) separated by blank lines —
+// detected from the text itself, mirroring the same check in
+// api/generate-content.mjs, so the UI's character count matches what the API
+// actually validated against.
+function splitThreadBeats(text: string): string[] | null {
+  const segments = text.split(/\n\s*\n/).map(s => s.trim()).filter(Boolean);
+  const beatCount = segments.filter(s => /^\d+\//.test(s)).length;
+  return beatCount >= 2 ? segments : null;
+}
+
+// For a thread, the relevant "character count" is the longest individual
+// tweet, not the combined length of every beat — a 3-beat thread at ~250
+// characters each is not a "750/280" violation.
+function displayChars(text: string): number {
+  const beats = splitThreadBeats(text);
+  return beats ? Math.max(...beats.map(b => b.length)) : text.length;
 }
 
 function buildXSystemPrompt(plans: SlotPlan[]): string {
@@ -1007,8 +1025,9 @@ function XContentTab() {
         throw new Error('AI returned an unexpected response shape');
       }
 
-      // Recompute chars from actual text
-      setPosts(parsed.posts.map(p => ({ ...p, chars: p.text.length })));
+      // Recompute chars from actual text — for a thread this is the longest
+      // individual tweet, not the combined length of every beat.
+      setPosts(parsed.posts.map(p => ({ ...p, chars: displayChars(p.text) })));
 
       // Remember what was just used so the next generation rotates away from it
       const updatedTypeIds = Array.from(new Set([...chosenTypes.map(t => t.id), ...recentTypeIds])).slice(0, 4);
@@ -1150,6 +1169,7 @@ function XContentTab() {
           {posts.map((post, idx) => {
             const slotStyle = SLOT_STYLE[post.slot] ?? SLOT_STYLE.Morning;
             const overLimit = post.chars > 280;
+            const isThread = splitThreadBeats(post.text) !== null;
             return (
               <div key={post.slot} style={{
                 background: '#111028',
@@ -1190,7 +1210,7 @@ function XContentTab() {
                       color: overLimit ? '#FF6B6B' : 'rgba(232,230,255,0.35)',
                       transition: 'color 0.15s',
                     }}>
-                      {post.chars} / 280
+                      {isThread ? `Longest tweet: ${post.chars} / 280` : `${post.chars} / 280`}
                     </span>
                     <button
                       onClick={() => copyPost(idx)}
