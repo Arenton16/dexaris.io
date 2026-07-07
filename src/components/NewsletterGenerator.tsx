@@ -101,42 +101,41 @@ type ContentTypeId =
 interface ContentTypeDef {
   id: ContentTypeId;
   label: string;
-  format: 'tweet' | 'thread';
   needsDataPoint: boolean;
   guidance: string;
 }
 
 const CONTENT_TYPES: ContentTypeDef[] = [
   {
-    id: 'data_drop', label: 'Data Drop', format: 'tweet', needsDataPoint: true,
+    id: 'data_drop', needsDataPoint: true, label: 'Data Drop',
     guidance: 'A specific stat or ranking pulled straight from live platform data. Set it up in one line, drop the number, say what it means. Example shape: "The highest organic-yield pool right now is X at Y% — Score 87. Here\'s why that matters."',
   },
   {
-    id: 'myth_bust', label: 'Myth Bust', format: 'thread', needsDataPoint: true,
-    guidance: 'Correct a common DeFi misconception directly, backed by a real number. Example shape: "High APY ≠ safe yield. Here\'s what to actually look at." State the myth, state the correction, back it with the data point.',
+    id: 'myth_bust', needsDataPoint: true, label: 'Myth Bust',
+    guidance: 'Correct a common DeFi misconception directly, backed by a real number. Example shape: "High APY ≠ safe yield. Here\'s what to actually look at." State the myth, state the correction, back it with the data point — all in one tweet.',
   },
   {
-    id: 'score_explainer', label: 'Score Explainer', format: 'thread', needsDataPoint: true,
-    guidance: 'Walk through why one specific pool scored the way it did, component by component (Consistency, APY Level, TVL Depth, Organic Yield, Maturity). Make the scoring model legible, not just the final number.',
+    id: 'score_explainer', needsDataPoint: true, label: 'Score Explainer',
+    guidance: 'Explain what\'s actually driving one specific pool\'s Dexaris Score. Pick the one or two components (Consistency, APY Level, TVL Depth, Organic Yield, Maturity) that matter most for this pool — not an exhaustive breakdown of all five. Make the scoring model legible in one tweet, not a lecture.',
   },
   {
-    id: 'market_observation', label: 'Market Observation', format: 'tweet', needsDataPoint: true,
+    id: 'market_observation', needsDataPoint: true, label: 'Market Observation',
     guidance: 'A trend visible in the current data that required the platform to spot. Example shape: "14 of the top 20 pools by score are on Ethereum right now. That\'s unusually concentrated."',
   },
   {
-    id: 'red_flag_callout', label: 'Red Flag Callout', format: 'tweet', needsDataPoint: true,
+    id: 'red_flag_callout', needsDataPoint: true, label: 'Red Flag Callout',
     guidance: 'Call out a specific incentive-heavy pool and explain the risk in plain terms (yield mostly from token incentives rather than organic fees). Do NOT frame this as a buy or sell recommendation — describe the risk pattern, not an instruction.',
   },
   {
-    id: 'behind_the_build', label: 'Behind the Build', format: 'thread', needsDataPoint: false,
+    id: 'behind_the_build', needsDataPoint: false, label: 'Behind the Build',
     guidance: 'A brief, first-person insight into how Dexaris works or why a product decision was made — e.g. why the scoring model is weighted the way it is, a tradeoff made while building it, something learned from watching the data every day. Builds founder credibility, not a product pitch.',
   },
   {
-    id: 'community_question', label: 'Community Question', format: 'tweet', needsDataPoint: true,
+    id: 'community_question', needsDataPoint: true, label: 'Community Question',
     guidance: 'Pose a genuine, open question to the audience prompted by something specific in the current data. Should invite real replies, not be rhetorical.',
   },
   {
-    id: 'contrarian_take', label: 'Contrarian Take', format: 'tweet', needsDataPoint: true,
+    id: 'contrarian_take', needsDataPoint: true, label: 'Contrarian Take',
     guidance: 'A data-backed opinion that pushes against conventional DeFi wisdom. Take a real position, back it with a number, don\'t hedge.',
   },
 ];
@@ -264,10 +263,8 @@ function buildDataHint(typeId: ContentTypeId, snap: LiveSnapshot): string {
   }
 }
 
-function formatConstraint(format: 'tweet' | 'thread'): string {
-  return format === 'tweet'
-    ? 'FORMAT: a single tweet. Under 280 characters, hard limit. No numbering, no thread markers.'
-    : 'FORMAT: a short thread of 2–4 tweets. Number each beat "1/", "2/", etc. Separate beats with a blank line. Put the whole thread in the single "text" field. For thread format posts, each numbered tweet must be under 280 characters individually — not the total combined length. Each tweet in the thread should be 180–260 characters — substantive but leaving breathing room under the 280 limit.';
+function formatConstraint(): string {
+  return 'FORMAT: a single tweet. Under 280 characters, hard limit. No numbering, no thread markers.';
 }
 
 // A thread is numbered beats ("1/", "2/", etc.) separated by blank lines —
@@ -295,7 +292,7 @@ function buildXSystemPrompt(plans: SlotPlan[]): string {
     `${p.slot} (${p.time}):`,
     `- Content type: ${p.type.label} — ${p.type.guidance}`,
     `- Tone: ${p.tone.label} — ${p.tone.guidance}`,
-    `- ${formatConstraint(p.type.format)}`,
+    `- ${formatConstraint()}`,
     p.dataHint ? `- ${p.dataHint}` : null,
   ].filter(Boolean).join('\n')).join('\n\n');
 
