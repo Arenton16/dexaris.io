@@ -583,14 +583,13 @@ export default function Portfolio({ onNavigateToYields }: PortfolioProps) {
   // portfolio_positions — scoped to this anonymous user. Feeds both the
   // performance chart (pool_id list) and the holdings section (full rows).
   useEffect(() => {
-    const anonId = getAnonymousId();
-    Promise.resolve(
-      supabase
-        .from('portfolio_positions')
-        .select('pool_id, protocol, chain, entry_apy, amount_usd')
-        .eq('anonymous_id', anonId)
-    )
-      .then(({ data, error }) => {
+    async function load() {
+      try {
+        const anonId = getAnonymousId();
+        const { data, error } = await supabase
+          .from('portfolio_positions')
+          .select('pool_id, protocol, chain, entry_apy, amount_usd')
+          .eq('anonymous_id', anonId);
         if (error) {
           setPositionsError(error.message);
           setPositions([]);
@@ -606,11 +605,12 @@ export default function Portfolio({ onNavigateToYields }: PortfolioProps) {
           entryApy: r.entry_apy,
           amountUsd: r.amount_usd,
         })));
-      })
-      .catch((err: Error) => {
-        setPositionsError(err.message);
+      } catch (err) {
+        setPositionsError(err instanceof Error ? err.message : 'Failed to load positions');
         setPositions([]);
-      });
+      }
+    }
+    load();
   }, []);
 
   // pool_snapshots for the held pool_ids — never filtered by anonymous_id
@@ -625,14 +625,13 @@ export default function Portfolio({ onNavigateToYields }: PortfolioProps) {
     }
     const poolIds = Array.from(new Set(positions.map(p => p.poolId)));
     setChartSnapshotsLoading(true);
-    Promise.resolve(
-      supabase
-        .from('pool_snapshots')
-        .select('pool_id, apy, timestamp')
-        .in('pool_id', poolIds)
-        .order('timestamp', { ascending: true })
-    )
-      .then(({ data, error }) => {
+    async function load() {
+      try {
+        const { data, error } = await supabase
+          .from('pool_snapshots')
+          .select('pool_id, apy, timestamp')
+          .in('pool_id', poolIds)
+          .order('timestamp', { ascending: true });
         if (error) {
           setChartError(error.message);
           setChartSnapshots([]);
@@ -643,35 +642,36 @@ export default function Portfolio({ onNavigateToYields }: PortfolioProps) {
           poolId: r.pool_id, apy: r.apy, timestamp: r.timestamp,
         })));
         setChartSnapshotsLoading(false);
-      })
-      .catch((err: Error) => {
-        setChartError(err.message);
+      } catch (err) {
+        setChartError(err instanceof Error ? err.message : 'Failed to load snapshots');
         setChartSnapshots([]);
         setChartSnapshotsLoading(false);
-      });
+      }
+    }
+    load();
   }, [positions]);
 
   // watchlists — scoped to this anonymous user.
   useEffect(() => {
-    const anonId = getAnonymousId();
-    Promise.resolve(
-      supabase
-        .from('watchlists')
-        .select('pool_id')
-        .eq('anonymous_id', anonId)
-    )
-      .then(({ data, error }) => {
+    async function load() {
+      try {
+        const anonId = getAnonymousId();
+        const { data, error } = await supabase
+          .from('watchlists')
+          .select('pool_id')
+          .eq('anonymous_id', anonId);
         if (error) {
           setWatchlistError(error.message);
           setWatchlistIds([]);
           return;
         }
         setWatchlistIds((data ?? []).map((r: { pool_id: string }) => r.pool_id));
-      })
-      .catch((err: Error) => {
-        setWatchlistError(err.message);
+      } catch (err) {
+        setWatchlistError(err instanceof Error ? err.message : 'Failed to load watchlist');
         setWatchlistIds([]);
-      });
+      }
+    }
+    load();
   }, []);
 
   // pool_snapshots for the watched pool_ids, last 8 days — again never
@@ -684,17 +684,17 @@ export default function Portfolio({ onNavigateToYields }: PortfolioProps) {
       setWatchlistSnapshotsLoading(false);
       return;
     }
+    const ids = watchlistIds;
     const eightDaysAgo = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString();
     setWatchlistSnapshotsLoading(true);
-    Promise.resolve(
-      supabase
-        .from('pool_snapshots')
-        .select('pool_id, apy, timestamp')
-        .in('pool_id', watchlistIds)
-        .gte('timestamp', eightDaysAgo)
-        .order('timestamp', { ascending: false })
-    )
-      .then(({ data, error }) => {
+    async function load() {
+      try {
+        const { data, error } = await supabase
+          .from('pool_snapshots')
+          .select('pool_id, apy, timestamp')
+          .in('pool_id', ids)
+          .gte('timestamp', eightDaysAgo)
+          .order('timestamp', { ascending: false });
         if (error) {
           setWatchlistError(error.message);
           setWatchlistSnapshots([]);
@@ -705,12 +705,13 @@ export default function Portfolio({ onNavigateToYields }: PortfolioProps) {
           poolId: r.pool_id, apy: r.apy, timestamp: r.timestamp,
         })));
         setWatchlistSnapshotsLoading(false);
-      })
-      .catch((err: Error) => {
-        setWatchlistError(err.message);
+      } catch (err) {
+        setWatchlistError(err instanceof Error ? err.message : 'Failed to load watchlist snapshots');
         setWatchlistSnapshots([]);
         setWatchlistSnapshotsLoading(false);
-      });
+      }
+    }
+    load();
   }, [watchlistIds]);
 
   return (
