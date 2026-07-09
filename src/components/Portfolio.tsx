@@ -23,11 +23,11 @@ const CARD_STYLE: React.CSSProperties = {
 };
 
 // Shared by the Holdings header row and every data row so columns can never
-// drift — pool info takes the remaining space, the three numeric columns
+// drift — pool info takes the remaining space, the four numeric columns
 // get fixed widths.
 const HOLDINGS_GRID: React.CSSProperties = {
   display: 'grid',
-  gridTemplateColumns: '1fr 100px 100px 120px',
+  gridTemplateColumns: '1fr 100px 100px 90px 100px',
   alignItems: 'center',
   gap: 12,
 };
@@ -768,14 +768,17 @@ function HoldingsSection({
         <>
           <div style={{ ...HOLDINGS_GRID, padding: '0 12px', marginBottom: 6 }}>
             <span />
-            <span style={{ fontSize: 9, color: 'rgba(232,230,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>
+            <span style={{ fontSize: 11, color: 'rgba(232,230,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>
               Entry APY
             </span>
-            <span style={{ fontSize: 9, color: 'rgba(232,230,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>
+            <span style={{ fontSize: 11, color: 'rgba(232,230,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>
               Amount
             </span>
-            <span style={{ fontSize: 9, color: 'rgba(232,230,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>
+            <span style={{ fontSize: 11, color: 'rgba(232,230,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>
               Current
+            </span>
+            <span style={{ fontSize: 11, color: 'rgba(232,230,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>
+              P/L
             </span>
           </div>
 
@@ -785,6 +788,9 @@ function HoldingsSection({
               const name = liveMatch ? `${liveMatch.project} — ${liveMatch.symbol}` : (pos.protocol ?? 'Unknown pool');
               const currentApy = liveMatch?.apy ?? null;
               const delta = currentApy !== null && pos.entryApy !== null ? currentApy - pos.entryApy : null;
+              const plColor = delta === null
+                ? 'rgba(232,230,255,0.3)'
+                : delta > 0 ? '#4ECDA4' : delta < 0 ? '#FF6B6B' : 'rgba(232,230,255,0.45)';
 
               return (
                 <div
@@ -821,15 +827,14 @@ function HoldingsSection({
                     {currentApy !== null ? (
                       <span style={{ fontSize: 13, color: '#E8E6FF' }}>
                         {currentApy.toFixed(2)}%
-                        {delta !== null && (
-                          <span style={{ marginLeft: 6, fontSize: 11, color: delta >= 0 ? '#4ECDA4' : '#FF6B6B' }}>
-                            {fmtPct(delta)}
-                          </span>
-                        )}
                       </span>
                     ) : (
                       <span style={{ fontSize: 13, color: 'rgba(232,230,255,0.3)' }}>—</span>
                     )}
+                  </div>
+
+                  <div style={{ fontSize: 13, fontWeight: 700, color: plColor, textAlign: 'right' }}>
+                    {delta !== null ? fmtPct(delta) : '—'}
                   </div>
                 </div>
               );
