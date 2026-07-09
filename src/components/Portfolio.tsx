@@ -22,6 +22,16 @@ const CARD_STYLE: React.CSSProperties = {
   boxSizing: 'border-box',
 };
 
+// Shared by the Holdings header row and every data row so columns can never
+// drift — pool info takes the remaining space, the three numeric columns
+// get fixed widths.
+const HOLDINGS_GRID: React.CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: '1fr 100px 100px 120px',
+  alignItems: 'center',
+  gap: 12,
+};
+
 const AXIS_TICK = {
   fill: 'rgba(232,230,255,0.45)',
   fontFamily: 'Inter, sans-serif',
@@ -756,6 +766,19 @@ function HoldingsSection({
         </p>
       ) : (
         <>
+          <div style={{ ...HOLDINGS_GRID, padding: '0 12px', marginBottom: 6 }}>
+            <span />
+            <span style={{ fontSize: 9, color: 'rgba(232,230,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>
+              Entry APY
+            </span>
+            <span style={{ fontSize: 9, color: 'rgba(232,230,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>
+              Amount
+            </span>
+            <span style={{ fontSize: 9, color: 'rgba(232,230,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>
+              Current
+            </span>
+          </div>
+
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {visibleRows.map(pos => {
               const liveMatch = allPools.find(p => p.pool === pos.poolId);
@@ -767,58 +790,45 @@ function HoldingsSection({
                 <div
                   key={pos.poolId}
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 12,
+                    ...HOLDINGS_GRID,
                     padding: '10px 12px',
                     borderRadius: 8,
                     background: 'rgba(107,79,255,0.04)',
                     border: '1px solid rgba(107,79,255,0.08)',
                   }}
                 >
-                  <ProtocolLogo project={pos.protocol ?? ''} size={24} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 500, color: '#E8E6FF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {name}
-                    </div>
-                    <div style={{ fontSize: 11, color: 'rgba(232,230,255,0.45)', marginTop: 2 }}>
-                      {pos.chain ?? '—'}
-                    </div>
-                  </div>
-
-                  <div style={{ textAlign: 'right', minWidth: 70 }}>
-                    <div style={{ fontSize: 9, color: 'rgba(232,230,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                      Entry APY
-                    </div>
-                    <div style={{ fontSize: 13, color: '#E8E6FF', marginTop: 2 }}>
-                      {pos.entryApy !== null ? `${pos.entryApy.toFixed(2)}%` : '—'}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+                    <ProtocolLogo project={pos.protocol ?? ''} size={24} />
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 500, color: '#E8E6FF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {name}
+                      </div>
+                      <div style={{ fontSize: 11, color: 'rgba(232,230,255,0.45)', marginTop: 2 }}>
+                        {pos.chain ?? '—'}
+                      </div>
                     </div>
                   </div>
 
-                  <div style={{ textAlign: 'right', minWidth: 70 }}>
-                    <div style={{ fontSize: 9, color: 'rgba(232,230,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                      Amount
-                    </div>
-                    <div style={{ fontSize: 13, color: '#E8E6FF', marginTop: 2 }}>
-                      {pos.amountUsd !== null ? fmtUsd(pos.amountUsd) : '—'}
-                    </div>
+                  <div style={{ fontSize: 13, color: '#E8E6FF', textAlign: 'right' }}>
+                    {pos.entryApy !== null ? `${pos.entryApy.toFixed(2)}%` : '—'}
                   </div>
 
-                  <div style={{ textAlign: 'right', minWidth: 80 }}>
-                    <div style={{ fontSize: 9, color: 'rgba(232,230,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                      Current
-                    </div>
+                  <div style={{ fontSize: 13, color: '#E8E6FF', textAlign: 'right' }}>
+                    {pos.amountUsd !== null ? fmtUsd(pos.amountUsd) : '—'}
+                  </div>
+
+                  <div style={{ textAlign: 'right' }}>
                     {currentApy !== null ? (
-                      <div style={{ fontSize: 13, color: '#E8E6FF', marginTop: 2 }}>
+                      <span style={{ fontSize: 13, color: '#E8E6FF' }}>
                         {currentApy.toFixed(2)}%
                         {delta !== null && (
                           <span style={{ marginLeft: 6, fontSize: 11, color: delta >= 0 ? '#4ECDA4' : '#FF6B6B' }}>
                             {fmtPct(delta)}
                           </span>
                         )}
-                      </div>
+                      </span>
                     ) : (
-                      <div style={{ fontSize: 13, color: 'rgba(232,230,255,0.3)', marginTop: 2 }}>—</div>
+                      <span style={{ fontSize: 13, color: 'rgba(232,230,255,0.3)' }}>—</span>
                     )}
                   </div>
                 </div>
