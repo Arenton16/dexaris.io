@@ -777,7 +777,7 @@ function HoldingsSection({
             <span style={{ fontSize: 11, color: 'rgba(232,230,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>
               Current
             </span>
-            <span style={{ fontSize: 11, color: 'rgba(232,230,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>
+            <span style={{ fontSize: 11, color: 'rgba(232,230,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'center' }}>
               P/L
             </span>
           </div>
@@ -833,7 +833,7 @@ function HoldingsSection({
                     )}
                   </div>
 
-                  <div style={{ fontSize: 13, fontWeight: 700, color: plColor, textAlign: 'right' }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: plColor, textAlign: 'center' }}>
                     {delta !== null ? fmtPct(delta) : '—'}
                   </div>
                 </div>
