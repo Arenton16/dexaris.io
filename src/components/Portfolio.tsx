@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import {
   LineChart, Line, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
 import { usePools } from '../contexts/PoolsContext';
 import type { Pool } from '../types';
+import { CHAIN_LABELS, CHAIN_LOGOS } from '../types';
 import { supabase } from '../lib/supabase';
 import { getAnonymousId } from '../lib/anonymousId';
 import { ProtocolLogo } from './ProtocolLogo';
@@ -61,12 +62,36 @@ interface DailyPoint {
 
 type Timeframe = '7D' | '30D' | 'All';
 
+// Add Position form state shape — recovered verbatim from the pre-rebuild
+// Portfolio.tsx (commit e0e7b89), used by ChainSelect/AddPositionForm below.
+const CHAIN_NAMES = Object.values(CHAIN_LABELS);
+const EMPTY_FORM  = { protocol: '', asset: '', chain: '', amount: '' };
+
 // ── Helpers ───────────────────────────────────────────────────────────────
 
 function fmtUsd(val: number): string {
   if (val >= 1_000_000) return `$${(val / 1_000_000).toFixed(2)}M`;
   if (val >= 1_000) return `$${(val / 1_000).toFixed(1)}k`;
   return `$${val.toFixed(0)}`;
+}
+
+// Resolves the exact live Pool a submitted (protocol, chain, asset) combo
+// refers to, so the insert can populate the real pool_id/entry_apy instead
+// of the placeholder values the pre-rebuild form used.
+function resolveMatchedPool(protocol: string, chain: string, asset: string, allPools: Pool[]): Pool | null {
+  const exact = allPools.find(p =>
+    p.project === protocol &&
+    p.chain?.toLowerCase() === chain.toLowerCase() &&
+    p.symbol === asset
+  );
+  if (exact) return exact;
+  const protQ = protocol.toLowerCase();
+  const assetQ = asset.toLowerCase();
+  return allPools.find(p =>
+    p.project?.toLowerCase().includes(protQ) &&
+    p.chain?.toLowerCase() === chain.toLowerCase() &&
+    p.symbol?.toLowerCase().includes(assetQ)
+  ) ?? null;
 }
 
 function fmtPct(val: number): string {
@@ -298,6 +323,364 @@ function PerformanceChartSection({
   );
 }
 
+// ── Add Position form ────────────────────────────────────────────────────
+// Recovered verbatim from the pre-rebuild Portfolio.tsx (commit e0e7b89) —
+// same combobox/dropdown interactions, same CSS classes (still present in
+// src/styles/index.css, never removed by the Hill-style rebuild). Only the
+// onAdd data shape below is inlined instead of referencing the old
+// Position interface, which this file no longer defines.
+
+function ChainSelect({
+  value,
+  onChange,
+  availableChains,
+  disabled,
+}: {
+  value: string;
+  onChange: (chain: string) => void;
+  availableChains: string[];
+  disabled: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  const canOpen = !disabled && availableChains.length > 1;
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (!ref.current?.contains(e.target as Node)) setOpen(false);
+    }
+    function handleEsc(e: KeyboardEvent) {
+      if (e.key === 'Escape') setOpen(false);
+    }
+    document.addEventListener('mousedown', handleClick);
+    document.addEventListener('keydown', handleEsc);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener('keydown', handleEsc);
+    };
+  }, []);
+
+  let triggerClass = 'pf-chain-select-trigger';
+  if (open)     triggerClass += ' pf-chain-select-trigger--open';
+  if (disabled || availableChains.length <= 1) triggerClass += ' pf-chain-select-trigger--readonly';
+
+  return (
+    <div className="pf-chain-select" ref={ref}>
+      <button
+        type="button"
+        className={triggerClass}
+        onClick={() => canOpen && setOpen(o => !o)}
+        disabled={disabled}
+      >
+        {disabled ? (
+          <span className="pf-chain-sel-placeholder">Select protocol first</span>
+        ) : value ? (
+          <>
+            {CHAIN_LOGOS[value] && (
+              <img src={CHAIN_LOGOS[value]} alt="" width={16} height={16} className="pf-chain-sel-logo" />
+            )}
+            <span className="pf-chain-sel-name">{value}</span>
+          </>
+        ) : (
+          <span className="pf-chain-sel-placeholder">Select chain</span>
+        )}
+        {canOpen && <span className="pf-chain-sel-arrow">{open ? '▴' : '▾'}</span>}
+      </button>
+      {open && canOpen && (
+        <div className="pf-dropdown">
+          {availableChains.map(chain => (
+            <div
+              key={chain}
+              className={`pf-dd-item${value === chain ? ' pf-dd-item--active' : ''}`}
+              onMouseDown={e => {
+                e.preventDefault();
+                onChange(chain);
+                setOpen(false);
+              }}
+            >
+              {CHAIN_LOGOS[chain] && (
+                <img src={CHAIN_LOGOS[chain]} alt="" width={16} height={16} className="pf-chain-sel-logo" />
+              )}
+              <span className="pf-dd-name">{chain}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AddPositionForm({
+  allPools,
+  onAdd,
+}: {
+  allPools: Pool[];
+  onAdd: (data: { protocol: string; asset: string; chain: string; amountInvested: number }) => void;
+}) {
+  const [form, setForm]                         = useState(EMPTY_FORM);
+  const [formError, setFormError]               = useState('');
+  const [protocolFromList, setProtocolFromList] = useState(false);
+  const [assetFromList, setAssetFromList]       = useState(false);
+  const [protocolOpen, setProtocolOpen]         = useState(false);
+  const [assetOpen, setAssetOpen]               = useState(false);
+  const protocolRef = useRef<HTMLDivElement>(null);
+  const assetRef    = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (!protocolRef.current?.contains(e.target as Node)) setProtocolOpen(false);
+      if (!assetRef.current?.contains(e.target as Node))    setAssetOpen(false);
+    }
+    function handleEsc(e: KeyboardEvent) {
+      if (e.key === 'Escape') { setProtocolOpen(false); setAssetOpen(false); }
+    }
+    document.addEventListener('mousedown', handleClick);
+    document.addEventListener('keydown', handleEsc);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener('keydown', handleEsc);
+    };
+  }, []);
+
+  const protocolOptions = useMemo(() => {
+    const q = form.protocol.trim().toLowerCase();
+    if (!q) return [];
+    const seen = new Set<string>();
+    const results: string[] = [];
+    for (const p of allPools) {
+      if (p.project?.toLowerCase().includes(q) && !seen.has(p.project)) {
+        seen.add(p.project);
+        results.push(p.project);
+        if (results.length >= 8) break;
+      }
+    }
+    return results;
+  }, [form.protocol, allPools]);
+
+  // Chains where the selected protocol actually exists, normalised to CHAIN_NAMES
+  const availableChains = useMemo(() => {
+    const protQ = form.protocol.trim().toLowerCase();
+    if (!protQ) return [];
+    const seen = new Set<string>();
+    const chains: string[] = [];
+    for (const p of allPools) {
+      const matchProto = protocolFromList
+        ? p.project === form.protocol
+        : p.project?.toLowerCase().includes(protQ);
+      if (!matchProto) continue;
+      const normalised = CHAIN_NAMES.find(n => n.toLowerCase() === p.chain?.toLowerCase());
+      if (normalised && !seen.has(normalised)) {
+        seen.add(normalised);
+        chains.push(normalised);
+      }
+    }
+    return chains;
+  }, [form.protocol, protocolFromList, allPools]);
+
+  // Auto-select chain when protocol maps to exactly one chain
+  useEffect(() => {
+    if (availableChains.length === 1) {
+      setForm(f => {
+        if (f.chain === availableChains[0]) return f;
+        return { ...f, chain: availableChains[0], asset: '' };
+      });
+      setAssetFromList(false);
+    }
+  }, [availableChains]);
+
+  const assetOptions = useMemo(() => {
+    const protQ  = form.protocol.trim().toLowerCase();
+    if (!protQ || !form.chain) return [];
+    const assetQ = form.asset.trim().toLowerCase();
+    const seen   = new Set<string>();
+    const results: { symbol: string; tvl: number }[] = [];
+    for (const p of allPools) {
+      const matchProto = protocolFromList
+        ? p.project === form.protocol
+        : p.project?.toLowerCase().includes(protQ);
+      const matchChain = p.chain?.toLowerCase() === form.chain.toLowerCase();
+      const matchAsset = !assetQ || p.symbol.toLowerCase().includes(assetQ);
+      if (matchProto && matchChain && matchAsset && !seen.has(p.symbol)) {
+        seen.add(p.symbol);
+        results.push({ symbol: p.symbol, tvl: p.tvlUsd });
+        if (results.length >= 8) break;
+      }
+    }
+    return results;
+  }, [form.protocol, form.chain, form.asset, protocolFromList, allPools]);
+
+  function selectProtocol(name: string, fromList: boolean) {
+    setForm(f => ({ ...f, protocol: name, asset: '', chain: '' }));
+    setProtocolFromList(fromList);
+    setAssetFromList(false);
+    setProtocolOpen(false);
+    setFormError('');
+  }
+
+  function selectAsset(symbol: string, fromList: boolean) {
+    setForm(f => ({ ...f, asset: symbol }));
+    setAssetFromList(fromList);
+    setAssetOpen(false);
+    setFormError('');
+  }
+
+  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const amount = parseFloat(form.amount);
+    const valid =
+      form.protocol.trim() &&
+      form.chain &&
+      form.asset.trim() &&
+      form.amount && !isNaN(amount) && amount > 0;
+    if (!valid) { setFormError('Please fill in all fields'); return; }
+    onAdd({ protocol: form.protocol.trim(), asset: form.asset.trim(), chain: form.chain, amountInvested: amount });
+    setForm(EMPTY_FORM);
+    setFormError('');
+    setProtocolFromList(false);
+    setAssetFromList(false);
+  }
+
+  const isManualEntry = form.protocol.trim() !== '' && form.asset.trim() !== '' && (!protocolFromList || !assetFromList);
+  const assetDisabled = !form.protocol.trim() || !form.chain;
+
+  return (
+    <>
+      <div className="pf-form-section-label">Add New Position</div>
+      <div className="pf-card pf-add-card">
+        <form className="pf-form" onSubmit={handleSubmit} noValidate>
+          <div className="pf-form-row">
+
+            {/* Protocol combobox */}
+            <div className="pf-combobox" ref={protocolRef}>
+              <input
+                className="pf-input"
+                placeholder="Protocol (e.g. Uniswap-V4)"
+                value={form.protocol}
+                autoComplete="off"
+                onChange={e => {
+                  setForm(f => ({ ...f, protocol: e.target.value, asset: '', chain: '' }));
+                  setProtocolFromList(false);
+                  setAssetFromList(false);
+                  setProtocolOpen(e.target.value.trim().length > 0);
+                  setFormError('');
+                }}
+                onFocus={() => {
+                  if (form.protocol.trim().length > 0) setProtocolOpen(true);
+                }}
+              />
+              {protocolOpen && (protocolOptions.length > 0 || form.protocol.trim()) && (
+                <div className="pf-dropdown">
+                  {protocolOptions.map(name => (
+                    <div
+                      key={name}
+                      className="pf-dd-item"
+                      onMouseDown={e => { e.preventDefault(); selectProtocol(name, true); }}
+                    >
+                      <span className="pf-dd-avatar">{name[0]?.toUpperCase()}</span>
+                      <span className="pf-dd-name">{name}</span>
+                    </div>
+                  ))}
+                  {form.protocol.trim() && (
+                    <div
+                      className="pf-dd-item pf-dd-item--manual"
+                      onMouseDown={e => { e.preventDefault(); selectProtocol(form.protocol.trim(), false); }}
+                    >
+                      + Add &ldquo;{form.protocol.trim()}&rdquo; manually
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Chain select — only shows chains this protocol exists on */}
+            <ChainSelect
+              value={form.chain}
+              onChange={chain => {
+                setForm(f => ({ ...f, chain, asset: '' }));
+                setAssetFromList(false);
+                setFormError('');
+              }}
+              availableChains={availableChains}
+              disabled={!form.protocol.trim()}
+            />
+
+            {/* Asset combobox — enabled only once protocol + chain are set */}
+            <div className="pf-combobox" ref={assetRef}>
+              <input
+                className="pf-input"
+                placeholder={assetDisabled ? 'Select protocol and chain first' : 'Asset / symbol (e.g. ETH-USDC)'}
+                value={form.asset}
+                disabled={assetDisabled}
+                autoComplete="off"
+                onChange={e => {
+                  setForm(f => ({ ...f, asset: e.target.value }));
+                  setAssetFromList(false);
+                  setAssetOpen(true);
+                  setFormError('');
+                }}
+                onFocus={() => {
+                  if (!assetDisabled) setAssetOpen(true);
+                }}
+              />
+              {assetOpen && !assetDisabled && (assetOptions.length > 0 || form.asset.trim()) && (
+                <div className="pf-dropdown">
+                  {assetOptions.map(({ symbol, tvl }) => (
+                    <div
+                      key={symbol}
+                      className="pf-dd-item"
+                      onMouseDown={e => { e.preventDefault(); selectAsset(symbol, true); }}
+                    >
+                      <span className="pf-dd-avatar">{symbol[0]?.toUpperCase()}</span>
+                      <div className="pf-dd-asset">
+                        <span className="pf-dd-name">{symbol}</span>
+                        <span className="pf-dd-tvl">{fmtUsd(tvl)} TVL</span>
+                      </div>
+                    </div>
+                  ))}
+                  {form.asset.trim() && (
+                    <div
+                      className="pf-dd-item pf-dd-item--manual"
+                      onMouseDown={e => { e.preventDefault(); selectAsset(form.asset.trim(), false); }}
+                    >
+                      + Add &ldquo;{form.asset.trim()}&rdquo; manually
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Amount */}
+            <div className="pf-amount-wrap">
+              <span className="pf-amount-prefix">$</span>
+              <input
+                className="pf-input pf-amount-input"
+                placeholder="Amount invested"
+                type="number"
+                min="0"
+                step="any"
+                value={form.amount}
+                onChange={e => { setForm(f => ({ ...f, amount: e.target.value })); setFormError(''); }}
+              />
+            </div>
+
+            <button type="submit" className="pf-add-btn">Add Position</button>
+          </div>
+
+          {isManualEntry && (
+            <div className="pf-manual-warning">
+              <span className="pf-manual-warning-icon">⚠</span>
+              Live data matching may be limited for manual entries
+            </div>
+          )}
+
+          {formError && <span className="pf-form-error">{formError}</span>}
+        </form>
+      </div>
+    </>
+  );
+}
+
 // ── Section 2 — Holdings ──────────────────────────────────────────────────
 
 function HoldingsSection({
@@ -305,11 +688,19 @@ function HoldingsSection({
   loading,
   error,
   allPools,
+  showAddForm,
+  onToggleAddForm,
+  onAddPosition,
+  addError,
 }: {
   positions: PortfolioPosition[] | null;
   loading: boolean;
   error: string | null;
   allPools: Pool[];
+  showAddForm: boolean;
+  onToggleAddForm: () => void;
+  onAddPosition: (data: { protocol: string; asset: string; chain: string; amountInvested: number }) => void;
+  addError: string | null;
 }) {
   const [expanded, setExpanded] = useState(false);
 
@@ -318,9 +709,38 @@ function HoldingsSection({
 
   return (
     <div style={CARD_STYLE}>
-      <h2 style={{ margin: '0 0 16px', fontSize: 15, fontWeight: 600, color: '#E8E6FF' }}>
-        Holdings
-      </h2>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <h2 style={{ margin: 0, fontSize: 15, fontWeight: 600, color: '#E8E6FF' }}>
+          Holdings
+        </h2>
+        <button
+          onClick={onToggleAddForm}
+          style={{
+            background: '#6B4FFF',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 6,
+            padding: '6px 14px',
+            fontSize: 12,
+            fontWeight: 600,
+            cursor: 'pointer',
+            fontFamily: FONT,
+          }}
+        >
+          {showAddForm ? 'Cancel' : '+ Add Position'}
+        </button>
+      </div>
+
+      {showAddForm && (
+        <div style={{ marginBottom: 16 }}>
+          <AddPositionForm allPools={allPools} onAdd={onAddPosition} />
+          {addError && (
+            <p style={{ margin: '8px 0 0', fontSize: 12, color: '#FF6B6B', fontFamily: FONT }}>
+              Couldn&apos;t add position: {addError}
+            </p>
+          )}
+        </div>
+      )}
 
       {loading ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -562,6 +982,9 @@ export default function Portfolio({ onNavigateToYields }: PortfolioProps) {
   const [positions, setPositions] = useState<PortfolioPosition[] | null>(null);
   const [positionsError, setPositionsError] = useState<string | null>(null);
 
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [addError, setAddError] = useState<string | null>(null);
+
   const [chartSnapshots, setChartSnapshots] = useState<SnapshotRow[] | null>(null);
   const [chartSnapshotsLoading, setChartSnapshotsLoading] = useState(true);
   const [chartError, setChartError] = useState<string | null>(null);
@@ -582,36 +1005,72 @@ export default function Portfolio({ onNavigateToYields }: PortfolioProps) {
 
   // portfolio_positions — scoped to this anonymous user. Feeds both the
   // performance chart (pool_id list) and the holdings section (full rows).
-  useEffect(() => {
-    async function load() {
-      try {
-        const anonId = getAnonymousId();
-        const { data, error } = await supabase
-          .from('portfolio_positions')
-          .select('pool_id, protocol, chain, entry_apy, amount_usd')
-          .eq('anonymous_id', anonId);
-        if (error) {
-          setPositionsError(error.message);
-          setPositions([]);
-          return;
-        }
-        setPositions((data ?? []).map((r: {
-          pool_id: string; protocol: string | null; chain: string | null;
-          entry_apy: number | null; amount_usd: number | null;
-        }) => ({
-          poolId: r.pool_id,
-          protocol: r.protocol,
-          chain: r.chain,
-          entryApy: r.entry_apy,
-          amountUsd: r.amount_usd,
-        })));
-      } catch (err) {
-        setPositionsError(err instanceof Error ? err.message : 'Failed to load positions');
+  // Extracted as a callback (not just an effect body) so a successful Add
+  // Position insert can re-run it and refresh Holdings in place.
+  const loadPositions = useCallback(async () => {
+    try {
+      const anonId = getAnonymousId();
+      const { data, error } = await supabase
+        .from('portfolio_positions')
+        .select('pool_id, protocol, chain, entry_apy, amount_usd')
+        .eq('anonymous_id', anonId);
+      if (error) {
+        setPositionsError(error.message);
         setPositions([]);
+        return;
       }
+      setPositions((data ?? []).map((r: {
+        pool_id: string; protocol: string | null; chain: string | null;
+        entry_apy: number | null; amount_usd: number | null;
+      }) => ({
+        poolId: r.pool_id,
+        protocol: r.protocol,
+        chain: r.chain,
+        entryApy: r.entry_apy,
+        amountUsd: r.amount_usd,
+      })));
+    } catch (err) {
+      setPositionsError(err instanceof Error ? err.message : 'Failed to load positions');
+      setPositions([]);
     }
-    load();
   }, []);
+
+  useEffect(() => { loadPositions(); }, [loadPositions]);
+
+  // Add Position — resolves the exact live pool (if any) from the submitted
+  // protocol/chain/asset combo so pool_id/entry_apy are real values instead
+  // of placeholders, inserts, then refreshes Holdings (and, via the
+  // positions effect dependency below, the performance chart) in place.
+  const handleAddPosition = useCallback(async (data: {
+    protocol: string; asset: string; chain: string; amountInvested: number;
+  }) => {
+    setAddError(null);
+    const anonId = getAnonymousId();
+    const matched = resolveMatchedPool(data.protocol, data.chain, data.asset, allPools);
+    const poolId = matched?.pool ?? crypto.randomUUID();
+    const entryApy = matched?.apy ?? null;
+    const entryDate = new Date().toISOString();
+
+    try {
+      const { error } = await supabase.from('portfolio_positions').insert({
+        anonymous_id: anonId,
+        pool_id: poolId,
+        protocol: data.protocol,
+        chain: data.chain,
+        entry_apy: entryApy,
+        amount_usd: data.amountInvested,
+        entry_date: entryDate,
+      });
+      if (error) {
+        setAddError(error.message);
+        return;
+      }
+      setShowAddForm(false);
+      await loadPositions();
+    } catch (err) {
+      setAddError(err instanceof Error ? err.message : 'Failed to add position');
+    }
+  }, [allPools, loadPositions]);
 
   // pool_snapshots for the held pool_ids — never filtered by anonymous_id
   // (pool_snapshots has no such column); the anon-scoped positions query
@@ -741,6 +1200,10 @@ export default function Portfolio({ onNavigateToYields }: PortfolioProps) {
             loading={positions === null}
             error={positionsError}
             allPools={allPools}
+            showAddForm={showAddForm}
+            onToggleAddForm={() => { setAddError(null); setShowAddForm(v => !v); }}
+            onAddPosition={handleAddPosition}
+            addError={addError}
           />
         </div>
         <div style={{ flex: isNarrow ? undefined : '45 1 0', minWidth: 0 }}>
