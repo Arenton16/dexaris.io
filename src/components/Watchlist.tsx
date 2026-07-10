@@ -72,6 +72,22 @@ function get24hChange(pool: Pool): number | null {
   return typeof raw === 'number' && Number.isFinite(raw) ? raw : null;
 }
 
+// Single source of truth for column widths — used on every <th> AND every
+// <td> below so the header row and data rows can never drift out of sync.
+// Protocol has no fixed width (flexible, absorbs remaining space), matching
+// how it behaved before this table used table-layout: fixed.
+const COL_WIDTHS = {
+  star: 32,
+  rank: 44,
+  asset: 130,
+  chain: 180,
+  apy: 100,
+  tvl: 150,
+  score: 170,
+  why: 80,
+  change24h: 110,
+};
+
 interface Props {
   allPools: Pool[];
   watchlistedIds: Set<string>;
@@ -144,19 +160,19 @@ export default function Watchlist({ allPools, watchlistedIds, onToggleWatchlist,
           </p>
           <div className="table-wrap">
             <style>{`.yield-table td { vertical-align: middle; line-height: 1.4; }`}</style>
-            <table className="yield-table" style={{ fontVariantNumeric: 'tabular-nums' }}>
+            <table className="yield-table" style={{ fontVariantNumeric: 'tabular-nums', tableLayout: 'fixed' }}>
               <thead>
                 <tr>
-                  <th style={{ width: 32 }} />
-                  <th className="hide-mobile">#</th>
+                  <th style={{ width: COL_WIDTHS.star }} />
+                  <th className="hide-mobile" style={{ width: COL_WIDTHS.rank }}>#</th>
                   <th>Protocol</th>
-                  <th>Asset</th>
-                  <th>Chain</th>
-                  <th className="hide-mobile">APY</th>
-                  <th className="hide-mobile">TVL</th>
-                  <th className="hide-mobile">Score</th>
-                  <th className="hide-mobile" style={{ width: 80 }}>Why</th>
-                  <th className="hide-mobile">24h</th>
+                  <th style={{ width: COL_WIDTHS.asset }}>Asset</th>
+                  <th style={{ width: COL_WIDTHS.chain }}>Chain</th>
+                  <th className="hide-mobile" style={{ width: COL_WIDTHS.apy }}>APY</th>
+                  <th className="hide-mobile" style={{ width: COL_WIDTHS.tvl }}>TVL</th>
+                  <th className="hide-mobile" style={{ width: COL_WIDTHS.score }}>Score</th>
+                  <th className="hide-mobile" style={{ width: COL_WIDTHS.why }}>Why</th>
+                  <th className="hide-mobile" style={{ width: COL_WIDTHS.change24h }}>24h</th>
                   <th className="show-mobile">APY / TVL</th>
                 </tr>
               </thead>
@@ -175,7 +191,7 @@ export default function Watchlist({ allPools, watchlistedIds, onToggleWatchlist,
                       onClick={() => setSelectedPool(pool)}
                       style={{ height: '44px' }}
                     >
-                      <td onClick={e => e.stopPropagation()}>
+                      <td onClick={e => e.stopPropagation()} style={{ width: COL_WIDTHS.star }}>
                         <button
                           className="star-btn starred"
                           onClick={() => onToggleWatchlist(pool.pool)}
@@ -184,15 +200,15 @@ export default function Watchlist({ allPools, watchlistedIds, onToggleWatchlist,
                           ★
                         </button>
                       </td>
-                      <td className="dim hide-mobile">{i + 1}</td>
+                      <td className="dim hide-mobile" style={{ width: COL_WIDTHS.rank }}>{i + 1}</td>
                       <td className="protocol">
                         <div className="protocol-cell">
                           <ProtocolLogo project={pool.project} />
                           {pool.project}
                         </div>
                       </td>
-                      <td>{pool.symbol}</td>
-                      <td>
+                      <td style={{ width: COL_WIDTHS.asset }}>{pool.symbol}</td>
+                      <td style={{ width: COL_WIDTHS.chain }}>
                         {(() => {
                           const cc = CHAIN_COLOURS[pool.chain] ?? 'rgba(232,230,255,0.4)';
                           return (
@@ -215,9 +231,9 @@ export default function Watchlist({ allPools, watchlistedIds, onToggleWatchlist,
                           );
                         })()}
                       </td>
-                      <td className="apy hide-mobile">{(pool.apy ?? 0).toFixed(2)}%</td>
-                      <td className="tvl hide-mobile">${formatTvl(pool.tvlUsd)}</td>
-                      <td className="hide-mobile">
+                      <td className="apy hide-mobile" style={{ width: COL_WIDTHS.apy }}>{(pool.apy ?? 0).toFixed(2)}%</td>
+                      <td className="tvl hide-mobile" style={{ width: COL_WIDTHS.tvl }}>${formatTvl(pool.tvlUsd)}</td>
+                      <td className="hide-mobile" style={{ width: COL_WIDTHS.score }}>
                         <span className="score-cell">
                           <span className="score-num" style={{ color: scoreColour }}>{score}</span>
                           <span className="score-badge" style={{
@@ -227,10 +243,10 @@ export default function Watchlist({ allPools, watchlistedIds, onToggleWatchlist,
                           }}>{scoreTier}</span>
                         </span>
                       </td>
-                      <td className="hide-mobile" style={{ width: 80 }}>
+                      <td className="hide-mobile" style={{ width: COL_WIDTHS.why }}>
                         <ReasonBar components={breakdown} />
                       </td>
-                      <td className="hide-mobile">
+                      <td className="hide-mobile" style={{ width: COL_WIDTHS.change24h }}>
                         {change24h !== null ? (
                           <span style={{ fontSize: 12, fontWeight: 600, color: change24h >= 0 ? '#4ECDA4' : '#FF6B6B' }}>
                             {change24h >= 0 ? '+' : ''}{change24h.toFixed(2)}%
