@@ -1,17 +1,21 @@
 import { useState } from 'react';
-import { CHAIN_LOGOS, type Pool } from '../types';
+import { type Pool } from '../types';
 import { calculateDexarisScore, calculateDexarisScoreBreakdown, getDexarisScoreColour, getDexarisScoreTier } from '../utils/dexarisScore';
 import PoolDetail from './PoolDetail';
 import { ProtocolLogo } from './ProtocolLogo';
 import LocalDataBanner from './LocalDataBanner';
 
-const CHAIN_COLORS: Record<string, { bg: string; text: string }> = {
-  Ethereum: { bg: '#1a3a5c', text: '#3B9EFF' },
-  Base:     { bg: '#1a1a4a', text: '#6B7FFF' },
-  Solana:   { bg: '#2d1a4a', text: '#9945FF' },
-  Arbitrum: { bg: '#1a2d4a', text: '#2D9CDB' },
-  Avalanche:{ bg: '#4a1a1a', text: '#E84142' },
-  Polygon:  { bg: '#2d1a4a', text: '#8247E5' },
+// Duplicated verbatim from YieldTable.tsx (not exported there, so can't be
+// imported without touching that file) so the chain badge renders pixel-
+// identically — same colours, same 13px logo, same inline styling instead
+// of the .chain-badge CSS class this file used before.
+const CHAIN_COLOURS: Record<string, string> = {
+  Ethereum: '#3B9EFF',
+  Solana:   '#A879FF',
+  Base:     '#7B92D9',
+  Arbitrum: '#3B9EFF',
+  Avalanche:'#FF6B6B',
+  Polygon:  '#FFB347',
 };
 
 // ── Score "Why" bar — recovered verbatim from YieldTable.tsx (not exported
@@ -139,7 +143,8 @@ export default function Watchlist({ allPools, watchlistedIds, onToggleWatchlist,
             Tracking {watchlistPools.length} pool{watchlistPools.length !== 1 ? 's' : ''} — highest yield: {highestApy.toFixed(1)}%
           </p>
           <div className="table-wrap">
-            <table className="yield-table">
+            <style>{`.yield-table td { vertical-align: middle; line-height: 1.4; }`}</style>
+            <table className="yield-table" style={{ fontVariantNumeric: 'tabular-nums' }}>
               <thead>
                 <tr>
                   <th style={{ width: 32 }} />
@@ -168,6 +173,7 @@ export default function Watchlist({ allPools, watchlistedIds, onToggleWatchlist,
                       key={pool.pool}
                       className="tr-clickable"
                       onClick={() => setSelectedPool(pool)}
+                      style={{ height: '44px' }}
                     >
                       <td onClick={e => e.stopPropagation()}>
                         <button
@@ -187,25 +193,27 @@ export default function Watchlist({ allPools, watchlistedIds, onToggleWatchlist,
                       </td>
                       <td>{pool.symbol}</td>
                       <td>
-                        <span
-                          className="chain-badge"
-                          style={{
-                            backgroundColor: CHAIN_COLORS[pool.chain]?.bg ?? 'rgba(107,79,255,0.1)',
-                            color: CHAIN_COLORS[pool.chain]?.text ?? 'rgba(232,230,255,0.45)',
-                          }}
-                        >
-                          {CHAIN_LOGOS[pool.chain] && (
-                            <img
-                              src={CHAIN_LOGOS[pool.chain]}
-                              alt={pool.chain}
-                              width={16}
-                              height={16}
-                              className="chain-logo"
-                              onError={e => { e.currentTarget.style.display = 'none'; }}
-                            />
-                          )}
-                          {pool.chain}
-                        </span>
+                        {(() => {
+                          const cc = CHAIN_COLOURS[pool.chain] ?? 'rgba(232,230,255,0.4)';
+                          return (
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '10px', padding: '3px 9px', borderRadius: '10px', background: 'rgba(232,230,255,0.04)', border: '0.5px solid rgba(232,230,255,0.12)', color: 'rgba(232,230,255,0.55)' }}>
+                              <img
+                                src={`/logos/chains/${pool.chain.toLowerCase()}.png`}
+                                alt={pool.chain}
+                                style={{ width: '13px', height: '13px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                                onError={e => {
+                                  const t = e.currentTarget;
+                                  t.style.display = 'none';
+                                  const fb = document.createElement('span');
+                                  fb.textContent = pool.chain[0];
+                                  Object.assign(fb.style, { width: '13px', height: '13px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', fontWeight: '700', flexShrink: '0', background: `${cc}33`, color: cc });
+                                  t.parentNode?.insertBefore(fb, t);
+                                }}
+                              />
+                              {pool.chain}
+                            </span>
+                          );
+                        })()}
                       </td>
                       <td className="apy hide-mobile">{(pool.apy ?? 0).toFixed(2)}%</td>
                       <td className="tvl hide-mobile">${formatTvl(pool.tvlUsd)}</td>
