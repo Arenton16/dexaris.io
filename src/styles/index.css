@@ -2193,10 +2193,6 @@ body {
 
 /* ─── Watchlist page ─────────────────────────────────────────── */
 
-.watchlist-page {
-  max-width: 900px;
-}
-
 .watchlist-page--empty {
   margin: -28px -32px;
   width: calc(100% + 64px);

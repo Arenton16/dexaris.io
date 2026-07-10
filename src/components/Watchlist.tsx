@@ -92,7 +92,7 @@ export default function Watchlist({ allPools, watchlistedIds, onToggleWatchlist,
     : 0;
 
   return (
-    <div className={`watchlist-page${watchlistPools.length === 0 ? ' watchlist-page--empty' : ''}`} style={{ padding: '24px' }}>
+    <div className={`watchlist-page${watchlistPools.length === 0 ? ' watchlist-page--empty' : ''}`}>
       <LocalDataBanner />
       {watchlistPools.length === 0 ? (
         <div style={{
