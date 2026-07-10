@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { type Pool } from '../types';
 import { calculateDexarisScore, calculateDexarisScoreBreakdown, getDexarisScoreColour, getDexarisScoreTier } from '../utils/dexarisScore';
 import PoolDetail from './PoolDetail';
@@ -88,6 +88,8 @@ const COL_WIDTHS = {
   change24h: 110,
 };
 
+type SortKey = 'apy' | 'tvl' | 'score' | '24h';
+
 interface Props {
   allPools: Pool[];
   watchlistedIds: Set<string>;
@@ -97,14 +99,46 @@ interface Props {
 
 export default function Watchlist({ allPools, watchlistedIds, onToggleWatchlist, onNavigateToYields }: Props) {
   const [selectedPool, setSelectedPool] = useState<Pool | null>(null);
+  const [sortBy, setSortBy] = useState<SortKey>('score');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+  const [hoveredSortCol, setHoveredSortCol] = useState<SortKey | null>(null);
 
-  // Preserves the existing sort — highest APY first — unchanged.
+  const handleSortClick = (key: SortKey) => {
+    if (sortBy === key) {
+      setSortDir(d => (d === 'desc' ? 'asc' : 'desc'));
+    } else {
+      setSortBy(key);
+      setSortDir('desc');
+    }
+  };
+
+  const sortHeaderStyle = (key: SortKey, width?: number): CSSProperties => ({
+    width,
+    cursor: 'pointer',
+    userSelect: 'none',
+    whiteSpace: 'nowrap',
+    color: sortBy === key ? 'var(--accent-text)' : hoveredSortCol === key ? 'rgba(232,230,255,0.7)' : undefined,
+  });
+
+  // Score and 24h change are precomputed once here (rather than inside the
+  // render map) so they can be used for both sorting and rendering without
+  // calculating them twice per pool.
   const watchlistPools = allPools
     .filter(p => watchlistedIds.has(p.pool))
-    .sort((a, b) => (b.apy ?? 0) - (a.apy ?? 0));
+    .map(pool => ({ pool, score: calculateDexarisScore(pool), change24h: get24hChange(pool) }))
+    .sort((a, b) => {
+      let diff = 0;
+      switch (sortBy) {
+        case 'apy': diff = (a.pool.apy ?? 0) - (b.pool.apy ?? 0); break;
+        case 'tvl': diff = (a.pool.tvlUsd ?? 0) - (b.pool.tvlUsd ?? 0); break;
+        case 'score': diff = a.score - b.score; break;
+        case '24h': diff = (a.change24h ?? -Infinity) - (b.change24h ?? -Infinity); break;
+      }
+      return sortDir === 'desc' ? -diff : diff;
+    });
 
   const highestApy = watchlistPools.length > 0
-    ? Math.max(...watchlistPools.map(p => p.apy ?? 0))
+    ? Math.max(...watchlistPools.map(({ pool }) => pool.apy ?? 0))
     : 0;
 
   return (
@@ -164,25 +198,55 @@ export default function Watchlist({ allPools, watchlistedIds, onToggleWatchlist,
               <thead>
                 <tr>
                   <th style={{ width: COL_WIDTHS.star }} />
-                  <th className="hide-mobile" style={{ width: COL_WIDTHS.rank }}>#</th>
-                  <th>Protocol</th>
-                  <th style={{ width: COL_WIDTHS.asset }}>Asset</th>
-                  <th style={{ width: COL_WIDTHS.chain }}>Chain</th>
-                  <th className="hide-mobile" style={{ width: COL_WIDTHS.apy }}>APY</th>
-                  <th className="hide-mobile" style={{ width: COL_WIDTHS.tvl }}>TVL</th>
-                  <th className="hide-mobile" style={{ width: COL_WIDTHS.score }}>Score</th>
-                  <th className="hide-mobile" style={{ width: COL_WIDTHS.why }}>Why</th>
-                  <th className="hide-mobile" style={{ width: COL_WIDTHS.change24h }}>24h</th>
-                  <th className="show-mobile">APY / TVL</th>
+                  <th className="hide-mobile" style={{ width: COL_WIDTHS.rank, cursor: 'default' }}>#</th>
+                  <th style={{ cursor: 'default' }}>Protocol</th>
+                  <th style={{ width: COL_WIDTHS.asset, cursor: 'default' }}>Asset</th>
+                  <th style={{ width: COL_WIDTHS.chain, cursor: 'default' }}>Chain</th>
+                  <th
+                    className="hide-mobile"
+                    style={sortHeaderStyle('apy', COL_WIDTHS.apy)}
+                    onClick={() => handleSortClick('apy')}
+                    onMouseEnter={() => setHoveredSortCol('apy')}
+                    onMouseLeave={() => setHoveredSortCol(null)}
+                  >
+                    APY {sortBy === 'apy' ? (sortDir === 'desc' ? '▼' : '▲') : ''}
+                  </th>
+                  <th
+                    className="hide-mobile"
+                    style={sortHeaderStyle('tvl', COL_WIDTHS.tvl)}
+                    onClick={() => handleSortClick('tvl')}
+                    onMouseEnter={() => setHoveredSortCol('tvl')}
+                    onMouseLeave={() => setHoveredSortCol(null)}
+                  >
+                    TVL {sortBy === 'tvl' ? (sortDir === 'desc' ? '▼' : '▲') : ''}
+                  </th>
+                  <th
+                    className="hide-mobile"
+                    style={sortHeaderStyle('score', COL_WIDTHS.score)}
+                    onClick={() => handleSortClick('score')}
+                    onMouseEnter={() => setHoveredSortCol('score')}
+                    onMouseLeave={() => setHoveredSortCol(null)}
+                  >
+                    Score {sortBy === 'score' ? (sortDir === 'desc' ? '▼' : '▲') : ''}
+                  </th>
+                  <th className="hide-mobile" style={{ width: COL_WIDTHS.why, cursor: 'default' }}>Why</th>
+                  <th
+                    className="hide-mobile"
+                    style={sortHeaderStyle('24h', COL_WIDTHS.change24h)}
+                    onClick={() => handleSortClick('24h')}
+                    onMouseEnter={() => setHoveredSortCol('24h')}
+                    onMouseLeave={() => setHoveredSortCol(null)}
+                  >
+                    24h {sortBy === '24h' ? (sortDir === 'desc' ? '▼' : '▲') : ''}
+                  </th>
+                  <th className="show-mobile" style={{ cursor: 'default' }}>APY / TVL</th>
                 </tr>
               </thead>
               <tbody>
-                {watchlistPools.map((pool, i) => {
-                  const score = calculateDexarisScore(pool);
+                {watchlistPools.map(({ pool, score, change24h }, i) => {
                   const scoreColour = getDexarisScoreColour(score);
                   const scoreTier = getDexarisScoreTier(score);
                   const breakdown = calculateDexarisScoreBreakdown(pool).components;
-                  const change24h = get24hChange(pool);
 
                   return (
                     <tr
