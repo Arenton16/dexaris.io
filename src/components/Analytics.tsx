@@ -102,10 +102,12 @@ interface ScoreHistEntry {
 
 interface InsightData {
   avgApy: number;
+  avgApyDelta: number | null;
   avgScore: number;
   poolCount: number;
   protocolCount: number;
   chainCount: number;
+  strongCount: number;
   bestChain: { chain: string; avg: number } | null;
 }
 
@@ -123,16 +125,30 @@ interface ChartCardProps {
 }
 
 const CARD_STYLE: React.CSSProperties = {
-  background: '#111028',
-  border: '0.5px solid rgba(232,230,255,0.08)',
-  borderRadius: '12px',
-  padding: '20px',
+  background: 'rgba(17,16,40,0.7)',
+  backdropFilter: 'blur(12px)',
+  WebkitBackdropFilter: 'blur(12px)',
+  border: '1px solid rgba(107,79,255,0.18)',
+  borderRadius: 12,
+  padding: 24,
+  transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
+};
+
+const CARD_HOVER_STYLE: React.CSSProperties = {
+  borderColor: 'rgba(107,79,255,0.4)',
+  boxShadow: '0 0 24px rgba(107,79,255,0.12)',
 };
 
 function ChartCard({ id, title, subtitle, info, openInfo, onInfo, style, children }: ChartCardProps) {
   const isOpen = openInfo === id;
+  const [hovered, setHovered] = useState(false);
   return (
-    <div className="chart-card" style={{ ...CARD_STYLE, ...style }}>
+    <div
+      className="chart-card"
+      style={{ ...CARD_STYLE, ...(hovered ? CARD_HOVER_STYLE : null), ...style }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
       <div className="chart-card-header">
         <div>
           <h3 className="chart-title" style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(232,230,255,0.45)', margin: 0 }}>{title}</h3>
@@ -200,7 +216,21 @@ function ScoreScatterTooltip({ active, payload }: { active?: boolean; payload?: 
 }
 
 function ScatterDot({ cx, cy, fill }: { cx?: number; cy?: number; fill?: string }) {
-  return <circle cx={cx ?? 0} cy={cy ?? 0} r={5} fill={fill ?? 'rgba(232,230,255,0.3)'} fillOpacity={0.55} />;
+  const [hovered, setHovered] = useState(false);
+  return (
+    <circle
+      cx={cx ?? 0}
+      cy={cy ?? 0}
+      r={hovered ? 7 : 5}
+      fill={fill ?? 'rgba(232,230,255,0.3)'}
+      fillOpacity={hovered ? 1 : 0.75}
+      stroke="rgba(12,11,26,0.6)"
+      strokeWidth={1}
+      style={{ transition: 'r 0.1s ease, fill-opacity 0.1s ease' }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    />
+  );
 }
 
 function QuadrantOverlay() {
@@ -259,6 +289,8 @@ function formatTvlLog(v: number) {
 export default function Analytics({ displayPools }: Props) {
   const [hiddenChains, setHiddenChains] = useState<Set<string>>(new Set());
   const [openInfo, setOpenInfo] = useState<string | null>(null);
+  const [heroLeftHovered, setHeroLeftHovered] = useState(false);
+  const [heroRightHovered, setHeroRightHovered] = useState(false);
 
   const toggleChain = useCallback((chain: string) => {
     setHiddenChains(prev => {
@@ -277,8 +309,16 @@ export default function Analytics({ displayPools }: Props) {
   const insightData = useMemo<InsightData | null>(() => {
     if (displayPools.length === 0) return null;
     const avgApy = displayPools.reduce((s, p) => s + (p.apy ?? 0), 0) / displayPools.length;
+    // apyPct1D is present on the raw DeFiLlama pool objects (confirmed live
+    // against yields.llama.fi/pools) but isn't part of the typed Pool
+    // interface yet — same pattern used for the Watchlist 24h column.
+    const apyDeltas = displayPools
+      .map(p => (p as unknown as { apyPct1D?: number | null }).apyPct1D)
+      .filter((v): v is number => typeof v === 'number' && Number.isFinite(v));
+    const avgApyDelta = apyDeltas.length > 0 ? apyDeltas.reduce((s, v) => s + v, 0) / apyDeltas.length : null;
     const scoreVals = [...scoreMap.values()];
     const avgScore = scoreVals.length > 0 ? Math.round(scoreVals.reduce((s, n) => s + n, 0) / scoreVals.length) : 0;
+    const strongCount = scoreVals.filter(s => s >= 85).length;
     const protocolCount = new Set(displayPools.map(p => p.project)).size;
     const chainCount = new Set(displayPools.map(p => p.chain)).size;
     const chainApyMap: Record<string, { sum: number; count: number }> = {};
@@ -290,7 +330,7 @@ export default function Analytics({ displayPools }: Props) {
     const bestChain = Object.entries(chainApyMap)
       .map(([chain, { sum, count }]) => ({ chain, avg: sum / count }))
       .sort((a, b) => b.avg - a.avg)[0] ?? null;
-    return { avgApy, avgScore, poolCount: displayPools.length, protocolCount, chainCount, bestChain };
+    return { avgApy, avgApyDelta, avgScore, poolCount: displayPools.length, protocolCount, chainCount, strongCount, bestChain };
   }, [displayPools, scoreMap]);
 
   const { chainGroups, legendChains } = useMemo(() => {
@@ -396,18 +436,34 @@ export default function Analytics({ displayPools }: Props) {
           return (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', alignItems: 'stretch' }}>
               {/* Left hero card — three horizontal zones */}
-              <div style={{ flex: '1.4 1 280px', background: '#111028', border: '0.5px solid rgba(107,79,255,0.25)', borderLeft: '2px solid #6B4FFF', borderRadius: '12px', padding: '24px', display: 'flex', flexDirection: 'row', alignItems: 'stretch', gap: '24px', minHeight: '200px', boxSizing: 'border-box' }}>
+              <div
+                style={{
+                  ...CARD_STYLE,
+                  flex: '1.4 1 280px',
+                  borderLeft: '2px solid #6B4FFF',
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'stretch',
+                  minHeight: '200px',
+                  boxSizing: 'border-box',
+                  boxShadow: heroLeftHovered
+                    ? '0 0 40px rgba(107,79,255,0.15), 0 0 24px rgba(107,79,255,0.12)'
+                    : '0 0 40px rgba(107,79,255,0.15)',
+                }}
+                onMouseEnter={() => setHeroLeftHovered(true)}
+                onMouseLeave={() => setHeroLeftHovered(false)}
+              >
                 {/* Zone 1 — score */}
                 <div style={{ flex: '0 0 30%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
                   <span style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(232,230,255,0.35)', display: 'block', marginBottom: '14px' }}>Avg Dexaris Score</span>
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                    <span style={{ fontSize: '52px', fontWeight: 600, lineHeight: 1, color: scoreColor }}>{insightData.avgScore}</span>
+                    <span style={{ fontSize: '52px', fontWeight: 600, lineHeight: 1, color: '#6B4FFF' }}>{insightData.avgScore}</span>
                     <span style={{ fontSize: '13px', color: scoreColor, opacity: 0.7, marginTop: '4px', display: 'block' }}>{scoreTier}</span>
                     <span style={{ fontSize: '12px', color: 'rgba(232,230,255,0.3)', marginTop: '10px', display: 'block' }}>Across {insightData.poolCount.toLocaleString()} scored pools</span>
                   </div>
                 </div>
                 {/* Zone 2 — tier gauge */}
-                <div style={{ flex: '1', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
+                <div style={{ flex: '1', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingLeft: '20px', borderLeft: '1px solid rgba(232,230,255,0.06)' }}>
                   <span style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(232,230,255,0.35)', display: 'block', marginBottom: '14px' }}>Score Gauge</span>
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                     <div style={{ position: 'relative', height: '14px', marginBottom: '2px', width: '100%' }}>
@@ -425,7 +481,7 @@ export default function Analytics({ displayPools }: Props) {
                   </div>
                 </div>
                 {/* Zone 3 — mini distribution */}
-                <div style={{ flex: '1', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
+                <div style={{ flex: '1', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingLeft: '20px', borderLeft: '1px solid rgba(232,230,255,0.06)' }}>
                   <span style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(232,230,255,0.35)', display: 'block', marginBottom: '14px' }}>Distribution</span>
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', width: '100%', height: '70px' }}>
@@ -441,34 +497,57 @@ export default function Analytics({ displayPools }: Props) {
                 </div>
               </div>
               {/* Right stats card — three dense rows */}
-              <div style={{ flex: '1 1 200px', background: '#111028', border: '0.5px solid rgba(232,230,255,0.08)', borderRadius: '12px', padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '200px', boxSizing: 'border-box' }}>
+              <div
+                style={{
+                  ...CARD_STYLE,
+                  ...(heroRightHovered ? CARD_HOVER_STYLE : null),
+                  flex: '1 1 200px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  minHeight: '200px',
+                  boxSizing: 'border-box',
+                }}
+                onMouseEnter={() => setHeroRightHovered(true)}
+                onMouseLeave={() => setHeroRightHovered(false)}
+              >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '14px', borderBottom: '0.5px solid rgba(232,230,255,0.06)' }}>
                   <div>
                     <span style={{ display: 'block', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(232,230,255,0.35)' }}>Average APY</span>
                     <span style={{ fontSize: '12px', color: 'rgba(232,230,255,0.3)' }}>across all pools</span>
                   </div>
-                  <span style={{ fontSize: '22px', fontWeight: 600, color: '#E8E6FF' }}>{insightData.avgApy.toFixed(2)}%</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                    <span style={{ fontSize: '22px', fontWeight: 600, color: '#E8E6FF' }}>{insightData.avgApy.toFixed(2)}%</span>
+                    {insightData.avgApyDelta !== null && (
+                      <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '12px', color: insightData.avgApyDelta >= 0 ? '#4ECDA4' : '#FF6B6B', marginTop: '2px' }}>
+                        {insightData.avgApyDelta >= 0 ? '+' : ''}{insightData.avgApyDelta.toFixed(2)}% <span style={{ color: 'rgba(232,230,255,0.3)' }}>24h</span>
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '14px', paddingBottom: '14px', borderBottom: '0.5px solid rgba(232,230,255,0.06)' }}>
                   <div>
                     <span style={{ display: 'block', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(232,230,255,0.35)' }}>Protocols Tracked</span>
                     <span style={{ fontSize: '12px', color: 'rgba(232,230,255,0.3)' }}>{insightData.chainCount} chains</span>
                   </div>
-                  <span style={{ fontSize: '22px', fontWeight: 600, color: '#E8E6FF' }}>{insightData.protocolCount}</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                    <span style={{ fontSize: '22px', fontWeight: 600, color: '#E8E6FF' }}>{insightData.protocolCount}</span>
+                    <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '12px', color: 'rgba(232,230,255,0.45)', marginTop: '2px' }}>{insightData.strongCount} scoring Strong</span>
+                  </div>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '14px' }}>
                   <div>
                     <span style={{ display: 'block', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(232,230,255,0.35)' }}>Best Performing Chain</span>
-                    {insightData.bestChain && (
-                      <span style={{ fontSize: '12px', color: 'rgba(232,230,255,0.3)' }}>{insightData.bestChain.avg.toFixed(2)}% avg APY</span>
-                    )}
                   </div>
                   {insightData.bestChain && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      {CHAIN_LOGOS[insightData.bestChain.chain] && (
-                        <img src={CHAIN_LOGOS[insightData.bestChain.chain]} alt={insightData.bestChain.chain} width={20} height={20} onError={e => { e.currentTarget.style.display = 'none'; }} />
-                      )}
-                      <span style={{ fontSize: '18px', fontWeight: 600, color: '#E8E6FF' }}>{insightData.bestChain.chain}</span>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        {CHAIN_LOGOS[insightData.bestChain.chain] && (
+                          <img src={CHAIN_LOGOS[insightData.bestChain.chain]} alt={insightData.bestChain.chain} width={20} height={20} onError={e => { e.currentTarget.style.display = 'none'; }} />
+                        )}
+                        <span style={{ fontSize: '18px', fontWeight: 600, color: '#E8E6FF' }}>{insightData.bestChain.chain}</span>
+                      </div>
+                      <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '14px', color: '#4ECDA4', marginTop: '2px' }}>{insightData.bestChain.avg.toFixed(2)}% avg APY</span>
                     </div>
                   )}
                 </div>
@@ -486,7 +565,7 @@ export default function Analytics({ displayPools }: Props) {
           openInfo={openInfo}
           onInfo={setOpenInfo}
         >
-          <ResponsiveContainer width="100%" height={420}>
+          <ResponsiveContainer width="100%" height={420} style={{ marginLeft: -8 }}>
             <ScatterChart margin={{ top: 4, right: 16, bottom: 24, left: 8 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(232,230,255,0.06)" />
               <XAxis
@@ -515,7 +594,16 @@ export default function Analytics({ displayPools }: Props) {
               const active = !hiddenChains.has(chain);
               return (
                 <span key={chain} className="scatter-legend-item" onClick={() => toggleChain(chain)}
-                  style={{ cursor: 'pointer', opacity: active ? 1 : 0.3, textDecoration: active ? 'none' : 'line-through', transition: 'opacity 0.15s ease', userSelect: 'none' }}>
+                  style={{
+                    cursor: 'pointer',
+                    opacity: active ? 1 : 0.3,
+                    textDecoration: active ? 'none' : 'line-through',
+                    background: active ? 'rgba(107,79,255,0.12)' : 'transparent',
+                    borderRadius: '6px',
+                    padding: '3px 8px',
+                    transition: 'opacity 0.15s ease, background 0.15s ease',
+                    userSelect: 'none',
+                  }}>
                   <span className="scatter-legend-dot" style={{ background: SCATTER_CHAIN_COLORS[chain] ?? 'rgba(232,230,255,0.3)' }} />
                   {chain}
                 </span>
@@ -536,7 +624,7 @@ export default function Analytics({ displayPools }: Props) {
             onInfo={setOpenInfo}
             style={{ flex: '1 1 400px', minWidth: 0 }}
           >
-            <ResponsiveContainer width="100%" height={380}>
+            <ResponsiveContainer width="100%" height={380} style={{ marginLeft: -8 }}>
               <BarChart data={topByScoreDeduped} layout="vertical" margin={{ top: 4, right: 56, bottom: 4, left: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(232,230,255,0.06)" horizontal={false} />
                 <XAxis type="number" domain={[0, 100]} tick={AXIS_TICK} tickLine={false} axisLine={false} />
@@ -562,7 +650,7 @@ export default function Analytics({ displayPools }: Props) {
             onInfo={setOpenInfo}
             style={{ flex: '1 1 400px', minWidth: 0 }}
           >
-            <ResponsiveContainer width="100%" height={380}>
+            <ResponsiveContainer width="100%" height={380} style={{ marginLeft: -8 }}>
               <BarChart data={scoreHistogram} margin={{ top: 8, right: 16, bottom: 4, left: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(232,230,255,0.06)" vertical={false} />
                 <XAxis dataKey="band" tick={{ ...AXIS_TICK, fontSize: 10 }} tickLine={false} axisLine={false} />
@@ -588,7 +676,7 @@ export default function Analytics({ displayPools }: Props) {
           openInfo={openInfo}
           onInfo={setOpenInfo}
         >
-          <ResponsiveContainer width="100%" height={420}>
+          <ResponsiveContainer width="100%" height={420} style={{ marginLeft: -8 }}>
             <ScatterChart margin={{ top: 4, right: 16, bottom: 24, left: 8 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(232,230,255,0.06)" />
               <XAxis
@@ -616,7 +704,16 @@ export default function Analytics({ displayPools }: Props) {
               const active = !hiddenChains.has(chain);
               return (
                 <span key={chain} className="scatter-legend-item" onClick={() => toggleChain(chain)}
-                  style={{ cursor: 'pointer', opacity: active ? 1 : 0.3, textDecoration: active ? 'none' : 'line-through', transition: 'opacity 0.15s ease', userSelect: 'none' }}>
+                  style={{
+                    cursor: 'pointer',
+                    opacity: active ? 1 : 0.3,
+                    textDecoration: active ? 'none' : 'line-through',
+                    background: active ? 'rgba(107,79,255,0.12)' : 'transparent',
+                    borderRadius: '6px',
+                    padding: '3px 8px',
+                    transition: 'opacity 0.15s ease, background 0.15s ease',
+                    userSelect: 'none',
+                  }}>
                   <span className="scatter-legend-dot" style={{ background: SCATTER_CHAIN_COLORS[chain] ?? 'rgba(232,230,255,0.3)' }} />
                   {chain}
                 </span>
