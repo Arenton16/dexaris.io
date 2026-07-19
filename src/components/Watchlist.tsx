@@ -1,6 +1,7 @@
-import { useState, type CSSProperties } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { type Pool } from '../types';
 import { calculateDexarisScore, calculateDexarisScoreBreakdown, getDexarisScoreColour, getDexarisScoreTier } from '../utils/dexarisScore';
+import { supabase } from '../lib/supabase';
 import PoolDetail from './PoolDetail';
 import { ProtocolLogo } from './ProtocolLogo';
 import LocalDataBanner from './LocalDataBanner';
@@ -72,6 +73,33 @@ function get24hChange(pool: Pool): number | null {
   return typeof raw === 'number' && Number.isFinite(raw) ? raw : null;
 }
 
+// ── 7D Trend sparkline — pure inline SVG, no chart library ──────
+function Sparkline({ values }: { values: number[] }) {
+  if (values.length < 3) {
+    return <span style={{ fontSize: 11, color: 'rgba(232,230,255,0.3)' }}>—</span>;
+  }
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = max - min || 0.01; // avoid div by zero on a flat line
+  const points = values.map((v, i) => {
+    const x = (i / (values.length - 1)) * 76;
+    const y = 24 - ((v - min) / range) * 20; // 24px height, 2px padding top/bottom
+    return `${x},${y}`;
+  }).join(' ');
+  return (
+    <svg width={80} height={28} viewBox="0 0 80 28" style={{ display: 'block' }}>
+      <polyline
+        points={points}
+        fill="none"
+        stroke="#6B4FFF"
+        strokeWidth={1.5}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 // Single source of truth for column widths — used on every <th> AND every
 // <td> below so the header row and data rows can never drift out of sync.
 // Protocol has no fixed width (flexible, absorbs remaining space), matching
@@ -86,6 +114,7 @@ const COL_WIDTHS = {
   score: 170,
   why: 80,
   change24h: 110,
+  trend: 100,
 };
 
 type SortKey = 'apy' | 'tvl' | 'score' | '24h';
@@ -102,6 +131,45 @@ export default function Watchlist({ allPools, watchlistedIds, onToggleWatchlist,
   const [sortBy, setSortBy] = useState<SortKey>('score');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [hoveredSortCol, setHoveredSortCol] = useState<SortKey | null>(null);
+  const [sparklineData, setSparklineData] = useState<Record<string, number[]>>({});
+
+  // Stable string key so the effect only refires when the actual set of
+  // watchlisted pool ids changes, not on every new Set reference from above.
+  const watchlistKey = [...watchlistedIds].sort().join(',');
+
+  useEffect(() => {
+    const ids = watchlistKey ? watchlistKey.split(',') : [];
+    if (ids.length === 0) {
+      setSparklineData({});
+      return;
+    }
+    let cancelled = false;
+    const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    supabase
+      .from('pool_snapshots')
+      .select('pool_id, apy, timestamp')
+      .in('pool_id', ids)
+      .gte('timestamp', cutoff)
+      .order('timestamp', { ascending: true })
+      .then(({ data }) => {
+        if (cancelled || !data) return;
+        // One reading per calendar day — since rows are ordered ascending,
+        // the last write for a given day is that day's most recent snapshot.
+        const byPoolByDay: Record<string, Map<string, number>> = {};
+        for (const row of data as Array<{ pool_id: string; apy: number | null; timestamp: string }>) {
+          if (row.apy == null) continue;
+          const day = row.timestamp.slice(0, 10);
+          if (!byPoolByDay[row.pool_id]) byPoolByDay[row.pool_id] = new Map();
+          byPoolByDay[row.pool_id].set(day, row.apy);
+        }
+        const result: Record<string, number[]> = {};
+        for (const [poolId, dayMap] of Object.entries(byPoolByDay)) {
+          result[poolId] = [...dayMap.keys()].sort().map(day => dayMap.get(day) as number);
+        }
+        setSparklineData(result);
+      });
+    return () => { cancelled = true; };
+  }, [watchlistKey]);
 
   const handleSortClick = (key: SortKey) => {
     if (sortBy === key) {
@@ -239,6 +307,7 @@ export default function Watchlist({ allPools, watchlistedIds, onToggleWatchlist,
                   >
                     24h {sortBy === '24h' ? (sortDir === 'desc' ? '▼' : '▲') : ''}
                   </th>
+                  <th className="hide-mobile" style={{ width: COL_WIDTHS.trend, cursor: 'default' }}>7D Trend</th>
                   <th className="show-mobile" style={{ cursor: 'default' }}>APY / TVL</th>
                 </tr>
               </thead>
@@ -318,6 +387,9 @@ export default function Watchlist({ allPools, watchlistedIds, onToggleWatchlist,
                         ) : (
                           <span style={{ fontSize: 12, color: 'rgba(232,230,255,0.3)' }}>—</span>
                         )}
+                      </td>
+                      <td className="hide-mobile" style={{ width: COL_WIDTHS.trend }}>
+                        <Sparkline values={sparklineData[pool.pool] ?? []} />
                       </td>
                       <td className="show-mobile">
                         <div className="mobile-apy-tvl">
