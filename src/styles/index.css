@@ -1835,8 +1835,11 @@ body {
   right: 0;
   width: 320px;
   height: 100vh;
-  background: var(--surface);
+  background: rgba(17,16,40,0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border-left: 3px solid var(--accent);
+  box-shadow: -24px 0 48px rgba(0,0,0,0.35);
   z-index: 21;
   padding: 28px 24px;
   transform: translateX(100%);
