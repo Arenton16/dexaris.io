@@ -312,9 +312,16 @@ export default function Analytics({ displayPools }: Props) {
     // apyPct1D is present on the raw DeFiLlama pool objects (confirmed live
     // against yields.llama.fi/pools) but isn't part of the typed Pool
     // interface yet — same pattern used for the Watchlist 24h column.
+    // It can carry extreme outlier values on illiquid pools (confirmed live
+    // — e.g. a single Balancer pool reporting -857,900% in one day), which
+    // are data artifacts rather than real signal. Clamping each pool's
+    // contribution to +/-100 points keeps every pool's direction in the
+    // average without letting a handful of broken values dominate it.
+    const APY_DELTA_CLAMP = 100;
     const apyDeltas = displayPools
       .map(p => (p as unknown as { apyPct1D?: number | null }).apyPct1D)
-      .filter((v): v is number => typeof v === 'number' && Number.isFinite(v));
+      .filter((v): v is number => typeof v === 'number' && Number.isFinite(v))
+      .map(v => Math.max(-APY_DELTA_CLAMP, Math.min(APY_DELTA_CLAMP, v)));
     const avgApyDelta = apyDeltas.length > 0 ? apyDeltas.reduce((s, v) => s + v, 0) / apyDeltas.length : null;
     const scoreVals = [...scoreMap.values()];
     const avgScore = scoreVals.length > 0 ? Math.round(scoreVals.reduce((s, n) => s + n, 0) / scoreVals.length) : 0;
@@ -463,7 +470,7 @@ export default function Analytics({ displayPools }: Props) {
                   </div>
                 </div>
                 {/* Zone 2 — tier gauge */}
-                <div style={{ flex: '1', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingLeft: '20px', borderLeft: '1px solid rgba(232,230,255,0.06)' }}>
+                <div style={{ flex: '1', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingLeft: '20px', paddingRight: '20px', borderLeft: '1px solid rgba(232,230,255,0.06)' }}>
                   <span style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(232,230,255,0.35)', display: 'block', marginBottom: '14px' }}>Score Gauge</span>
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                     <div style={{ position: 'relative', height: '14px', marginBottom: '2px', width: '100%' }}>
