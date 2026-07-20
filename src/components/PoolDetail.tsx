@@ -9,6 +9,7 @@ import { calculateDexarisScore, calculateDexarisScoreBreakdown, getDexarisScoreC
 import { useTokenPrices, parsePoolSymbols } from '../hooks/useTokenPrices';
 import { usePools } from '../contexts/PoolsContext';
 import { supabase } from '../lib/supabase';
+import { ProtocolLogo } from './ProtocolLogo';
 
 interface Props {
   pool: Pool | null;
@@ -324,7 +325,6 @@ function generateInsight(
   // Only non-zero when apyReward is truthy — the same condition the bar uses to enter its
   // incentive branch — so the warning never fires when Yield Composition shows 100% organic.
   const rewardRatio = apy > 0 && p.apyReward ? (apy - apyBase) / Math.max(apy, 0.001) : 0;
-  console.log('[generateInsight]', { apy, apyReward: p.apyReward, apyBase, rewardRatio });
   const lines: string[] = [];
   if (consistency >= 9) lines.push('Highly consistent yield over 30 days.');
   else if (consistency >= 6) lines.push('Moderately stable yield with some variance.');
@@ -377,6 +377,12 @@ export default function PoolDetail({ pool, onClose }: Props) {
     const idx = sorted.findIndex(([id]) => id === pool.pool);
     return idx >= 0 ? idx + 1 : null;
   }, [scoreMap, pool]);
+  const tvlRank = useMemo(() => {
+    if (!pool) return null;
+    const sorted = [...allPools].sort((a, b) => b.tvlUsd - a.tvlUsd);
+    const idx = sorted.findIndex(p => p.pool === pool.pool);
+    return idx >= 0 ? idx + 1 : null;
+  }, [allPools, pool]);
   const totalPools = allPools.length;
 
   useEffect(() => {
@@ -485,22 +491,40 @@ export default function PoolDetail({ pool, onClose }: Props) {
           // ── Shared render fragments ──────────────────────────────────────
 
           const headerEl = (
-            <div className="detail-header">
-              <h2 className="detail-protocol">{pool.project}</h2>
-              <p className="detail-asset">{pool.symbol}</p>
-              <span className="chain-badge" style={{ backgroundColor: chain.bg, color: chain.text }}>
-                {CHAIN_LOGOS[pool.chain] && (
-                  <img
-                    src={CHAIN_LOGOS[pool.chain]}
-                    alt={pool.chain}
-                    width={16}
-                    height={16}
-                    className="chain-logo"
-                    onError={e => { e.currentTarget.style.display = 'none'; }}
-                  />
-                )}
-                {pool.chain}
-              </span>
+            <div className="detail-header" style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+              <div style={{
+                width: 52,
+                height: 52,
+                borderRadius: 14,
+                background: 'rgba(107,79,255,0.08)',
+                border: '1px solid rgba(107,79,255,0.25)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                overflow: 'hidden',
+              }}>
+                <ProtocolLogo project={pool.project} size={38} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 0 }}>
+                <h2 className="detail-protocol" style={{ margin: 0 }}>{pool.project}</h2>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <p className="detail-asset" style={{ margin: 0 }}>{pool.symbol}</p>
+                  <span className="chain-badge" style={{ backgroundColor: chain.bg, color: chain.text }}>
+                    {CHAIN_LOGOS[pool.chain] && (
+                      <img
+                        src={CHAIN_LOGOS[pool.chain]}
+                        alt={pool.chain}
+                        width={13}
+                        height={13}
+                        className="chain-logo"
+                        onError={e => { e.currentTarget.style.display = 'none'; }}
+                      />
+                    )}
+                    {pool.chain}
+                  </span>
+                </div>
+              </div>
             </div>
           );
 
@@ -736,6 +760,11 @@ export default function PoolDetail({ pool, onClose }: Props) {
                             <div style={rowStyle}>
                               <span style={labelStyle}>Score Rank</span>
                               <span style={valueStyle}>{scoreRank != null ? `#${scoreRank} of ${totalPools}` : '—'}</span>
+                            </div>
+                            <div style={divStyle} />
+                            <div style={rowStyle}>
+                              <span style={labelStyle}>TVL Rank</span>
+                              <span style={valueStyle}>{tvlRank != null ? `#${tvlRank} of ${totalPools}` : '—'}</span>
                             </div>
                             <div style={divStyle} />
                             <div style={rowStyle}>

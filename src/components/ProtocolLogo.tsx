@@ -9,7 +9,14 @@ export function ProtocolLogo({ project, size = 20 }: Props) {
   const [failed, setFailed] = useState(false);
 
   if (failed) {
-    return <span className="protocol-logo-placeholder">{project[0]}</span>;
+    return (
+      <span
+        className="protocol-logo-placeholder"
+        style={{ width: size, height: size, fontSize: Math.round(size * 0.5) }}
+      >
+        {project[0]}
+      </span>
+    );
   }
 
   return (
