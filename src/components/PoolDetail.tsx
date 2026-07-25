@@ -565,6 +565,21 @@ export default function PoolDetail({ pool, onClose }: Props) {
             );
           })();
 
+          const scoreDisclaimerEl = (
+            <div style={{
+              marginTop: 12,
+              background: 'rgba(255,179,71,0.06)',
+              border: '1px solid rgba(255,179,71,0.25)',
+              borderRadius: 6,
+              padding: '10px 14px',
+            }}>
+              <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: '#FFB347', lineHeight: 1.5 }}>
+                <span aria-hidden="true">⚠ </span>
+                This score does not currently account for token unlock schedules or wallet/holder concentration. These factors can materially affect yield risk.
+              </span>
+            </div>
+          );
+
           const yieldSource = getYieldSource(extPool);
           const compositionFallback = (() => {
             const isWarning = yieldSource.label === 'Token incentives';
@@ -736,6 +751,7 @@ export default function PoolDetail({ pool, onClose }: Props) {
                         <div className="score-bar-fill" style={{ width: `${score}%`, background: scoreColour }} />
                       </div>
                       {breakdownRows}
+                      {scoreDisclaimerEl}
                       {scoreSparklineEl}
                     </div>
                     {yieldSourceEl}
@@ -855,6 +871,7 @@ export default function PoolDetail({ pool, onClose }: Props) {
                     <div className="score-bar-fill" style={{ width: `${score}%`, background: scoreColour }} />
                   </div>
                   {breakdownRows}
+                  {scoreDisclaimerEl}
                   {scoreSparklineEl}
                 </div>
               </div>

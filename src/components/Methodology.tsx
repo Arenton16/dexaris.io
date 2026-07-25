@@ -116,6 +116,27 @@ export default function Methodology() {
           </div>
         </div>
 
+        {/* Known limitations */}
+        <div style={S.card}>
+          <h2 style={S.cardTitle}>Known Limitations</h2>
+          <p style={S.cardSubtitle}>
+            Where the score currently falls short, and what we're doing about it.
+          </p>
+          <ul style={S.limitationsList}>
+            <li style={S.limitationsItem}>
+              Token unlock schedules are not currently factored in. A large scheduled unlock can create
+              sudden sell pressure that this score doesn't yet anticipate.
+            </li>
+            <li style={S.limitationsItem}>
+              Wallet and holder concentration is not currently factored in. Pools dominated by a small
+              number of holders carry withdrawal and manipulation risk this score doesn't yet capture.
+            </li>
+          </ul>
+          <p style={S.limitationsNote}>
+            Both are on the roadmap for a future scoring update.
+          </p>
+        </div>
+
         {/* Disclaimer */}
         <div style={S.disclaimer}>
           <div style={S.disclaimerHeader}>
@@ -347,6 +368,27 @@ const styles = {
     height: '100%',
     borderRadius: 2,
     opacity: 0.7,
+  } as React.CSSProperties,
+
+  limitationsList: {
+    margin: '0 0 12px',
+    padding: '0 0 0 18px',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: 10,
+  } as React.CSSProperties,
+
+  limitationsItem: {
+    fontSize: 13,
+    color: 'rgba(232,230,255,0.55)',
+    lineHeight: 1.65,
+  } as React.CSSProperties,
+
+  limitationsNote: {
+    fontSize: 13,
+    color: 'rgba(232,230,255,0.4)',
+    lineHeight: 1.6,
+    margin: 0,
   } as React.CSSProperties,
 
   disclaimer: {

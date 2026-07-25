@@ -219,12 +219,17 @@ export default function YieldTable({
                   >
                     <span className="th-score-header">
                       Score {sortKey === 'score' ? (sortDir === 'desc' ? '▼' : '▲') : ''}
-                      <button
-                        className="th-info-icon"
-                        onClick={e => { e.stopPropagation(); setScoreInfoOpen(true); }}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0 0 0 4px', color: 'inherit', fontSize: 'inherit', lineHeight: 1 }}
-                        aria-label="Dexaris Score information"
-                      >ⓘ</button>
+                      <span className="th-info-wrap">
+                        <button
+                          className="th-info-icon"
+                          onClick={e => { e.stopPropagation(); setScoreInfoOpen(true); }}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0 0 0 4px', color: 'inherit', fontSize: 'inherit', lineHeight: 1 }}
+                          aria-label="Dexaris Score information"
+                        >ⓘ</button>
+                        <span className="th-info-tooltip">
+                          This score does not currently account for token unlock schedules or wallet/holder concentration. These factors can materially affect yield risk.
+                        </span>
+                      </span>
                     </span>
                   </th>
                   <th className="hide-mobile" style={{ width: 80 }}>Why</th>
@@ -433,6 +438,19 @@ function ScoreInfoModal({ open, onClose }: { open: boolean; onClose: () => void 
               ))}
             </tbody>
           </table>
+        </div>
+
+        <div style={{
+          background: 'rgba(255,179,71,0.06)',
+          border: '1px solid rgba(255,179,71,0.25)',
+          borderRadius: 6,
+          padding: '10px 14px',
+          marginBottom: 16,
+        }}>
+          <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: '#FFB347', lineHeight: 1.5 }}>
+            <span aria-hidden="true">⚠ </span>
+            This score does not currently account for token unlock schedules or wallet/holder concentration. These factors can materially affect yield risk.
+          </span>
         </div>
 
         <button
