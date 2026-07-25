@@ -290,9 +290,14 @@ export default function LandingPage() {
   const [subStatus, setSubStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
   const { allPools, isLoading: loadingPools } = usePools();
+  // Sorted by the real Dexaris Score (not raw APY) so the landing page's own
+  // preview backs up the pitch above it — a high-APY, weak-scored pool at
+  // the top here would directly contradict "don't chase headline APY."
   const pools = allPools
     .filter(p => (p.apy ?? 0) > 0)
-    .sort((a, b) => (b.apy ?? 0) - (a.apy ?? 0))
+    .map(p => ({ ...p, previewScore: calculateDexarisScore(p) }))
+    .filter(p => p.previewScore >= 60)
+    .sort((a, b) => b.previewScore - a.previewScore)
     .slice(0, 5);
 
   return (
@@ -616,7 +621,7 @@ export default function LandingPage() {
                     </tr>
                   ))
                 : pools.map((pool, i) => {
-                    const score = calculateDexarisScore(pool);
+                    const score = pool.previewScore;
                     return (
                     <tr key={i} className="preview-row" style={{ borderBottom: i < pools.length - 1 ? '0.5px solid rgba(107,79,255,0.06)' : 'none' }}>
                       <td style={{ padding: '14px 16px', fontSize: '13px', color: '#E8E6FF' }}>
