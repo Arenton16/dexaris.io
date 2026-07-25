@@ -68,9 +68,16 @@ function ReasonBar({ components }: { components: Component[] }) {
 // against yields.llama.fi/pools) but isn't part of the typed Pool interface
 // yet — same situation as ilRisk/outlier in dexarisScore.ts, accessed the
 // same way rather than widening the shared Pool type.
+// It can carry extreme outlier values on illiquid pools (confirmed live —
+// e.g. a single Balancer pool reporting -857,900% in one day), which are
+// data artifacts rather than real signal — same issue fixed in Analytics'
+// fleet-wide average. Clamped here too so a glitched pool can't show an
+// absurd figure in its own row.
+const APY_1D_CLAMP = 100;
 function get24hChange(pool: Pool): number | null {
   const raw = (pool as unknown as { apyPct1D?: number | null }).apyPct1D;
-  return typeof raw === 'number' && Number.isFinite(raw) ? raw : null;
+  if (typeof raw !== 'number' || !Number.isFinite(raw)) return null;
+  return Math.max(-APY_1D_CLAMP, Math.min(APY_1D_CLAMP, raw));
 }
 
 // ── 7D Trend sparkline — pure inline SVG, no chart library ──────
