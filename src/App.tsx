@@ -2,8 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import NavSidebar from './components/NavSidebar';
 import Navbar from './components/Navbar';
 import NewsBanner from './components/NewsBanner';
-import Sidebar from './components/Sidebar';
-import YieldTable from './components/YieldTable';
+import YieldTable, { type ScoreTier } from './components/YieldTable';
 import Watchlist from './components/Watchlist';
 import Analytics from './components/Analytics';
 import Portfolio from './components/Portfolio';
@@ -18,14 +17,12 @@ export default function App() {
   const [selectedChains, setSelectedChains] = useState<ChainKey[]>(
     Object.keys(CHAIN_LABELS) as ChainKey[]
   );
-  const [minApy, setMinApy] = useState(1);
+  const [scoreTier, setScoreTier] = useState<ScoreTier>(0);
+  const [organicOnly, setOrganicOnly] = useState(false);
   const [sortKey, setSortKey] = useState<'apy' | 'tvlUsd' | 'score'>('score');
   const [sortDir, setSortDir] = useState<'desc' | 'asc'>('desc');
-  const [selectedProtocols, setSelectedProtocols] = useState<string[]>([]);
   const [countdown, setCountdown] = useState(60);
   const [isNavOpen, setIsNavOpen] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [navCollapsed, setNavCollapsed] = useState(true);
   const [bannerVisible, setBannerVisible] = useState(true);
   const [currentPage, setCurrentPage] = useState<Page>('yields');
@@ -81,29 +78,16 @@ export default function App() {
     }
   }, [sortKey]);
 
-  const handleSortKeyChange = useCallback((key: 'apy' | 'tvlUsd' | 'score') => {
-    setSortKey(key);
-    setSortDir('desc');
-  }, []);
-
   const handleNavigate = useCallback((page: Page) => {
     setCurrentPage(page);
     setIsNavOpen(false);
-    if (page !== 'yields') setIsSidebarOpen(false);
   }, []);
 
   const toggleNav = useCallback(() => {
     setIsNavOpen(o => !o);
-    setIsSidebarOpen(false);
-  }, []);
-
-  const toggleFilters = useCallback(() => {
-    setIsSidebarOpen(o => !o);
-    setIsNavOpen(false);
   }, []);
 
   const closeNav = useCallback(() => setIsNavOpen(false), []);
-  const closeSidebar = useCallback(() => setIsSidebarOpen(false), []);
   const toggleNavCollapse = useCallback(() => setNavCollapsed(c => !c), []);
   const dismissBanner = useCallback(() => setBannerVisible(false), []);
   const navigateToYields = useCallback(() => handleNavigate('yields'), [handleNavigate]);
@@ -127,7 +111,6 @@ export default function App() {
           isLoading={isLoading}
           onManualRefresh={triggerRefresh}
           onToggleNav={toggleNav}
-          onToggleFilters={toggleFilters}
           currentPage={currentPage}
         />
 
@@ -147,96 +130,29 @@ export default function App() {
               <Alerts />
             </main>
           ) : currentPage === 'yields' ? (
-            <>
-              {isSidebarOpen && (
-                <div className="sidebar-backdrop" onClick={closeSidebar} />
-              )}
-              {/* Toggle handle — always visible, never inside main content */}
-              <div style={{
-                flexShrink: 0,
-                width: '36px',
-                background: '#0F0E22',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                paddingTop: '16px',
-              }}>
-                <button
-                  onClick={() => setSidebarOpen(o => !o)}
-                  aria-label={sidebarOpen ? 'Collapse filters' : 'Expand filters'}
-                  style={{
-                    width: '28px',
-                    height: '28px',
-                    borderRadius: '6px',
-                    background: 'rgba(232,230,255,0.04)',
-                    border: '0.5px solid rgba(232,230,255,0.1)',
-                    color: 'rgba(232,230,255,0.4)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                    flexShrink: 0,
-                  }}
-                >
-                  {sidebarOpen ? '‹' : '›'}
-                </button>
-              </div>
-              {/* Collapsible sidebar content */}
-              <div style={{
-                flexShrink: 0,
-                width: sidebarOpen ? '148px' : '0px',
-                minWidth: sidebarOpen ? '148px' : '0px',
-                height: '100%',
-                overflow: 'hidden',
-                transition: 'width 0.2s ease, min-width 0.2s ease',
-                background: '#0F0E22',
-                borderRight: sidebarOpen ? '0.5px solid rgba(232,230,255,0.08)' : 'none',
-              }}>
-                <div style={{
-                  opacity: sidebarOpen ? 1 : 0,
-                  pointerEvents: sidebarOpen ? 'auto' : 'none',
-                  transition: 'opacity 0.15s ease',
-                  width: '147px',
-                  overflow: 'hidden',
-                  paddingBottom: '24px',
-                }}>
-                  <Sidebar
-                    selected={selectedChains}
-                    onChange={setSelectedChains}
-                    minApy={minApy}
-                    onMinApyChange={setMinApy}
-                    sortKey={sortKey}
-                    onSortKeyChange={handleSortKeyChange}
-                    isOpen={isSidebarOpen}
-                    onClose={closeSidebar}
-                    allPools={allPools}
-                    selectedProtocols={selectedProtocols}
-                    onProtocolsChange={setSelectedProtocols}
-                  />
-                </div>
-              </div>
-              <main className="content">
-                <YieldTable
-                  allPools={allPools}
-                  loading={isLoading}
-                  error={error}
-                  fetchedAt={fetchedAt}
-                  isFlashing={isFlashing}
-                  apyDelta={apyDelta}
-                  onRetry={triggerRefresh}
-                  selectedChains={selectedChains}
-                  selectedProtocols={selectedProtocols}
-                  minApy={minApy}
-                  sortKey={sortKey}
-                  sortDir={sortDir}
-                  onSortChange={handleSortChange}
-                  watchlistedIds={watchlistedIds}
-                  onToggleWatchlist={toggleWatchlist}
-                  onNavigateToAnalytics={navigateToAnalytics}
-                />
-              </main>
-            </>
+            <main className="content">
+              <YieldTable
+                allPools={allPools}
+                loading={isLoading}
+                error={error}
+                fetchedAt={fetchedAt}
+                isFlashing={isFlashing}
+                apyDelta={apyDelta}
+                onRetry={triggerRefresh}
+                selectedChains={selectedChains}
+                onSelectedChainsChange={setSelectedChains}
+                scoreTier={scoreTier}
+                onScoreTierChange={setScoreTier}
+                organicOnly={organicOnly}
+                onOrganicOnlyChange={setOrganicOnly}
+                sortKey={sortKey}
+                sortDir={sortDir}
+                onSortChange={handleSortChange}
+                watchlistedIds={watchlistedIds}
+                onToggleWatchlist={toggleWatchlist}
+                onNavigateToAnalytics={navigateToAnalytics}
+              />
+            </main>
           ) : (
             <main className="content">
               <Watchlist

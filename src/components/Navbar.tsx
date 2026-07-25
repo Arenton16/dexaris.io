@@ -13,7 +13,6 @@ interface Props {
   isLoading: boolean;
   onManualRefresh: () => void;
   onToggleNav: () => void;
-  onToggleFilters: () => void;
   currentPage: string;
 }
 
@@ -22,7 +21,6 @@ export default function TopBar({
   isLoading,
   onManualRefresh,
   onToggleNav,
-  onToggleFilters,
   currentPage,
 }: Props) {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
@@ -48,10 +46,6 @@ export default function TopBar({
       <h1 className="topbar-title">{PAGE_TITLES[currentPage] ?? 'Yield Explorer'}</h1>
 
       <div className="topbar-right">
-        <button className="topbar-filter-btn" onClick={onToggleFilters} aria-label="Toggle filters">
-          ⊟ Filters
-        </button>
-
         <div
           className="topbar-refresh"
           onClick={onManualRefresh}

@@ -14,6 +14,8 @@ const CHAIN_COLOURS: Record<string, string> = {
   Polygon:  '#FFB347',
 };
 
+export type ScoreTier = 0 | 70 | 85;
+
 interface Props {
   allPools: Pool[];
   loading: boolean;
@@ -23,8 +25,11 @@ interface Props {
   apyDelta: number | null;
   onRetry: () => void;
   selectedChains: ChainKey[];
-  selectedProtocols: string[];
-  minApy: number;
+  onSelectedChainsChange: (chains: ChainKey[]) => void;
+  scoreTier: ScoreTier;
+  onScoreTierChange: (tier: ScoreTier) => void;
+  organicOnly: boolean;
+  onOrganicOnlyChange: (value: boolean) => void;
   sortKey: 'apy' | 'tvlUsd' | 'score';
   sortDir: 'desc' | 'asc';
   onSortChange: (key: 'apy' | 'tvlUsd' | 'score') => void;
@@ -32,6 +37,60 @@ interface Props {
   onToggleWatchlist: (id: string) => void;
   onNavigateToAnalytics?: () => void;
 }
+
+const GROUP_LABEL_STYLE: React.CSSProperties = {
+  fontSize: '9px',
+  fontWeight: 600,
+  letterSpacing: '0.06em',
+  textTransform: 'uppercase',
+  color: 'rgba(232,230,255,0.3)',
+  marginRight: '2px',
+  flexShrink: 0,
+};
+
+const DIVIDER_STYLE: React.CSSProperties = {
+  width: '0.5px',
+  alignSelf: 'stretch',
+  background: '#1A1A2A',
+  margin: '0 4px',
+  flexShrink: 0,
+};
+
+function FilterChip({
+  label, active, activeScheme, onClick,
+}: { label: string; active: boolean; activeScheme: 'chain' | 'score'; onClick: () => void }) {
+  const [hovered, setHovered] = useState(false);
+  const style: React.CSSProperties = active
+    ? (activeScheme === 'score'
+      ? { background: 'rgba(78,205,164,0.1)', border: '0.5px solid rgba(78,205,164,0.3)', color: '#4ECDA4' }
+      : { background: 'rgba(74,56,184,0.15)', border: '0.5px solid rgba(107,84,255,0.35)', color: '#9488CC' })
+    : { background: 'transparent', border: `0.5px solid ${hovered ? '#3A3A4E' : '#2A2A3E'}`, color: hovered ? '#888888' : '#666666' };
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        ...style,
+        borderRadius: '20px',
+        padding: '4px 10px',
+        fontSize: '11px',
+        fontFamily: "'Inter', sans-serif",
+        cursor: 'pointer',
+        whiteSpace: 'nowrap',
+        transition: 'border-color 0.15s ease, color 0.15s ease',
+      }}
+    >
+      {label}
+    </button>
+  );
+}
+
+const SCORE_TIER_OPTIONS: Array<{ label: string; value: ScoreTier }> = [
+  { label: 'All', value: 0 },
+  { label: 'Strong (85+)', value: 85 },
+  { label: 'Solid (70+)', value: 70 },
+];
 
 const PAGE_SIZE = 100;
 
@@ -79,7 +138,8 @@ function ReasonBar({ components }: { components: Component[] }) {
 
 export default function YieldTable({
   allPools, loading, error, fetchedAt, isFlashing, apyDelta, onRetry,
-  selectedChains, selectedProtocols, minApy, sortKey, sortDir, onSortChange,
+  selectedChains, onSelectedChainsChange, scoreTier, onScoreTierChange, organicOnly, onOrganicOnlyChange,
+  sortKey, sortDir, onSortChange,
   watchlistedIds, onToggleWatchlist, onNavigateToAnalytics,
 }: Props) {
   const [search, setSearch] = useState('');
@@ -87,10 +147,34 @@ export default function YieldTable({
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [scoreInfoOpen, setScoreInfoOpen] = useState(false);
 
+  const chainKeys = Object.keys(CHAIN_LABELS) as ChainKey[];
+  const allChainsSelected = selectedChains.length === chainKeys.length;
+  const hasActiveFilters = !allChainsSelected || scoreTier !== 0 || organicOnly;
+
+  const toggleChain = (chain: ChainKey) => {
+    // Coming from "All" (every chain selected) — clicking a specific chain
+    // isolates to just that one rather than removing it from the full set.
+    if (allChainsSelected) {
+      onSelectedChainsChange([chain]);
+      return;
+    }
+    onSelectedChainsChange(
+      selectedChains.includes(chain)
+        ? selectedChains.filter(c => c !== chain)
+        : [...selectedChains, chain]
+    );
+  };
+
+  const clearFilters = () => {
+    onSelectedChainsChange(chainKeys);
+    onScoreTierChange(0);
+    onOrganicOnlyChange(false);
+  };
+
   // Reset to first page whenever filters, sort, or search changes
   useEffect(() => {
     setVisibleCount(PAGE_SIZE);
-  }, [search, selectedChains, minApy, sortKey, sortDir]);
+  }, [search, selectedChains, scoreTier, organicOnly, sortKey, sortDir]);
 
   const scoreMap = useMemo(() => {
     const map = new Map<string, number>();
@@ -106,14 +190,18 @@ export default function YieldTable({
 
   const filteredSortedPools = useMemo(() => {
     const allowed = new Set(selectedChains.map(c => CHAIN_LABELS[c]));
-    const allowedProtocols = selectedProtocols.length ? new Set(selectedProtocols) : null;
     const q = search.toLowerCase().trim();
     return allPools
-      .filter(p =>
-        allowed.has(p.chain) &&
-        (p.apy ?? 0) >= minApy &&
-        (!allowedProtocols || allowedProtocols.has(p.project))
-      )
+      .filter(p => allowed.has(p.chain))
+      .filter(p => scoreTier === 0 || (scoreMap.get(p.pool) ?? 0) >= scoreTier)
+      .filter(p => {
+        if (!organicOnly) return true;
+        // ilRisk/apyReward are present on the raw DeFiLlama pool objects but
+        // not part of the typed Pool interface yet — same pattern used in
+        // dexarisScore.ts and PoolDetail.tsx's getYieldSource.
+        const ext = p as unknown as { ilRisk?: string; apyReward?: number | null };
+        return ext.ilRisk === 'no' && !(ext.apyReward && ext.apyReward > 0);
+      })
       .filter(p => !q || p.project.toLowerCase().includes(q) || p.symbol.toLowerCase().includes(q))
       .sort((a, b) => {
         const av = sortKey === 'score' ? (scoreMap.get(a.pool) ?? 0)
@@ -122,7 +210,7 @@ export default function YieldTable({
           : sortKey === 'apy' ? (b.apy ?? 0) : b.tvlUsd;
         return sortDir === 'desc' ? bv - av : av - bv;
       });
-  }, [allPools, selectedChains, selectedProtocols, minApy, search, sortKey, sortDir, scoreMap]);
+  }, [allPools, selectedChains, scoreTier, organicOnly, search, sortKey, sortDir, scoreMap]);
 
   const displayPools = filteredSortedPools.slice(0, visibleCount);
   const hasMore = filteredSortedPools.length > visibleCount;
@@ -180,6 +268,60 @@ export default function YieldTable({
             onChange={e => setSearch(e.target.value)}
           />
         </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '6px', padding: '8px 0' }}>
+          <span style={GROUP_LABEL_STYLE}>Chain</span>
+          <FilterChip label="All" active={allChainsSelected} activeScheme="chain" onClick={() => onSelectedChainsChange(chainKeys)} />
+          {chainKeys.map(key => (
+            <FilterChip
+              key={key}
+              label={CHAIN_LABELS[key]}
+              active={selectedChains.includes(key)}
+              activeScheme="chain"
+              onClick={() => toggleChain(key)}
+            />
+          ))}
+
+          <span style={DIVIDER_STYLE} />
+
+          <span style={GROUP_LABEL_STYLE}>Score</span>
+          {SCORE_TIER_OPTIONS.map(opt => (
+            <FilterChip
+              key={opt.label}
+              label={opt.label}
+              active={scoreTier === opt.value}
+              activeScheme="score"
+              onClick={() => onScoreTierChange(opt.value)}
+            />
+          ))}
+
+          <span style={DIVIDER_STYLE} />
+
+          <span style={GROUP_LABEL_STYLE}>Yield</span>
+          <FilterChip label="All" active={!organicOnly} activeScheme="chain" onClick={() => onOrganicOnlyChange(false)} />
+          <FilterChip label="Organic only" active={organicOnly} activeScheme="chain" onClick={() => onOrganicOnlyChange(true)} />
+
+          {hasActiveFilters && (
+            <button
+              onClick={clearFilters}
+              style={{
+                marginLeft: 'auto',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '11px',
+                color: 'rgba(232,230,255,0.4)',
+                textDecoration: 'underline',
+                padding: 0,
+                fontFamily: "'Inter', sans-serif",
+                flexShrink: 0,
+              }}
+            >
+              Clear filters
+            </button>
+          )}
+        </div>
+
         {displayPools.length === 0 ? (
           <div className="empty-state">
             <p className="empty-state-main">No pools match your search</p>
