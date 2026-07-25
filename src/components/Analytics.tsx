@@ -14,7 +14,7 @@ interface Props {
 }
 
 const SCATTER_CHAIN_COLORS: Record<string, string> = {
-  Ethereum: '#8B73FF',
+  Ethereum: '#6B5FD4',
   Solana:   '#4ECDA4',
   Arbitrum: '#3B9EFF',
   Base:     '#FFFFFF',
@@ -34,15 +34,15 @@ const AXIS_TICK = {
 
 const TOOLTIP_STYLE = {
   contentStyle: {
-    background: '#111028',
-    border: '0.5px solid rgba(107,79,255,0.3)',
+    background: '#100F22',
+    border: '0.5px solid rgba(74,56,184,0.3)',
     borderRadius: 6,
     fontFamily: 'Space Grotesk, sans-serif',
     fontSize: 11,
   },
-  labelStyle:  { color: '#8B73FF', fontFamily: 'Space Grotesk, sans-serif' },
+  labelStyle:  { color: '#6B5FD4', fontFamily: 'Space Grotesk, sans-serif' },
   itemStyle:   { color: '#E8E6FF', fontFamily: 'Space Grotesk, sans-serif' },
-  cursor:      { fill: 'rgba(107,79,255,0.06)' },
+  cursor:      { fill: 'rgba(74,56,184,0.06)' },
 };
 
 const CHART_INFO: Record<string, string> = {
@@ -128,15 +128,15 @@ const CARD_STYLE: React.CSSProperties = {
   background: 'rgba(17,16,40,0.7)',
   backdropFilter: 'blur(12px)',
   WebkitBackdropFilter: 'blur(12px)',
-  border: '1px solid rgba(107,79,255,0.18)',
+  border: '1px solid rgba(74,56,184,0.18)',
   borderRadius: 12,
   padding: 24,
   transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
 };
 
 const CARD_HOVER_STYLE: React.CSSProperties = {
-  borderColor: 'rgba(107,79,255,0.4)',
-  boxShadow: '0 0 24px rgba(107,79,255,0.12)',
+  borderColor: 'rgba(74,56,184,0.4)',
+  boxShadow: '0 0 24px rgba(74,56,184,0.12)',
 };
 
 function ChartCard({ id, title, subtitle, info, openInfo, onInfo, style, children }: ChartCardProps) {
@@ -186,7 +186,7 @@ function ScatterTooltip({ active, payload }: { active?: boolean; payload?: Array
     </p>
   );
   return (
-    <div style={{ background: '#111028', border: '1px solid rgba(107,79,255,0.3)', borderRadius: 6, padding: '10px 12px', fontFamily: 'Space Grotesk, sans-serif', fontSize: 11, color: '#E8E6FF', lineHeight: 1.75, minWidth: 160, pointerEvents: 'none' }}>
+    <div style={{ background: '#100F22', border: '1px solid rgba(74,56,184,0.3)', borderRadius: 6, padding: '10px 12px', fontFamily: 'Space Grotesk, sans-serif', fontSize: 11, color: '#E8E6FF', lineHeight: 1.75, minWidth: 160, pointerEvents: 'none' }}>
       <p style={{ margin: '0 0 4px', fontWeight: 500 }}>{d.project} <span style={{ color: 'rgba(232,230,255,0.4)', fontWeight: 400 }}>{d.symbol}</span></p>
       {row('Chain', d.chain)}
       {row('APY', `${(d.apy ?? 0).toFixed(2)}%`)}
@@ -206,7 +206,7 @@ function ScoreScatterTooltip({ active, payload }: { active?: boolean; payload?: 
     </p>
   );
   return (
-    <div style={{ background: '#111028', border: '1px solid rgba(107,79,255,0.3)', borderRadius: 6, padding: '10px 12px', fontFamily: 'Space Grotesk, sans-serif', fontSize: 11, color: '#E8E6FF', lineHeight: 1.75, minWidth: 140, pointerEvents: 'none' }}>
+    <div style={{ background: '#100F22', border: '1px solid rgba(74,56,184,0.3)', borderRadius: 6, padding: '10px 12px', fontFamily: 'Space Grotesk, sans-serif', fontSize: 11, color: '#E8E6FF', lineHeight: 1.75, minWidth: 140, pointerEvents: 'none' }}>
       <p style={{ margin: '0 0 4px', fontWeight: 500 }}>{d.project}</p>
       {row('Chain', d.chain)}
       {row('APY', `${d.apy.toFixed(2)}%`)}
@@ -245,8 +245,8 @@ function QuadrantOverlay() {
   const ap = { fontSize: 9, fontFamily: 'Space Grotesk, sans-serif', fill: 'rgba(232,230,255,0.3)' } as const;
   return (
     <g>
-      <line x1={thresholdX} y1={top}       x2={thresholdX} y2={top + h}   stroke="rgba(107,79,255,0.2)"  strokeDasharray="4 4" strokeWidth={1} />
-      <line x1={left}       y1={thresholdY} x2={left + w}   y2={thresholdY} stroke="rgba(107,79,255,0.3)" strokeDasharray="4 4" strokeWidth={1} />
+      <line x1={thresholdX} y1={top}       x2={thresholdX} y2={top + h}   stroke="rgba(74,56,184,0.2)"  strokeDasharray="4 4" strokeWidth={1} />
+      <line x1={left}       y1={thresholdY} x2={left + w}   y2={thresholdY} stroke="rgba(74,56,184,0.3)" strokeDasharray="4 4" strokeWidth={1} />
       <text x={left + w - 4} y={thresholdY - 4} textAnchor="end" {...ap}>15% APY</text>
     </g>
   );
@@ -264,8 +264,8 @@ function ApyScoreQuadrant() {
   const ap = { fontSize: 8, fontFamily: 'Space Grotesk, sans-serif', fill: 'rgba(232,230,255,0.2)' } as const;
   return (
     <g>
-      <line x1={thresholdX} y1={top}       x2={thresholdX} y2={top + h}   stroke="rgba(107,79,255,0.15)" strokeDasharray="4 4" strokeWidth={1} />
-      <line x1={left}       y1={thresholdY} x2={left + w}   y2={thresholdY} stroke="rgba(107,79,255,0.15)" strokeDasharray="4 4" strokeWidth={1} />
+      <line x1={thresholdX} y1={top}       x2={thresholdX} y2={top + h}   stroke="rgba(74,56,184,0.15)" strokeDasharray="4 4" strokeWidth={1} />
+      <line x1={left}       y1={thresholdY} x2={left + w}   y2={thresholdY} stroke="rgba(74,56,184,0.15)" strokeDasharray="4 4" strokeWidth={1} />
       <text x={left + w - 4} y={thresholdY - 4} textAnchor="end" {...ap}>15% APY</text>
       <text x={thresholdX}   y={top + h - 4}    textAnchor="middle" {...ap}>Score 50</text>
     </g>
@@ -275,7 +275,7 @@ function ApyScoreQuadrant() {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function ColourBar(props: any) {
   const { x, y, width, height, payload } = props;
-  return <rect x={x} y={y} width={width} height={height} rx={3} fill={payload?.colour ?? '#8B73FF'} fillOpacity={0.85} />;
+  return <rect x={x} y={y} width={width} height={height} rx={3} fill={payload?.colour ?? '#6B5FD4'} fillOpacity={0.85} />;
 }
 
 function formatTvlLog(v: number) {
@@ -447,15 +447,15 @@ export default function Analytics({ displayPools }: Props) {
                 style={{
                   ...CARD_STYLE,
                   flex: '1.4 1 280px',
-                  borderLeft: '2px solid #6B4FFF',
+                  borderLeft: '2px solid #4A38B8',
                   display: 'flex',
                   flexDirection: 'row',
                   alignItems: 'stretch',
                   minHeight: '200px',
                   boxSizing: 'border-box',
                   boxShadow: heroLeftHovered
-                    ? '0 0 40px rgba(107,79,255,0.15), 0 0 24px rgba(107,79,255,0.12)'
-                    : '0 0 40px rgba(107,79,255,0.15)',
+                    ? '0 0 40px rgba(74,56,184,0.15), 0 0 24px rgba(74,56,184,0.12)'
+                    : '0 0 40px rgba(74,56,184,0.15)',
                 }}
                 onMouseEnter={() => setHeroLeftHovered(true)}
                 onMouseLeave={() => setHeroLeftHovered(false)}
@@ -464,7 +464,7 @@ export default function Analytics({ displayPools }: Props) {
                 <div style={{ flex: '0 0 30%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
                   <span style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(232,230,255,0.35)', display: 'block', marginBottom: '14px' }}>Avg Dexaris Score</span>
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                    <span style={{ fontSize: '52px', fontWeight: 600, lineHeight: 1, color: '#6B4FFF' }}>{insightData.avgScore}</span>
+                    <span style={{ fontSize: '52px', fontWeight: 600, lineHeight: 1, color: '#4A38B8' }}>{insightData.avgScore}</span>
                     <span style={{ fontSize: '13px', color: scoreColor, opacity: 0.7, marginTop: '4px', display: 'block' }}>{scoreTier}</span>
                     <span style={{ fontSize: '12px', color: 'rgba(232,230,255,0.3)', marginTop: '10px', display: 'block' }}>Across {insightData.poolCount.toLocaleString()} scored pools</span>
                   </div>
@@ -605,7 +605,7 @@ export default function Analytics({ displayPools }: Props) {
                     cursor: 'pointer',
                     opacity: active ? 1 : 0.3,
                     textDecoration: active ? 'none' : 'line-through',
-                    background: active ? 'rgba(107,79,255,0.12)' : 'transparent',
+                    background: active ? 'rgba(74,56,184,0.12)' : 'transparent',
                     borderRadius: '6px',
                     padding: '3px 8px',
                     transition: 'opacity 0.15s ease, background 0.15s ease',
@@ -715,7 +715,7 @@ export default function Analytics({ displayPools }: Props) {
                     cursor: 'pointer',
                     opacity: active ? 1 : 0.3,
                     textDecoration: active ? 'none' : 'line-through',
-                    background: active ? 'rgba(107,79,255,0.12)' : 'transparent',
+                    background: active ? 'rgba(74,56,184,0.12)' : 'transparent',
                     borderRadius: '6px',
                     padding: '3px 8px',
                     transition: 'opacity 0.15s ease, background 0.15s ease',

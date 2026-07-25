@@ -514,15 +514,15 @@ function PasswordGate({ onUnlock }: { onUnlock: () => void }) {
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#0C0B1A',
+      background: '#0A0910',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       fontFamily: "'Inter', sans-serif",
     }}>
       <div style={{
-        background: '#111028',
-        border: '1px solid rgba(107,79,255,0.3)',
+        background: '#100F22',
+        border: '1px solid rgba(74,56,184,0.3)',
         borderRadius: '16px',
         padding: '40px 36px',
         width: '100%',
@@ -552,8 +552,8 @@ function PasswordGate({ onUnlock }: { onUnlock: () => void }) {
             onChange={e => { setValue(e.target.value); setError(false); }}
             style={{
               width: '100%',
-              background: 'rgba(107,79,255,0.08)',
-              border: `0.5px solid ${error ? '#FF6B6B' : 'rgba(107,79,255,0.25)'}`,
+              background: 'rgba(74,56,184,0.08)',
+              border: `0.5px solid ${error ? '#FF6B6B' : 'rgba(74,56,184,0.25)'}`,
               borderRadius: '10px',
               padding: '10px 14px',
               fontSize: '14px',
@@ -569,7 +569,7 @@ function PasswordGate({ onUnlock }: { onUnlock: () => void }) {
           <button
             type="submit"
             style={{
-              background: '#6B4FFF',
+              background: '#4A38B8',
               border: 'none',
               borderRadius: '10px',
               padding: '10px',
@@ -632,7 +632,7 @@ function ChartExportSection({ pools }: { pools: Pool[] }) {
     setExporting(true);
     try {
       const canvas = await html2canvas(chartRef.current, {
-        background: '#0C0B1A',
+        background: '#0A0910',
         useCORS: true,
         scale: 2,
       } as Parameters<typeof html2canvas>[1]);
@@ -670,16 +670,16 @@ function ChartExportSection({ pools }: { pools: Pool[] }) {
           style={{
             ...S,
             background: (exporting || chartLoading || displayData.length === 0)
-              ? 'rgba(107,79,255,0.2)'
-              : 'rgba(107,79,255,0.15)',
-            border: '1px solid rgba(107,79,255,0.3)',
+              ? 'rgba(74,56,184,0.2)'
+              : 'rgba(74,56,184,0.15)',
+            border: '1px solid rgba(74,56,184,0.3)',
             borderRadius: '8px',
             padding: '8px 18px',
             fontSize: '13px',
             fontWeight: 500,
             color: (exporting || chartLoading || displayData.length === 0)
-              ? 'rgba(139,115,255,0.4)'
-              : '#8B73FF',
+              ? 'rgba(107,95,212,0.4)'
+              : '#6B5FD4',
             cursor: (exporting || chartLoading || displayData.length === 0) ? 'not-allowed' : 'pointer',
             transition: 'all 0.15s',
           }}
@@ -701,8 +701,8 @@ function ChartExportSection({ pools }: { pools: Pool[] }) {
               style={{
                 ...S,
                 flex: '1 1 160px',
-                background: selected ? 'rgba(107,79,255,0.12)' : '#111028',
-                border: `1px solid ${selected ? 'rgba(107,79,255,0.5)' : 'rgba(107,79,255,0.15)'}`,
+                background: selected ? 'rgba(74,56,184,0.12)' : '#100F22',
+                border: `1px solid ${selected ? 'rgba(74,56,184,0.5)' : 'rgba(74,56,184,0.15)'}`,
                 borderRadius: '10px',
                 padding: '12px 14px',
                 cursor: 'pointer',
@@ -720,7 +720,7 @@ function ChartExportSection({ pools }: { pools: Pool[] }) {
                 {pool.symbol} · {pool.chain}
               </span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-                <span style={{ ...S, fontSize: '12px', fontWeight: 600, color: '#8B73FF' }}>
+                <span style={{ ...S, fontSize: '12px', fontWeight: 600, color: '#6B5FD4' }}>
                   {fmtApy(pool.apy)}
                 </span>
                 <span style={{
@@ -745,8 +745,8 @@ function ChartExportSection({ pools }: { pools: Pool[] }) {
       <div
         ref={chartRef}
         style={{
-          background: '#0C0B1A',
-          border: '1px solid rgba(107,79,255,0.2)',
+          background: '#0A0910',
+          border: '1px solid rgba(74,56,184,0.2)',
           borderRadius: '12px',
           padding: '24px',
           position: 'relative',
@@ -784,13 +784,13 @@ function ChartExportSection({ pools }: { pools: Pool[] }) {
               onClick={() => setTimeRange(range)}
               style={{
                 ...S,
-                background: timeRange === range ? 'rgba(107,79,255,0.18)' : 'transparent',
-                border: `1px solid ${timeRange === range ? 'rgba(107,79,255,0.4)' : 'rgba(107,79,255,0.15)'}`,
+                background: timeRange === range ? 'rgba(74,56,184,0.18)' : 'transparent',
+                border: `1px solid ${timeRange === range ? 'rgba(74,56,184,0.4)' : 'rgba(74,56,184,0.15)'}`,
                 borderRadius: '6px',
                 padding: '4px 12px',
                 fontSize: '12px',
                 fontWeight: timeRange === range ? 600 : 400,
-                color: timeRange === range ? '#8B73FF' : 'rgba(232,230,255,0.4)',
+                color: timeRange === range ? '#6B5FD4' : 'rgba(232,230,255,0.4)',
                 cursor: 'pointer',
                 transition: 'all 0.15s',
               }}
@@ -806,7 +806,7 @@ function ChartExportSection({ pools }: { pools: Pool[] }) {
             {[60, 80, 50, 90, 70, 85, 55].map((h, i) => (
               <div key={i} style={{
                 height: `${h}%`,
-                background: 'linear-gradient(90deg, rgba(107,79,255,0.06) 0%, rgba(107,79,255,0.12) 50%, rgba(107,79,255,0.06) 100%)',
+                background: 'linear-gradient(90deg, rgba(74,56,184,0.06) 0%, rgba(74,56,184,0.12) 50%, rgba(74,56,184,0.06) 100%)',
                 borderRadius: '4px',
                 animation: 'nlgen-spin 1.4s ease-in-out infinite',
               }} />
@@ -847,11 +847,11 @@ function ChartExportSection({ pools }: { pools: Pool[] }) {
             <AreaChart data={displayData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
               <defs>
                 <linearGradient id="apyGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#6B4FFF" stopOpacity={0.35} />
-                  <stop offset="95%" stopColor="#6B4FFF" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#4A38B8" stopOpacity={0.35} />
+                  <stop offset="95%" stopColor="#4A38B8" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(107,79,255,0.1)" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(74,56,184,0.1)" vertical={false} />
               <XAxis
                 dataKey="date"
                 tick={{ fontSize: 11, fill: 'rgba(232,230,255,0.35)', fontFamily: 'Inter, sans-serif' }}
@@ -868,8 +868,8 @@ function ChartExportSection({ pools }: { pools: Pool[] }) {
               />
               <Tooltip
                 contentStyle={{
-                  background: '#111028',
-                  border: '1px solid rgba(107,79,255,0.3)',
+                  background: '#100F22',
+                  border: '1px solid rgba(74,56,184,0.3)',
                   borderRadius: '8px',
                   fontSize: '12px',
                   color: '#E8E6FF',
@@ -877,16 +877,16 @@ function ChartExportSection({ pools }: { pools: Pool[] }) {
                 }}
                 formatter={(value) => [`${Number(value).toFixed(2)}%`, 'APY']}
                 labelStyle={{ color: 'rgba(232,230,255,0.5)', marginBottom: '2px' }}
-                cursor={{ stroke: 'rgba(107,79,255,0.4)', strokeWidth: 1 }}
+                cursor={{ stroke: 'rgba(74,56,184,0.4)', strokeWidth: 1 }}
               />
               <Area
                 type="monotone"
                 dataKey="apy"
-                stroke="#8B73FF"
+                stroke="#6B5FD4"
                 strokeWidth={2}
                 fill="url(#apyGradient)"
                 dot={false}
-                activeDot={{ r: 4, fill: '#8B73FF', strokeWidth: 0 }}
+                activeDot={{ r: 4, fill: '#6B5FD4', strokeWidth: 0 }}
               />
             </AreaChart>
           </ResponsiveContainer>
@@ -901,7 +901,7 @@ function ChartExportSection({ pools }: { pools: Pool[] }) {
           margin: 0,
           fontSize: '11px',
           fontWeight: 600,
-          color: 'rgba(107,79,255,0.4)',
+          color: 'rgba(74,56,184,0.4)',
           letterSpacing: '0.04em',
           pointerEvents: 'none',
           userSelect: 'none',
@@ -1074,7 +1074,7 @@ function XContentTab() {
         style={{
           ...S,
           alignSelf: 'flex-start',
-          background: loading ? 'rgba(107,79,255,0.4)' : '#6B4FFF',
+          background: loading ? 'rgba(74,56,184,0.4)' : '#4A38B8',
           border: 'none',
           borderRadius: '10px',
           padding: '12px 28px',
@@ -1118,8 +1118,8 @@ function XContentTab() {
       {posts.length === 0 && !loading && !error && (
         <div style={{
           ...S,
-          background: 'rgba(107,79,255,0.06)',
-          border: '0.5px solid rgba(107,79,255,0.2)',
+          background: 'rgba(74,56,184,0.06)',
+          border: '0.5px solid rgba(74,56,184,0.2)',
           borderRadius: '10px',
           padding: '14px 16px',
           fontSize: '13px',
@@ -1128,9 +1128,9 @@ function XContentTab() {
         }}>
           Posts are generated from live DeFi yield data and scored with the Dexaris algorithm.
           Scheduling requires a third-party tool —{' '}
-          <a href="https://typefully.com" target="_blank" rel="noopener noreferrer" style={{ color: '#8B73FF', textDecoration: 'none' }}>Typefully</a>
+          <a href="https://typefully.com" target="_blank" rel="noopener noreferrer" style={{ color: '#6B5FD4', textDecoration: 'none' }}>Typefully</a>
           {' '}or{' '}
-          <a href="https://buffer.com" target="_blank" rel="noopener noreferrer" style={{ color: '#8B73FF', textDecoration: 'none' }}>Buffer</a>
+          <a href="https://buffer.com" target="_blank" rel="noopener noreferrer" style={{ color: '#6B5FD4', textDecoration: 'none' }}>Buffer</a>
           {' '}recommended.
         </div>
       )}
@@ -1144,13 +1144,13 @@ function XContentTab() {
               onClick={copyAll}
               style={{
                 ...S,
-                background: 'rgba(107,79,255,0.15)',
-                border: '1px solid rgba(107,79,255,0.3)',
+                background: 'rgba(74,56,184,0.15)',
+                border: '1px solid rgba(74,56,184,0.3)',
                 borderRadius: '8px',
                 padding: '8px 18px',
                 fontSize: '13px',
                 fontWeight: 500,
-                color: allCopied ? '#34D399' : '#8B73FF',
+                color: allCopied ? '#34D399' : '#6B5FD4',
                 cursor: 'pointer',
                 transition: 'color 0.15s',
               }}
@@ -1169,8 +1169,8 @@ function XContentTab() {
             const isThread = splitThreadBeats(post.text) !== null;
             return (
               <div key={post.slot} style={{
-                background: '#111028',
-                border: '1px solid rgba(107,79,255,0.18)',
+                background: '#100F22',
+                border: '1px solid rgba(74,56,184,0.18)',
                 borderRadius: '12px',
                 padding: '20px',
                 display: 'flex',
@@ -1213,13 +1213,13 @@ function XContentTab() {
                       onClick={() => copyPost(idx)}
                       style={{
                         ...S,
-                        background: copiedIdx === idx ? 'rgba(52,211,153,0.12)' : 'rgba(107,79,255,0.1)',
-                        border: `1px solid ${copiedIdx === idx ? 'rgba(52,211,153,0.3)' : 'rgba(107,79,255,0.25)'}`,
+                        background: copiedIdx === idx ? 'rgba(52,211,153,0.12)' : 'rgba(74,56,184,0.1)',
+                        border: `1px solid ${copiedIdx === idx ? 'rgba(52,211,153,0.3)' : 'rgba(74,56,184,0.25)'}`,
                         borderRadius: '6px',
                         padding: '4px 12px',
                         fontSize: '12px',
                         fontWeight: 500,
-                        color: copiedIdx === idx ? '#34D399' : '#8B73FF',
+                        color: copiedIdx === idx ? '#34D399' : '#6B5FD4',
                         cursor: 'pointer',
                         transition: 'all 0.15s',
                       }}
@@ -1248,8 +1248,8 @@ function XContentTab() {
           {/* Scheduler CTA */}
           <div style={{
             ...S,
-            background: 'rgba(107,79,255,0.06)',
-            border: '0.5px solid rgba(107,79,255,0.2)',
+            background: 'rgba(74,56,184,0.06)',
+            border: '0.5px solid rgba(74,56,184,0.2)',
             borderRadius: '10px',
             padding: '14px 16px',
             fontSize: '13px',
@@ -1261,17 +1261,17 @@ function XContentTab() {
           }}>
             <span>Ready to schedule?</span>
             <a href="https://typefully.com" target="_blank" rel="noopener noreferrer"
-              style={{ color: '#8B73FF', textDecoration: 'none', fontWeight: 500 }}>Typefully</a>
+              style={{ color: '#6B5FD4', textDecoration: 'none', fontWeight: 500 }}>Typefully</a>
             <span>or</span>
             <a href="https://buffer.com" target="_blank" rel="noopener noreferrer"
-              style={{ color: '#8B73FF', textDecoration: 'none', fontWeight: 500 }}>Buffer</a>
+              style={{ color: '#6B5FD4', textDecoration: 'none', fontWeight: 500 }}>Buffer</a>
             <span>can schedule all three at the suggested times.</span>
           </div>
 
           {/* Chart export */}
           {topPools.length > 0 && (
             <>
-              <div style={{ height: '1px', background: 'rgba(107,79,255,0.12)', margin: '4px 0' }} />
+              <div style={{ height: '1px', background: 'rgba(74,56,184,0.12)', margin: '4px 0' }} />
               <ChartExportSection pools={topPools} />
             </>
           )}
@@ -1385,13 +1385,13 @@ export default function NewsletterGenerator() {
     const active = activeTab === tab;
     return {
       fontFamily: "'Inter', sans-serif",
-      background: active ? 'rgba(107,79,255,0.15)' : 'transparent',
-      border: active ? '1px solid rgba(107,79,255,0.35)' : '1px solid transparent',
+      background: active ? 'rgba(74,56,184,0.15)' : 'transparent',
+      border: active ? '1px solid rgba(74,56,184,0.35)' : '1px solid transparent',
       borderRadius: '8px',
       padding: '8px 20px',
       fontSize: '13px',
       fontWeight: active ? 600 : 400,
-      color: active ? '#8B73FF' : 'rgba(232,230,255,0.45)',
+      color: active ? '#6B5FD4' : 'rgba(232,230,255,0.45)',
       cursor: 'pointer',
       transition: 'all 0.15s',
     };
@@ -1410,8 +1410,8 @@ export default function NewsletterGenerator() {
         display: 'flex',
         gap: '6px',
         padding: '4px',
-        background: 'rgba(107,79,255,0.05)',
-        border: '1px solid rgba(107,79,255,0.12)',
+        background: 'rgba(74,56,184,0.05)',
+        border: '1px solid rgba(74,56,184,0.12)',
         borderRadius: '10px',
         width: 'fit-content',
         marginBottom: '4px',

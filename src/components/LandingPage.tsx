@@ -76,7 +76,7 @@ function LiveTicker() {
       <div style={{
         maxWidth: 'min(480px, calc(100vw - 48px))', height: '40px', borderRadius: '40px',
         margin: '0 auto',
-        background: 'rgba(107,79,255,0.08)', border: '1px solid rgba(107,79,255,0.15)',
+        background: 'rgba(74,56,184,0.08)', border: '1px solid rgba(74,56,184,0.15)',
         animation: 'pulse 1.5s ease-in-out infinite',
       }} />
     );
@@ -90,8 +90,8 @@ function LiveTicker() {
       maxWidth: 'min(480px, calc(100vw - 48px))',
       overflow: 'hidden',
       margin: '0 auto',
-      background: 'rgba(107,79,255,0.08)',
-      border: '1px solid rgba(107,79,255,0.25)',
+      background: 'rgba(74,56,184,0.08)',
+      border: '1px solid rgba(74,56,184,0.25)',
       borderRadius: '40px',
       padding: isMobile ? '8px 14px' : '10px 20px',
       display: 'flex',
@@ -115,7 +115,7 @@ function LiveTicker() {
         <span style={{ color: 'rgba(232,230,255,0.35)' }}> · </span>
         <span style={{ color: '#4ECDA4', fontWeight: 700 }}>{pool.apy.toFixed(2)}%</span>
         <span style={{ color: 'rgba(232,230,255,0.35)' }}> · </span>
-        <span style={{ color: 'rgba(232,230,255,0.35)' }}>Score <span style={{ color: '#8B73FF', fontWeight: 700 }}>{pool.score}</span></span>
+        <span style={{ color: 'rgba(232,230,255,0.35)' }}>Score <span style={{ color: '#6B5FD4', fontWeight: 700 }}>{pool.score}</span></span>
         <span style={{ color: 'rgba(232,230,255,0.35)' }}> · </span>
         <span style={{ color: 'rgba(232,230,255,0.35)' }}>{pool.chain}</span>
       </span>
@@ -132,8 +132,8 @@ function formatTvl(tvl: number): string {
 function ChainIcon() {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" stroke="#6B4FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" stroke="#6B4FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" stroke="#4A38B8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" stroke="#4A38B8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   );
 }
@@ -141,7 +141,7 @@ function ChainIcon() {
 function StarIcon() {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="#6B4FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="#4A38B8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   );
 }
@@ -149,9 +149,9 @@ function StarIcon() {
 function D4Icon() {
   return (
     <svg width="24" height="24" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <polygon points="4,42 10,26 16,26 10,42" fill="rgba(107,79,255,0.5)" />
-      <polygon points="16,42 22,16 28,16 22,42" fill="rgba(107,79,255,0.75)" />
-      <polygon points="28,42 34,5 40,5 34,42" fill="#6B4FFF" />
+      <polygon points="4,42 10,26 16,26 10,42" fill="rgba(74,56,184,0.5)" />
+      <polygon points="16,42 22,16 28,16 22,42" fill="rgba(74,56,184,0.75)" />
+      <polygon points="28,42 34,5 40,5 34,42" fill="#4A38B8" />
     </svg>
   );
 }
@@ -240,8 +240,8 @@ function ProtocolLogoStrip() {
                 width: '52px',
                 height: '52px',
                 borderRadius: '50%',
-                background: 'rgba(107,79,255,0.08)',
-                border: '1px solid rgba(107,79,255,0.15)',
+                background: 'rgba(74,56,184,0.08)',
+                border: '1px solid rgba(74,56,184,0.15)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -260,15 +260,15 @@ function ProtocolLogoStrip() {
 function ScoreIcon() {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="12" cy="12" r="9" stroke="#6B4FFF" strokeWidth="1.5" />
-      <path d="M8 12l3 3 5-5" stroke="#6B4FFF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="12" cy="12" r="9" stroke="#4A38B8" strokeWidth="1.5" />
+      <path d="M8 12l3 3 5-5" stroke="#4A38B8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
 
 function scoreColour(score: number): string {
   if (score >= 80) return '#4ECDA4';
-  if (score >= 60) return '#8B73FF';
+  if (score >= 60) return '#6B5FD4';
   if (score >= 40) return '#FFB347';
   return '#FF6B6B';
 }
@@ -308,7 +308,7 @@ export default function LandingPage() {
         height: '64px',
         background: 'rgba(8,7,20,0.9)',
         backdropFilter: 'blur(12px)',
-        borderBottom: '0.5px solid rgba(107,79,255,0.12)',
+        borderBottom: '0.5px solid rgba(74,56,184,0.12)',
         position: 'sticky',
         top: 0,
         zIndex: 100,
@@ -370,14 +370,14 @@ export default function LandingPage() {
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            background: 'rgba(107,79,255,0.12)',
-            border: '0.5px solid rgba(107,79,255,0.3)',
+            background: 'rgba(74,56,184,0.12)',
+            border: '0.5px solid rgba(74,56,184,0.3)',
             borderRadius: '20px',
             padding: '5px 14px',
             fontSize: '11px',
-            color: 'rgba(107,79,255,0.9)',
+            color: 'rgba(74,56,184,0.9)',
           }}>
-            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#6B4FFF', animation: 'pulse 2s ease-in-out infinite', display: 'inline-block' }} />
+            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#4A38B8', animation: 'pulse 2s ease-in-out infinite', display: 'inline-block' }} />
             Live DeFi yield data — updated every 60 seconds
           </div>
 
@@ -390,7 +390,7 @@ export default function LandingPage() {
             margin: 0,
           }}>
             Find the yield<br />
-            <span style={{ color: '#8B73FF' }}>worth chasing.</span>
+            <span style={{ color: '#6B5FD4' }}>worth chasing.</span>
           </h1>
 
           {/* Subtitle */}
@@ -447,7 +447,7 @@ export default function LandingPage() {
 
       {/* ─── Features ───────────────────────────────────────────── */}
       <section id="features" className="features-section" style={{
-        borderTop: '0.5px solid rgba(107,79,255,0.1)',
+        borderTop: '0.5px solid rgba(74,56,184,0.1)',
         maxWidth: '1100px',
         margin: '0 auto',
         width: '100%',
@@ -501,10 +501,10 @@ export default function LandingPage() {
             >
               <div style={{
                 width: '48px', height: '48px',
-                background: 'rgba(107,79,255,0.15)',
-                border: '1px solid rgba(107,79,255,0.25)',
+                background: 'rgba(74,56,184,0.15)',
+                border: '1px solid rgba(74,56,184,0.25)',
                 borderRadius: '12px',
-                boxShadow: '0 0 20px rgba(107,79,255,0.2)',
+                boxShadow: '0 0 20px rgba(74,56,184,0.2)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 marginBottom: '16px',
               }}>
@@ -543,10 +543,10 @@ export default function LandingPage() {
             >
               <div style={{
                 width: '48px', height: '48px',
-                background: 'rgba(107,79,255,0.15)',
-                border: '1px solid rgba(107,79,255,0.25)',
+                background: 'rgba(74,56,184,0.15)',
+                border: '1px solid rgba(74,56,184,0.25)',
                 borderRadius: '12px',
-                boxShadow: '0 0 20px rgba(107,79,255,0.2)',
+                boxShadow: '0 0 20px rgba(74,56,184,0.2)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 marginBottom: '16px',
               }}>
@@ -579,17 +579,17 @@ export default function LandingPage() {
         </p>
 
         <div style={{
-          background: 'rgba(107, 79, 255, 0.06)',
+          background: 'rgba(74, 56, 184, 0.06)',
           backdropFilter: 'blur(12px)',
           WebkitBackdropFilter: 'blur(12px)',
-          border: '1px solid rgba(107, 79, 255, 0.18)',
+          border: '1px solid rgba(74, 56, 184, 0.18)',
           borderRadius: '16px',
-          boxShadow: '0 4px 24px rgba(107, 79, 255, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.04)',
+          boxShadow: '0 4px 24px rgba(74, 56, 184, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.04)',
           overflow: 'hidden',
         }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
-              <tr style={{ borderBottom: '0.5px solid rgba(107,79,255,0.12)' }}>
+              <tr style={{ borderBottom: '0.5px solid rgba(74,56,184,0.12)' }}>
                 {['Protocol', 'Chain', 'APY', 'TVL', 'Score'].map(col => (
                   <th key={col} className={col === 'TVL' ? 'preview-tvl-col' : undefined} style={{
                     padding: '12px 16px',
@@ -606,13 +606,13 @@ export default function LandingPage() {
             <tbody>
               {loadingPools
                 ? Array.from({ length: 5 }).map((_, i) => (
-                    <tr key={i} style={{ borderBottom: '0.5px solid rgba(107,79,255,0.06)' }}>
+                    <tr key={i} style={{ borderBottom: '0.5px solid rgba(74,56,184,0.06)' }}>
                       {Array.from({ length: 5 }).map((_, j) => (
                         <td key={j} style={{ padding: '14px 16px' }}>
                           <div style={{
                             height: '12px',
                             borderRadius: '4px',
-                            background: 'rgba(107,79,255,0.1)',
+                            background: 'rgba(74,56,184,0.1)',
                             width: j === 0 ? '120px' : j === 1 ? '80px' : '60px',
                             animation: 'pulse 1.5s ease-in-out infinite',
                           }} />
@@ -623,7 +623,7 @@ export default function LandingPage() {
                 : pools.map((pool, i) => {
                     const score = pool.previewScore;
                     return (
-                    <tr key={i} className="preview-row" style={{ borderBottom: i < pools.length - 1 ? '0.5px solid rgba(107,79,255,0.06)' : 'none' }}>
+                    <tr key={i} className="preview-row" style={{ borderBottom: i < pools.length - 1 ? '0.5px solid rgba(74,56,184,0.06)' : 'none' }}>
                       <td style={{ padding: '14px 16px', fontSize: '13px', color: '#E8E6FF' }}>
                         <span style={{ textTransform: 'capitalize' }}>{pool.project}</span>
                         <span style={{ fontSize: '11px', color: 'rgba(232,230,255,0.35)', marginLeft: '8px' }}>{pool.symbol}</span>
@@ -650,19 +650,19 @@ export default function LandingPage() {
           <button
             onClick={() => navigate('/app')}
             onMouseEnter={e => {
-              e.currentTarget.style.background = 'rgba(107,79,255,0.15)';
-              e.currentTarget.style.borderColor = 'rgba(107,79,255,0.6)';
+              e.currentTarget.style.background = 'rgba(74,56,184,0.15)';
+              e.currentTarget.style.borderColor = 'rgba(74,56,184,0.6)';
             }}
             onMouseLeave={e => {
-              e.currentTarget.style.background = 'rgba(107,79,255,0.08)';
-              e.currentTarget.style.borderColor = 'rgba(107,79,255,0.4)';
+              e.currentTarget.style.background = 'rgba(74,56,184,0.08)';
+              e.currentTarget.style.borderColor = 'rgba(74,56,184,0.4)';
             }}
             style={{
-              background: 'rgba(107,79,255,0.08)',
-              border: '1px solid rgba(107,79,255,0.4)',
+              background: 'rgba(74,56,184,0.08)',
+              border: '1px solid rgba(74,56,184,0.4)',
               borderRadius: '8px',
               padding: '10px 24px',
-              color: '#8B73FF',
+              color: '#6B5FD4',
               fontSize: '14px',
               cursor: 'pointer',
               fontFamily: "'Inter', sans-serif",
@@ -676,7 +676,7 @@ export default function LandingPage() {
 
       {/* ─── Newsletter ─────────────────────────────────────────── */}
       <section id="newsletter" className="newsletter-section" style={{
-        borderTop: '0.5px solid rgba(107,79,255,0.1)',
+        borderTop: '0.5px solid rgba(74,56,184,0.1)',
       }}>
         <motion.div
           className="newsletter-inner"
@@ -699,7 +699,7 @@ export default function LandingPage() {
           </div>
 
           {subStatus === 'success' ? (
-            <p style={{ fontSize: '13px', color: '#8B73FF', fontWeight: 500 }}>
+            <p style={{ fontSize: '13px', color: '#6B5FD4', fontWeight: 500 }}>
               You're in — welcome to the list! 🟣
             </p>
           ) : (
@@ -738,8 +738,8 @@ export default function LandingPage() {
                 className="newsletter-input"
                 autoComplete="email"
                 style={{
-                  background: 'rgba(107,79,255,0.08)',
-                  border: '0.5px solid rgba(107,79,255,0.2)',
+                  background: 'rgba(74,56,184,0.08)',
+                  border: '0.5px solid rgba(74,56,184,0.2)',
                   borderRadius: '20px',
                   padding: '10px 18px',
                   fontSize: '13px',
@@ -779,7 +779,7 @@ export default function LandingPage() {
       {/* ─── About ──────────────────────────────────────────────── */}
       <section id="about" style={{
         padding: '64px 40px',
-        borderTop: '0.5px solid rgba(107,79,255,0.1)',
+        borderTop: '0.5px solid rgba(74,56,184,0.1)',
         maxWidth: '1100px',
         margin: '0 auto',
         width: '100%',
@@ -826,7 +826,7 @@ export default function LandingPage() {
 
       {/* ─── Footer ─────────────────────────────────────────────── */}
       <footer className="landing-footer" style={{
-        borderTop: '0.5px solid rgba(107,79,255,0.1)',
+        borderTop: '0.5px solid rgba(74,56,184,0.1)',
       }}>
         <DexarisLogo iconSize={20} fontSize={13} />
 

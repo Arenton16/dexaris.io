@@ -28,7 +28,7 @@ export default class ErrorBoundary extends Component<Props, State> {
           alignItems: 'center',
           justifyContent: 'center',
           minHeight: '100vh',
-          background: '#0C0B1A',
+          background: '#0A0910',
           color: '#E8E6FF',
           fontFamily: "'Inter', sans-serif",
           gap: '16px',
@@ -36,9 +36,9 @@ export default class ErrorBoundary extends Component<Props, State> {
           textAlign: 'center',
         }}>
           <svg width="36" height="36" viewBox="0 0 44 44" fill="none">
-            <polygon points="4,42 10,26 16,26 10,42" fill="rgba(107,79,255,0.3)" />
-            <polygon points="16,42 22,16 28,16 22,42" fill="rgba(107,79,255,0.6)" />
-            <polygon points="28,42 34,5 40,5 34,42"  fill="#6B4FFF" />
+            <polygon points="4,42 10,26 16,26 10,42" fill="rgba(74,56,184,0.3)" />
+            <polygon points="16,42 22,16 28,16 22,42" fill="rgba(74,56,184,0.6)" />
+            <polygon points="28,42 34,5 40,5 34,42"  fill="#4A38B8" />
           </svg>
           <p style={{ fontSize: '18px', fontWeight: 500, margin: 0 }}>
             Something went wrong
@@ -57,7 +57,7 @@ export default class ErrorBoundary extends Component<Props, State> {
             style={{
               marginTop: '8px',
               padding: '10px 28px',
-              background: '#6B4FFF',
+              background: '#4A38B8',
               border: 'none',
               borderRadius: '20px',
               color: '#fff',

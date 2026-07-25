@@ -146,12 +146,12 @@ export default function Sidebar({
           {selectedProtocols.map(name => (
             <span
               key={name}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', background: 'rgba(107,79,255,0.14)', border: '0.5px solid #6B4FFF', borderRadius: '20px', color: '#8B73FF', fontSize: '11px', fontFamily: 'Inter, sans-serif', cursor: 'pointer', margin: '2px' }}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', background: 'rgba(74,56,184,0.14)', border: '0.5px solid #4A38B8', borderRadius: '20px', color: '#6B5FD4', fontSize: '11px', fontFamily: 'Inter, sans-serif', cursor: 'pointer', margin: '2px' }}
             >
               {name}
               <button
                 onClick={() => removeProtocol(name)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#8B73FF', padding: '0 0 0 2px', lineHeight: 1, fontSize: '13px', opacity: 0.7 }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B5FD4', padding: '0 0 0 2px', lineHeight: 1, fontSize: '13px', opacity: 0.7 }}
                 aria-label={`Remove ${name}`}
               >×</button>
             </span>
@@ -169,7 +169,7 @@ export default function Sidebar({
         style={{
           width: '100%',
           background: 'rgba(232,230,255,0.04)',
-          border: protocolInputFocused ? '0.5px solid rgba(107,79,255,0.5)' : '0.5px solid rgba(232,230,255,0.15)',
+          border: protocolInputFocused ? '0.5px solid rgba(74,56,184,0.5)' : '0.5px solid rgba(232,230,255,0.15)',
           borderRadius: '20px',
           padding: '4px 10px',
           fontSize: '11px',

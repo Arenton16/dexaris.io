@@ -25,7 +25,7 @@ export function BackgroundPaths() {
         {paths.map((path) => (
           <motion.path
             key={path.id}
-            stroke="#6B4FFF"
+            stroke="#4A38B8"
             strokeWidth={path.width}
             fill="none"
             initial={{ d: path.d1, pathLength: 0.35, pathOffset: 0, opacity: 0 }}

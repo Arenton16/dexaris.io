@@ -122,7 +122,7 @@ export function getDexarisScoreTier(score: number): string {
 
 export function getDexarisScoreColour(score: number): string {
   if (score >= 80) return '#4ECDA4';
-  if (score >= 60) return '#8B73FF';
+  if (score >= 60) return '#6B5FD4';
   if (score >= 40) return '#FFB347';
   return '#FF6B6B';
 }

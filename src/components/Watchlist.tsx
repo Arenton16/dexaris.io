@@ -98,7 +98,7 @@ function Sparkline({ values }: { values: number[] }) {
       <polyline
         points={points}
         fill="none"
-        stroke="#6B4FFF"
+        stroke="#4A38B8"
         strokeWidth={1.5}
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -234,8 +234,8 @@ export default function Watchlist({ allPools, watchlistedIds, onToggleWatchlist,
             width: 72,
             height: 72,
             borderRadius: '50%',
-            background: 'rgba(107,79,255,0.1)',
-            border: '1px solid rgba(107,79,255,0.2)',
+            background: 'rgba(74,56,184,0.1)',
+            border: '1px solid rgba(74,56,184,0.2)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -246,7 +246,7 @@ export default function Watchlist({ allPools, watchlistedIds, onToggleWatchlist,
           <p style={{ color: 'rgba(232,230,255,0.45)', fontSize: 14, margin: '0 0 24px' }}>Star any pool from the Yields page to track it here</p>
           <button
             style={{
-              background: '#6B4FFF',
+              background: '#4A38B8',
               border: 'none',
               borderRadius: 8,
               padding: '10px 24px',
@@ -352,7 +352,7 @@ export default function Watchlist({ allPools, watchlistedIds, onToggleWatchlist,
                         {(() => {
                           const cc = CHAIN_COLOURS[pool.chain] ?? 'rgba(232,230,255,0.4)';
                           return (
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '10px', padding: '3px 9px', borderRadius: '10px', background: 'rgba(232,230,255,0.04)', border: '0.5px solid rgba(232,230,255,0.12)', color: 'rgba(232,230,255,0.55)' }}>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '10px', padding: '3px 9px', borderRadius: '10px', background: 'rgba(50,50,65,0.5)', border: '0.5px solid #2E2E3E', color: '#888899' }}>
                               <img
                                 src={`/logos/chains/${pool.chain.toLowerCase()}.png`}
                                 alt={pool.chain}

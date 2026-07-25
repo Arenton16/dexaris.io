@@ -84,7 +84,7 @@ export default function StatsBar({ highestApy, totalTvl, protocolCount, chainCou
     {
       label: 'Highest Yield Today',
       value: `${highestApy.toFixed(2)}%`,
-      color: '#6B4FFF',
+      color: '#4A38B8',
       delta: apyDelta !== null && apyDelta > 0 ? `+${apyDelta.toFixed(2)}%` : null,
     },
     {
@@ -120,7 +120,7 @@ export default function StatsBar({ highestApy, totalTvl, protocolCount, chainCou
           <div
             key={cell.label}
             className="stats-cell"
-            style={{ background: i % 2 === 0 ? '#111028' : 'transparent' }}
+            style={{ background: i % 2 === 0 ? '#100F22' : 'transparent' }}
           >
             <span className="stats-label">{cell.label}</span>
             <span className="stats-value" style={{ color: cell.color }}>{cell.value}</span>
@@ -129,7 +129,7 @@ export default function StatsBar({ highestApy, totalTvl, protocolCount, chainCou
         ))}
       </div>
       <div style={{
-        background: '#111028',
+        background: '#100F22',
         border: '0.5px solid rgba(232,230,255,0.08)',
         borderRadius: '10px',
         padding: '12px 16px',

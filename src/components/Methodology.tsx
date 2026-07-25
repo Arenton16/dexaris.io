@@ -163,14 +163,14 @@ export default function Methodology() {
 const styles = {
   page: {
     minHeight: '100vh',
-    background: '#0C0B1A',
+    background: '#0A0910',
     fontFamily: 'Inter, sans-serif',
     color: '#E8E6FF',
   } as React.CSSProperties,
 
   topBar: {
     padding: '16px 24px',
-    borderBottom: '1px solid rgba(107,79,255,0.12)',
+    borderBottom: '1px solid rgba(74,56,184,0.12)',
     background: 'rgba(17,16,40,0.8)',
     backdropFilter: 'blur(8px)',
     WebkitBackdropFilter: 'blur(8px)',
@@ -207,9 +207,9 @@ const styles = {
     fontWeight: 600,
     letterSpacing: '0.12em',
     textTransform: 'uppercase' as const,
-    color: '#6B4FFF',
-    background: 'rgba(107,79,255,0.12)',
-    border: '1px solid rgba(107,79,255,0.25)',
+    color: '#4A38B8',
+    background: 'rgba(74,56,184,0.12)',
+    border: '1px solid rgba(74,56,184,0.25)',
     borderRadius: 4,
     padding: '3px 10px',
     marginBottom: 16,
@@ -233,8 +233,8 @@ const styles = {
   } as React.CSSProperties,
 
   card: {
-    background: 'rgba(107,79,255,0.05)',
-    border: '1px solid rgba(107,79,255,0.15)',
+    background: 'rgba(74,56,184,0.05)',
+    border: '1px solid rgba(74,56,184,0.15)',
     borderRadius: 12,
     padding: '28px 28px 24px',
     backdropFilter: 'blur(12px)',
@@ -276,7 +276,7 @@ const styles = {
     letterSpacing: '0.09em',
     textTransform: 'uppercase' as const,
     color: 'rgba(232,230,255,0.35)',
-    borderBottom: '1px solid rgba(107,79,255,0.15)',
+    borderBottom: '1px solid rgba(74,56,184,0.15)',
     whiteSpace: 'nowrap' as const,
   } as React.CSSProperties,
 
@@ -293,12 +293,12 @@ const styles = {
   } as React.CSSProperties,
 
   trOdd: {
-    background: 'rgba(107,79,255,0.03)',
+    background: 'rgba(74,56,184,0.03)',
   } as React.CSSProperties,
 
   td: {
     padding: '13px 14px',
-    borderBottom: '1px solid rgba(107,79,255,0.07)',
+    borderBottom: '1px solid rgba(74,56,184,0.07)',
     verticalAlign: 'top' as const,
     lineHeight: 1.5,
   } as React.CSSProperties,
@@ -313,7 +313,7 @@ const styles = {
 
   tdWeight: {
     fontWeight: 700,
-    color: '#6B4FFF',
+    color: '#4A38B8',
     fontSize: 14,
     whiteSpace: 'nowrap' as const,
   } as React.CSSProperties,
@@ -392,11 +392,11 @@ const styles = {
   } as React.CSSProperties,
 
   disclaimer: {
-    background: 'rgba(107,79,255,0.04)',
-    border: '1px solid rgba(107,79,255,0.3)',
+    background: 'rgba(74,56,184,0.04)',
+    border: '1px solid rgba(74,56,184,0.3)',
     borderRadius: 12,
     padding: '22px 24px',
-    boxShadow: '0 0 0 4px rgba(107,79,255,0.06)',
+    boxShadow: '0 0 0 4px rgba(74,56,184,0.06)',
   } as React.CSSProperties,
 
   disclaimerHeader: {

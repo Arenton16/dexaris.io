@@ -26,14 +26,9 @@ interface ScoreHistoryPoint {
   score: number;
 }
 
-const CHAIN_COLORS: Record<string, { bg: string; text: string }> = {
-  Ethereum: { bg: '#1a3a5c', text: '#3B9EFF' },
-  Base:     { bg: '#1a1a4a', text: '#6B7FFF' },
-  Solana:   { bg: '#2d1a4a', text: '#9945FF' },
-  Arbitrum: { bg: '#1a2d4a', text: '#2D9CDB' },
-  Avalanche:{ bg: '#4a1a1a', text: '#E84142' },
-  Polygon:  { bg: '#2d1a4a', text: '#8247E5' },
-};
+// Neutralised per the muted-palette pass — every chain now renders with the
+// same neutral badge treatment instead of a per-chain accent colour.
+const NEUTRAL_CHAIN_BADGE = { bg: 'rgba(50,50,65,0.5)', text: '#888899' };
 
 const AXIS_TICK = {
   fill: 'rgba(232,230,255,0.3)',
@@ -200,14 +195,14 @@ function TokenPricesSection({
   return (
     <div style={{
       margin: noMargin ? 0 : '16px 0',
-      background: 'rgba(107,79,255,0.07)',
-      border: '1px solid rgba(107,79,255,0.2)',
+      background: 'rgba(74,56,184,0.07)',
+      border: '1px solid rgba(74,56,184,0.2)',
       borderRadius: 10,
       overflow: 'hidden',
     }}>
       <div style={{
         padding: '10px 14px 8px',
-        borderBottom: '1px solid rgba(107,79,255,0.1)',
+        borderBottom: '1px solid rgba(74,56,184,0.1)',
       }}>
         <span style={{
           fontSize: 10,
@@ -253,7 +248,7 @@ function TokenPricesSection({
                 alignItems: 'center',
                 gap: 10,
                 padding: '9px 14px',
-                borderBottom: '1px solid rgba(107,79,255,0.06)',
+                borderBottom: '1px solid rgba(74,56,184,0.06)',
               }}>
                 <span style={{ fontSize: 12, fontWeight: 600, color: '#E8E6FF', minWidth: 48, flex: 'none' }}>
                   {sym}
@@ -475,7 +470,7 @@ export default function PoolDetail({ pool, onClose }: Props) {
         {pool && (() => {
           const apy = pool.apy ?? 0;
           const risk = getRisk(apy);
-          const chain = CHAIN_COLORS[pool.chain] ?? { bg: 'rgba(107,79,255,0.1)', text: 'rgba(232,230,255,0.45)' };
+          const chain = NEUTRAL_CHAIN_BADGE;
           const breakdown = calculateDexarisScoreBreakdown(pool);
           const score = breakdown.total;
           const scoreColour = getDexarisScoreColour(score);
@@ -496,8 +491,8 @@ export default function PoolDetail({ pool, onClose }: Props) {
                 width: 52,
                 height: 52,
                 borderRadius: 14,
-                background: 'rgba(107,79,255,0.08)',
-                border: '1px solid rgba(107,79,255,0.25)',
+                background: 'rgba(74,56,184,0.08)',
+                border: '1px solid rgba(74,56,184,0.25)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -510,7 +505,7 @@ export default function PoolDetail({ pool, onClose }: Props) {
                 <h2 className="detail-protocol" style={{ margin: 0 }}>{pool.project}</h2>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <p className="detail-asset" style={{ margin: 0 }}>{pool.symbol}</p>
-                  <span className="chain-badge" style={{ backgroundColor: chain.bg, color: chain.text }}>
+                  <span className="chain-badge" style={{ backgroundColor: chain.bg, color: chain.text, border: '0.5px solid #2E2E3E' }}>
                     {CHAIN_LOGOS[pool.chain] && (
                       <img
                         src={CHAIN_LOGOS[pool.chain]}
@@ -634,20 +629,20 @@ export default function PoolDetail({ pool, onClose }: Props) {
                   <AreaChart data={historyData} margin={{ top: 4, right: 4, bottom: 0, left: -8 }}>
                     <defs>
                       <linearGradient id="apyGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%"  stopColor="#6B4FFF" stopOpacity={0.2} />
-                        <stop offset="95%" stopColor="#6B4FFF" stopOpacity={0} />
+                        <stop offset="5%"  stopColor="#4A38B8" stopOpacity={0.2} />
+                        <stop offset="95%" stopColor="#4A38B8" stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(107,79,255,0.08)" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(74,56,184,0.08)" />
                     <XAxis dataKey="date" tick={AXIS_TICK} tickLine={false} axisLine={false} interval="preserveStartEnd" />
                     <YAxis tickFormatter={v => `${v}%`} tick={AXIS_TICK} tickLine={false} axisLine={false} width={36} />
                     <Tooltip
-                      contentStyle={{ background: '#111028', border: '0.5px solid rgba(107,79,255,0.25)', borderRadius: 6, fontFamily: 'Space Grotesk, sans-serif', fontSize: 12 }}
-                      labelStyle={{ color: '#8B73FF', fontFamily: 'Space Grotesk, sans-serif' }}
+                      contentStyle={{ background: '#100F22', border: '0.5px solid rgba(74,56,184,0.25)', borderRadius: 6, fontFamily: 'Space Grotesk, sans-serif', fontSize: 12 }}
+                      labelStyle={{ color: '#6B5FD4', fontFamily: 'Space Grotesk, sans-serif' }}
                       itemStyle={{ color: '#E8E6FF' }}
                       formatter={(v) => [`${Number(v).toFixed(2)}%`, 'APY']}
                     />
-                    <Area type="monotone" dataKey="apy" stroke="#6B4FFF" strokeWidth={1.5} fill="url(#apyGrad)" dot={false} activeDot={{ r: 3, fill: '#6B4FFF' }} />
+                    <Area type="monotone" dataKey="apy" stroke="#4A38B8" strokeWidth={1.5} fill="url(#apyGrad)" dot={false} activeDot={{ r: 3, fill: '#4A38B8' }} />
                   </AreaChart>
                 </ResponsiveContainer>
               )}
@@ -666,7 +661,7 @@ export default function PoolDetail({ pool, onClose }: Props) {
               {extPool.ilRisk != null && (
                 <span style={chipStyle}>IL risk: {extPool.ilRisk}</span>
               )}
-              <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 20, background: chain.bg, border: `0.5px solid ${chain.text}40`, color: chain.text }}>
+              <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 20, background: chain.bg, border: '0.5px solid #2E2E3E', color: chain.text }}>
                 {pool.chain}
               </span>
             </div>
@@ -714,7 +709,7 @@ export default function PoolDetail({ pool, onClose }: Props) {
                       <>
                         <div style={statCard}>
                           <span style={statLabel}>APY</span>
-                          <span style={{ ...statValue, color: 'var(--accent-text)' }}>{apy.toFixed(2)}%</span>
+                          <span style={{ ...statValue, color: 'var(--accent-muted)' }}>{apy.toFixed(2)}%</span>
                           {apyDiff != null && (
                             <span style={{ fontSize: '11px', fontWeight: 400, marginTop: '2px', color: apyDiff >= 0 ? '#4ECDA4' : '#FF6B6B' }}>
                               vs 30d avg: {apyDiff >= 0 ? '+' : ''}{apyDiff.toFixed(2)}%
@@ -800,8 +795,8 @@ export default function PoolDetail({ pool, onClose }: Props) {
                 </div>
 
                 {/* Row 3 — Pool Insight */}
-                <div style={{ background: 'rgba(107,79,255,0.07)', border: '0.5px solid rgba(107,79,255,0.2)', borderRadius: '10px', padding: '16px' }}>
-                  <span style={{ ...SEC_LABEL, color: 'rgba(139,115,255,0.7)' }}>Pool Insight</span>
+                <div style={{ background: 'rgba(74,56,184,0.07)', border: '0.5px solid rgba(74,56,184,0.2)', borderRadius: '10px', padding: '16px' }}>
+                  <span style={{ ...SEC_LABEL, color: 'rgba(107,95,212,0.7)' }}>Pool Insight</span>
                   <p style={{ margin: 0, fontSize: '13px', lineHeight: 1.7, color: 'rgba(232,230,255,0.65)' }}>{insightText}</p>
                   <p style={{ margin: 0, marginTop: '10px', fontSize: '13px', lineHeight: 1.7, color: 'rgba(232,230,255,0.65)' }}>{insightSynthesis}</p>
                 </div>
@@ -858,8 +853,8 @@ export default function PoolDetail({ pool, onClose }: Props) {
               />
 
               {/* Score Breakdown */}
-              <div style={{ margin: '16px 0', background: 'rgba(107,79,255,0.07)', border: '1px solid rgba(107,79,255,0.2)', borderRadius: 10, overflow: 'hidden' }}>
-                <div style={{ padding: '10px 14px 8px', borderBottom: '1px solid rgba(107,79,255,0.1)' }}>
+              <div style={{ margin: '16px 0', background: 'rgba(74,56,184,0.07)', border: '1px solid rgba(74,56,184,0.2)', borderRadius: 10, overflow: 'hidden' }}>
+                <div style={{ padding: '10px 14px 8px', borderBottom: '1px solid rgba(74,56,184,0.1)' }}>
                   <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(232,230,255,0.4)' }}>Score Breakdown</span>
                 </div>
                 <div style={{ padding: '14px 14px 10px' }}>
@@ -877,8 +872,8 @@ export default function PoolDetail({ pool, onClose }: Props) {
               </div>
 
               {/* Yield Composition */}
-              <div style={{ margin: '16px 0', background: 'rgba(107,79,255,0.07)', border: '1px solid rgba(107,79,255,0.2)', borderRadius: 10, overflow: 'hidden' }}>
-                <div style={{ padding: '10px 14px 8px', borderBottom: '1px solid rgba(107,79,255,0.1)' }}>
+              <div style={{ margin: '16px 0', background: 'rgba(74,56,184,0.07)', border: '1px solid rgba(74,56,184,0.2)', borderRadius: 10, overflow: 'hidden' }}>
+                <div style={{ padding: '10px 14px 8px', borderBottom: '1px solid rgba(74,56,184,0.1)' }}>
                   <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(232,230,255,0.4)' }}>Yield Composition</span>
                 </div>
                 <div style={{ padding: '14px 14px 12px' }}>
@@ -898,8 +893,8 @@ export default function PoolDetail({ pool, onClose }: Props) {
               </div>
 
               {/* Pool Facts */}
-              <div style={{ margin: '16px 0 0', background: 'rgba(107,79,255,0.07)', border: '1px solid rgba(107,79,255,0.2)', borderRadius: 10, overflow: 'hidden' }}>
-                <div style={{ padding: '10px 14px 8px', borderBottom: '1px solid rgba(107,79,255,0.1)' }}>
+              <div style={{ margin: '16px 0 0', background: 'rgba(74,56,184,0.07)', border: '1px solid rgba(74,56,184,0.2)', borderRadius: 10, overflow: 'hidden' }}>
+                <div style={{ padding: '10px 14px 8px', borderBottom: '1px solid rgba(74,56,184,0.1)' }}>
                   <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(232,230,255,0.4)' }}>Pool Facts</span>
                 </div>
                 <div style={{ padding: '12px 14px' }}>

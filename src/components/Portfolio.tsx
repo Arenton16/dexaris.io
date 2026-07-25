@@ -14,9 +14,9 @@ import { ProtocolLogo } from './ProtocolLogo';
 const FONT = 'Inter, sans-serif';
 
 const CARD_STYLE: React.CSSProperties = {
-  background: '#111028',
+  background: '#100F22',
   borderRadius: 12,
-  border: '1px solid rgba(107,79,255,0.15)',
+  border: '1px solid rgba(74,56,184,0.15)',
   padding: 20,
   fontFamily: FONT,
   boxSizing: 'border-box',
@@ -40,13 +40,13 @@ const AXIS_TICK = {
 
 const TOOLTIP_STYLE = {
   contentStyle: {
-    background: '#111028',
-    border: '0.5px solid rgba(107,79,255,0.3)',
+    background: '#100F22',
+    border: '0.5px solid rgba(74,56,184,0.3)',
     borderRadius: 6,
     fontFamily: 'Inter, sans-serif',
     fontSize: 11,
   },
-  labelStyle: { color: '#8B73FF', fontFamily: 'Inter, sans-serif' },
+  labelStyle: { color: '#6B5FD4', fontFamily: 'Inter, sans-serif' },
 };
 
 // ── Types ─────────────────────────────────────────────────────────────────
@@ -169,7 +169,7 @@ function Sparkline({ points }: { points: number[] }) {
     .join(' ');
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
-      <polyline points={coords} fill="none" stroke="#6B4FFF" strokeWidth="1.5" />
+      <polyline points={coords} fill="none" stroke="#4A38B8" strokeWidth="1.5" />
     </svg>
   );
 }
@@ -254,8 +254,8 @@ function PerformanceChartSection({
               onClick={onNavigateToYields}
               style={{
                 background: 'transparent',
-                border: '1px solid #6B4FFF',
-                color: '#8B73FF',
+                border: '1px solid #4A38B8',
+                color: '#6B5FD4',
                 borderRadius: 8,
                 padding: '8px 18px',
                 fontSize: 13,
@@ -306,8 +306,8 @@ function PerformanceChartSection({
                     fontWeight: 600,
                     cursor: 'pointer',
                     fontFamily: FONT,
-                    background: timeframe === tf ? '#6B4FFF' : 'transparent',
-                    border: timeframe === tf ? '1px solid #6B4FFF' : '1px solid rgba(232,230,255,0.2)',
+                    background: timeframe === tf ? '#4A38B8' : 'transparent',
+                    border: timeframe === tf ? '1px solid #4A38B8' : '1px solid rgba(232,230,255,0.2)',
                     color: timeframe === tf ? '#fff' : 'rgba(232,230,255,0.5)',
                   }}
                 >
@@ -323,8 +323,8 @@ function PerformanceChartSection({
               <XAxis dataKey="date" tick={AXIS_TICK} tickLine={false} axisLine={false} />
               <YAxis tick={AXIS_TICK} tickLine={false} axisLine={false} tickFormatter={v => `${v}%`} />
               <Tooltip {...TOOLTIP_STYLE} formatter={(value) => [`${Number(value).toFixed(2)}%`, 'Avg APY']} />
-              <Area type="monotone" dataKey="apy" stroke="none" fill="rgba(107,79,255,0.08)" />
-              <Line type="monotone" dataKey="apy" stroke="#6B4FFF" strokeWidth={2} dot={false} />
+              <Area type="monotone" dataKey="apy" stroke="none" fill="rgba(74,56,184,0.08)" />
+              <Line type="monotone" dataKey="apy" stroke="#4A38B8" strokeWidth={2} dot={false} />
             </LineChart>
           </ResponsiveContainer>
         </>
@@ -726,7 +726,7 @@ function HoldingsSection({
         <button
           onClick={onToggleAddForm}
           style={{
-            background: '#6B4FFF',
+            background: '#4A38B8',
             color: '#fff',
             border: 'none',
             borderRadius: 6,
@@ -799,8 +799,8 @@ function HoldingsSection({
                     ...HOLDINGS_GRID,
                     padding: '10px 12px',
                     borderRadius: 8,
-                    background: 'rgba(107,79,255,0.04)',
-                    border: '1px solid rgba(107,79,255,0.08)',
+                    background: 'rgba(74,56,184,0.04)',
+                    border: '1px solid rgba(74,56,184,0.08)',
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
@@ -848,7 +848,7 @@ function HoldingsSection({
                 marginTop: 12,
                 background: 'transparent',
                 border: 'none',
-                color: '#8B73FF',
+                color: '#6B5FD4',
                 fontSize: 12,
                 fontWeight: 500,
                 cursor: 'pointer',
@@ -954,8 +954,8 @@ function WatchlistSection({
                   gap: 12,
                   padding: '10px 12px',
                   borderRadius: 8,
-                  background: 'rgba(107,79,255,0.04)',
-                  border: '1px solid rgba(107,79,255,0.08)',
+                  background: 'rgba(74,56,184,0.04)',
+                  border: '1px solid rgba(74,56,184,0.08)',
                 }}
               >
                 <ProtocolLogo project={row.name.split(' — ')[0]} size={22} />

@@ -264,7 +264,7 @@ export default function YieldTable({
                         <div className="protocol-cell">
                           <ProtocolLogo project={pool.project} />
                           {pool.project}
-                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', fontSize: '10px', fontWeight: 600, padding: '2px 7px', borderRadius: '10px', background: 'rgba(107,79,255,0.15)', border: '0.5px solid rgba(107,79,255,0.4)', color: '#8B73FF', marginLeft: '8px', letterSpacing: '0.3px', textTransform: 'uppercase', visibility: pool.pool === bestPickId ? 'visible' : 'hidden' }}>✦ Best Pick</span>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', fontSize: '10px', fontWeight: 600, padding: '2px 7px', borderRadius: '10px', background: 'rgba(74,56,184,0.15)', border: '0.5px solid rgba(74,56,184,0.4)', color: '#6B5FD4', marginLeft: '8px', letterSpacing: '0.3px', textTransform: 'uppercase', visibility: pool.pool === bestPickId ? 'visible' : 'hidden' }}>✦ Best Pick</span>
                         </div>
                       </td>
                       <td>{pool.symbol}</td>
@@ -272,7 +272,7 @@ export default function YieldTable({
                         {(() => {
                           const cc = CHAIN_COLOURS[pool.chain] ?? 'rgba(232,230,255,0.4)';
                           return (
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '10px', padding: '3px 9px', borderRadius: '10px', background: 'rgba(232,230,255,0.04)', border: '0.5px solid rgba(232,230,255,0.12)', color: 'rgba(232,230,255,0.55)' }}>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '10px', padding: '3px 9px', borderRadius: '10px', background: 'rgba(50,50,65,0.5)', border: '0.5px solid #2E2E3E', color: '#888899' }}>
                               <img
                                 src={`/logos/chains/${pool.chain.toLowerCase()}.png`}
                                 alt={pool.chain}
@@ -380,8 +380,8 @@ function ScoreInfoModal({ open, onClose }: { open: boolean; onClose: () => void 
     >
       <div
         style={{
-          background: '#111028',
-          border: '0.5px solid rgba(107,79,255,0.3)',
+          background: '#100F22',
+          border: '0.5px solid rgba(74,56,184,0.3)',
           borderRadius: 12,
           padding: '28px 28px 24px',
           width: 360,
@@ -404,7 +404,7 @@ function ScoreInfoModal({ open, onClose }: { open: boolean; onClose: () => void 
         >×</button>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
-          <span style={{ fontSize: 16, color: '#6B4FFF' }}>ⓘ</span>
+          <span style={{ fontSize: 16, color: '#4A38B8' }}>ⓘ</span>
           <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: '#E8E6FF' }}>Dexaris Score</h3>
         </div>
 
@@ -418,7 +418,7 @@ function ScoreInfoModal({ open, onClose }: { open: boolean; onClose: () => void 
           ))}
         </div>
 
-        <div style={{ height: 1, background: 'rgba(107,79,255,0.15)', marginBottom: 20 }} />
+        <div style={{ height: 1, background: 'rgba(74,56,184,0.15)', marginBottom: 20 }} />
 
         <div style={{ marginBottom: 20 }}>
           <p style={{ margin: '0 0 10px', fontSize: 11, color: 'rgba(232,230,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Components</p>
@@ -431,9 +431,9 @@ function ScoreInfoModal({ open, onClose }: { open: boolean; onClose: () => void 
             </thead>
             <tbody>
               {components.map((c, i) => (
-                <tr key={c.name} style={{ background: i % 2 === 0 ? 'rgba(107,79,255,0.04)' : 'transparent' }}>
+                <tr key={c.name} style={{ background: i % 2 === 0 ? 'rgba(74,56,184,0.04)' : 'transparent' }}>
                   <td style={{ fontSize: 13, color: 'rgba(232,230,255,0.75)', padding: '6px 8px 6px 0' }}>{c.name}</td>
-                  <td style={{ fontSize: 13, color: '#6B4FFF', fontWeight: 600, textAlign: 'right', padding: '6px 0' }}>{c.weight}</td>
+                  <td style={{ fontSize: 13, color: '#4A38B8', fontWeight: 600, textAlign: 'right', padding: '6px 0' }}>{c.weight}</td>
                 </tr>
               ))}
             </tbody>
@@ -458,8 +458,8 @@ function ScoreInfoModal({ open, onClose }: { open: boolean; onClose: () => void 
           style={{
             display: 'block', width: '100%',
             padding: '9px 0',
-            background: 'rgba(107,79,255,0.08)',
-            border: '0.5px solid rgba(107,79,255,0.25)',
+            background: 'rgba(74,56,184,0.08)',
+            border: '0.5px solid rgba(74,56,184,0.25)',
             borderRadius: 7,
             color: 'rgba(232,230,255,0.65)',
             fontSize: 13,
