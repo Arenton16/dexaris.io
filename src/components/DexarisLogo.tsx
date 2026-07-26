@@ -43,6 +43,7 @@ export default function DexarisLogo({ iconSize = 28, fontSize = 18 }: DexarisLog
         viewBox="0 0 44 44"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
+        style={{ display: 'block' }}
       >
         <polygon points="4,42 10,26 16,26 10,42" fill="rgba(74,56,184,0.3)" />
         <polygon points="16,42 22,16 28,16 22,42" fill="rgba(74,56,184,0.6)" />
