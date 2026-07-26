@@ -36,14 +36,14 @@ export default function DexarisLogo({ iconSize = 28, fontSize = 18 }: DexarisLog
   }, []);
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', lineHeight: 1 }}>
       <svg
         width={iconSize}
         height={iconSize}
-        viewBox="0 0 44 44"
+        viewBox="0 1.5 44 44"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        style={{ display: 'block' }}
+        style={{ display: 'block', flexShrink: 0, verticalAlign: 'middle', width: iconSize, height: iconSize }}
       >
         <polygon points="4,42 10,26 16,26 10,42" fill="rgba(74,56,184,0.3)" />
         <polygon points="16,42 22,16 28,16 22,42" fill="rgba(74,56,184,0.6)" />
@@ -58,6 +58,8 @@ export default function DexarisLogo({ iconSize = 28, fontSize = 18 }: DexarisLog
           color: '#E8E6FF',
           lineHeight: 1,
           textTransform: 'uppercase',
+          display: 'flex',
+          alignItems: 'center',
         }}
       >
         DEXARIS
