@@ -148,6 +148,17 @@ html {
   50% { opacity: 0.35; }
 }
 
+/* ─── Chain logo strip — seamless CSS marquee ─────────────────── */
+
+.chain-marquee-track {
+  animation: chainMarquee 26s linear infinite;
+}
+
+@keyframes chainMarquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
 /* ─── Scroll reveal ───────────────────────────────────────────── */
 
 .reveal {
@@ -2450,8 +2461,6 @@ body {
 }
 .nav-cta:hover {
   background: #5A3FE8;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 20px rgba(74,56,184,0.3);
 }
 
 .btn-primary {
@@ -2460,8 +2469,6 @@ body {
 }
 .btn-primary:hover {
   background: #5A3FE8;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(74,56,184,0.35);
 }
 
 .btn-secondary {
@@ -2474,7 +2481,6 @@ body {
   background: rgba(74,56,184,0.08);
   border-color: rgba(74,56,184,0.5);
   color: #E8E6FF;
-  transform: translateY(-1px);
 }
 
 .feature-card {
@@ -2539,8 +2545,6 @@ body {
 }
 .newsletter-btn:hover {
   background: #5A3FE8;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 20px rgba(74,56,184,0.3);
 }
 
 .footer-link {
@@ -2624,10 +2628,6 @@ body {
 
 .preview-section {
   padding: 0 40px 80px;
-}
-
-.trust-stats-section {
-  padding: 40px 40px;
 }
 
 .newsletter-section {
@@ -2738,9 +2738,6 @@ body {
   }
   .preview-section {
     padding: 0 24px 48px;
-  }
-  .trust-stats-section {
-    padding: 32px 24px;
   }
   .preview-tvl-col {
     display: none;

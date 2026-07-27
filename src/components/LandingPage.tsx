@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -119,39 +119,6 @@ function D4Icon() {
 
 
 function ProtocolLogoStrip() {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const posRef = useRef(0);
-
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-
-    const singleSetWidth = el.scrollWidth / 4;
-    let raf: number;
-
-    const step = () => {
-      posRef.current += 0.5;
-      if (posRef.current >= singleSetWidth) {
-        posRef.current = posRef.current - singleSetWidth;
-      }
-      el.style.transform = `translateX(-${posRef.current}px)`;
-      raf = requestAnimationFrame(step);
-    };
-
-    const imgs = el.querySelectorAll('img');
-    let loaded = 0;
-    const onLoad = () => {
-      loaded++;
-      if (loaded === imgs.length) raf = requestAnimationFrame(step);
-    };
-    imgs.forEach(img => {
-      if (img.complete) onLoad();
-      else img.addEventListener('load', onLoad);
-    });
-
-    return () => cancelAnimationFrame(raf);
-  }, []);
-
   const chains = [
     { name: 'Ethereum', logo: '/logos/chains/ethereum.png' },
     { name: 'Solana',   logo: '/logos/chains/solana.png' },
@@ -160,7 +127,12 @@ function ProtocolLogoStrip() {
     { name: 'Avalanche',logo: '/logos/chains/avalanche.png' },
     { name: 'Polygon',  logo: '/logos/chains/polygon.png' },
   ];
-  const repeated = [...chains, ...chains, ...chains, ...chains];
+  // Exactly 2 copies + a CSS keyframe translating to -50% is a seamless loop
+  // by construction (the browser computes the percentage against the track's
+  // own live width every frame) — unlike the old rAF version, which measured
+  // scrollWidth once in JS and reset via subtraction, where any sub-pixel
+  // rounding between the two measurements showed up as a visible jump.
+  const repeated = [...chains, ...chains];
 
   return (
     <motion.section
@@ -191,12 +163,11 @@ function ProtocolLogoStrip() {
           <div style={{ position: 'absolute', top: 0, bottom: 0, left: 0, width: '80px', background: 'linear-gradient(to right, #100F22, transparent)', zIndex: 1, pointerEvents: 'none' }} />
           <div style={{ position: 'absolute', top: 0, bottom: 0, right: 0, width: '80px', background: 'linear-gradient(to left, #100F22, transparent)', zIndex: 1, pointerEvents: 'none' }} />
           <div
-            ref={scrollRef}
+            className="chain-marquee-track"
             style={{
               display: 'flex',
               gap: '40px',
               width: 'max-content',
-              willChange: 'transform',
               padding: '20px 0',
             }}
           >
@@ -388,55 +359,17 @@ function HeroRiskRewardPanel() {
           </div>
         ))}
       </div>
+      <p style={{
+        textAlign: 'center',
+        fontSize: '11px',
+        color: 'rgba(232,230,255,0.3)',
+        borderTop: '0.5px solid rgba(74,56,184,0.12)',
+        padding: '10px 16px',
+        margin: 0,
+      }}>
+        Live figures, pulled straight from DeFiLlama — no manual curation, no sponsored placements.
+      </p>
     </div>
-  );
-}
-
-function TrustStatsBar() {
-  const { allPools, isLoading } = usePools();
-
-  const stats = useMemo(() => {
-    const protocols = new Set(allPools.map(p => p.project)).size;
-    const totalTvl = allPools.reduce((sum, p) => sum + p.tvlUsd, 0);
-    return { pools: allPools.length, protocols, totalTvl };
-  }, [allPools]);
-
-  const items: { value: string; label: string }[] = [
-    { value: isLoading ? '—' : `${stats.pools.toLocaleString()}+`, label: 'pools tracked' },
-    { value: isLoading ? '—' : `${stats.protocols}+`, label: 'protocols' },
-    { value: isLoading ? '—' : formatTvl(stats.totalTvl), label: 'in tracked TVL' },
-    { value: '6', label: 'chains covered' },
-  ];
-
-  return (
-    <motion.section
-      initial={{ opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-      viewport={{ once: true, amount: 0.01 }}
-      className="trust-stats-section"
-      style={{ maxWidth: '1100px', margin: '0 auto', width: '100%' }}
-    >
-      <div className="data-panel">
-        <div className="hero-stat-strip" style={{ borderTop: 'none' }}>
-          {items.map(({ value, label }) => (
-            <div key={label}>
-              <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '18px', fontWeight: 500, color: '#E8E6FF', margin: 0 }}>{value}</p>
-              <p style={{ fontSize: '10.5px', color: 'rgba(232,230,255,0.3)', margin: '2px 0 0', textTransform: 'uppercase', letterSpacing: '0.03em' }}>{label}</p>
-            </div>
-          ))}
-        </div>
-        <p style={{
-          textAlign: 'center',
-          fontSize: '11.5px',
-          color: 'rgba(232,230,255,0.3)',
-          padding: '16px 16px 0',
-          margin: '0 0 16px',
-        }}>
-          Live figures, pulled straight from DeFiLlama — no manual curation, no sponsored placements.
-        </p>
-      </div>
-    </motion.section>
   );
 }
 
@@ -736,9 +669,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ─── Trust stats ────────────────────────────────────────── */}
-      <TrustStatsBar />
-
       {/* ─── Live data preview ──────────────────────────────────── */}
       <motion.section
         className="preview-section"
@@ -867,8 +797,14 @@ export default function LandingPage() {
           </div>
 
           {subStatus === 'success' ? (
-            <p style={{ fontSize: '13px', color: '#6B5FD4', fontWeight: 500 }}>
-              You're in — welcome to the list! 🟣
+            <p style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#6B5FD4', fontWeight: 500, margin: 0 }}>
+              <span style={{
+                width: '16px', height: '16px', borderRadius: '50%',
+                background: 'rgba(78,205,164,0.15)', border: '1px solid #4ECDA4',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '10px', color: '#4ECDA4', flexShrink: 0,
+              }}>✓</span>
+              You're in — welcome to the list.
             </p>
           ) : (
             <form
@@ -945,35 +881,31 @@ export default function LandingPage() {
       </section>
 
       {/* ─── About ──────────────────────────────────────────────── */}
-      <section id="about" style={{
-        padding: '64px 40px',
-        borderTop: '0.5px solid rgba(74,56,184,0.1)',
-        maxWidth: '1100px',
-        margin: '0 auto',
-        width: '100%',
-        textAlign: 'center',
-      }}>
-        <div style={{ maxWidth: '640px', margin: '0 auto' }}>
-        <p style={{
-          fontSize: '9px',
-          textTransform: 'uppercase',
-          color: 'rgba(232,230,255,0.25)',
-          letterSpacing: '0.1em',
-          marginBottom: '20px',
-        }}>
-          About
-        </p>
-        <motion.p
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          viewport={{ once: true, amount: 0.01 }}
-          style={{ fontSize: '14px', color: 'rgba(232,230,255,0.5)', lineHeight: 1.8 }}
-        >
-          Dexaris is a free DeFi yield intelligence platform built on data from DeFiLlama. It tracks hundreds of liquidity pools across every major chain and updates every 60 seconds — so you always know where the best yields are, and which ones carry the most risk.
-        </motion.p>
+      <motion.section
+        id="about"
+        initial={{ opacity: 0, y: 24 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        viewport={{ once: true, amount: 0.01 }}
+        style={{ padding: '40px', maxWidth: '1100px', margin: '0 auto', width: '100%' }}
+      >
+        <div className="data-panel">
+          <div className="data-panel-header" style={{ justifyContent: 'center' }}>
+            <span>About</span>
+          </div>
+          <p style={{
+            fontSize: '14px',
+            color: 'rgba(232,230,255,0.5)',
+            lineHeight: 1.8,
+            textAlign: 'center',
+            maxWidth: '640px',
+            margin: '0 auto',
+            padding: '24px 16px',
+          }}>
+            Dexaris is a free DeFi yield intelligence platform built on data from DeFiLlama. It tracks hundreds of liquidity pools across every major chain and updates every 60 seconds — so you always know where the best yields are, and which ones carry the most risk.
+          </p>
         </div>
-      </section>
+      </motion.section>
 
       {/* ─── Legal disclaimer ───────────────────────────────────── */}
       <div style={{
