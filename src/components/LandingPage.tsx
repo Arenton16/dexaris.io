@@ -262,6 +262,58 @@ function scoreColour(score: number): string {
   return '#FF6B6B';
 }
 
+function TrustStatsBar() {
+  const { allPools, isLoading } = usePools();
+
+  const stats = useMemo(() => {
+    const protocols = new Set(allPools.map(p => p.project)).size;
+    const totalTvl = allPools.reduce((sum, p) => sum + p.tvlUsd, 0);
+    return { pools: allPools.length, protocols, totalTvl };
+  }, [allPools]);
+
+  const items: { value: string; label: string }[] = [
+    { value: isLoading ? '—' : `${stats.pools.toLocaleString()}+`, label: 'pools tracked' },
+    { value: isLoading ? '—' : `${stats.protocols}+`, label: 'protocols' },
+    { value: isLoading ? '—' : formatTvl(stats.totalTvl), label: 'in tracked TVL' },
+    { value: '6', label: 'chains covered' },
+  ];
+
+  return (
+    <motion.section
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      viewport={{ once: true, amount: 0.01 }}
+      className="trust-stats-section"
+      style={{
+        maxWidth: '1100px',
+        margin: '0 auto',
+        width: '100%',
+        borderTop: '0.5px solid rgba(74,56,184,0.1)',
+        borderBottom: '0.5px solid rgba(74,56,184,0.1)',
+      }}
+    >
+      <div className="trust-stats-grid">
+        {items.map(({ value, label }) => (
+          <div key={label} style={{ textAlign: 'center' }}>
+            <p style={{ fontSize: '28px', fontWeight: 600, color: '#E8E6FF', margin: '0 0 4px' }}>{value}</p>
+            <p style={{ fontSize: '12px', color: 'rgba(232,230,255,0.4)', margin: 0 }}>{label}</p>
+          </div>
+        ))}
+      </div>
+      <p style={{
+        textAlign: 'center',
+        fontSize: '11.5px',
+        color: 'rgba(232,230,255,0.3)',
+        marginTop: '20px',
+        marginBottom: 0,
+      }}>
+        Live figures, pulled straight from DeFiLlama — no manual curation, no sponsored placements.
+      </p>
+    </motion.section>
+  );
+}
+
 function scrollToId(id: string) {
   return (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -428,6 +480,21 @@ export default function LandingPage() {
               Learn more
             </a>
           </div>
+
+          {/* Trust line */}
+          <p style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            color: 'rgba(232,230,255,0.35)',
+            fontSize: '12.5px',
+            margin: 0,
+          }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2 4 5v6c0 5.25 3.4 9.74 8 11 4.6-1.26 8-5.75 8-11V5z" />
+            </svg>
+            Non-custodial. We never hold your funds or ask for a wallet connection to browse data.
+          </p>
         </div>
       </section>
 
@@ -510,8 +577,8 @@ export default function LandingPage() {
           {[
             {
               icon: <StarIcon />,
-              title: 'Watchlist and alerts',
-              desc: 'Save pools you care about to your personal watchlist. Set APY targets and get notified when a yield hits your threshold.',
+              title: 'Personal watchlist',
+              desc: 'Save pools you care about and track their APY, TVL and Dexaris Score in real time, all in one place. Price alerts are coming soon.',
               delay: 0.24,
             },
             {
@@ -547,6 +614,9 @@ export default function LandingPage() {
           ))}
         </div>
       </section>
+
+      {/* ─── Trust stats ────────────────────────────────────────── */}
+      <TrustStatsBar />
 
       {/* ─── Live data preview ──────────────────────────────────── */}
       <motion.section
