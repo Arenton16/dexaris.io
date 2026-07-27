@@ -98,6 +98,56 @@ html {
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 @keyframes skeleton-pulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
 
+/* ─── Hero ambient background — data grid + drifting points ───── */
+
+.bg-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(232,230,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(232,230,255,0.04) 1px, transparent 1px);
+  background-size: 44px 44px;
+  animation: bgGridBreathe 6s ease-in-out infinite;
+}
+
+.bg-scan {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 120px;
+  top: -120px;
+  background: linear-gradient(rgba(107,95,212,0), rgba(107,95,212,0.05), rgba(107,95,212,0));
+  animation: bgScanMove 9s linear infinite;
+}
+
+.bg-drift-dot {
+  position: absolute;
+  border-radius: 50%;
+  animation-name: bgDotDrift, bgDotPulse;
+  animation-timing-function: ease-in-out, ease-in-out;
+  animation-iteration-count: infinite, infinite;
+}
+
+@keyframes bgGridBreathe {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.85; }
+}
+
+@keyframes bgScanMove {
+  0% { top: -120px; }
+  100% { top: 100%; }
+}
+
+@keyframes bgDotDrift {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(var(--dx), var(--dy)); }
+}
+
+@keyframes bgDotPulse {
+  0%, 100% { opacity: 0.1; }
+  50% { opacity: 0.35; }
+}
+
 /* ─── Scroll reveal ───────────────────────────────────────────── */
 
 .reveal {
@@ -2428,17 +2478,51 @@ body {
 }
 
 .feature-card {
-  background: rgba(74, 56, 184, 0.06);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(74, 56, 184, 0.18);
-  border-radius: 16px;
-  box-shadow: 0 4px 24px rgba(74, 56, 184, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.04);
-  transition: border-color 0.2s, box-shadow 0.2s;
+  background: #100F22;
+  border: 0.5px solid rgba(74, 56, 184, 0.22);
+  border-radius: 8px;
+  transition: border-color 0.2s;
 }
 .feature-card:hover {
-  border-color: rgba(74, 56, 184, 0.4);
-  box-shadow: 0 8px 32px rgba(74, 56, 184, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  border-color: rgba(74, 56, 184, 0.45);
+}
+
+.data-panel {
+  background: #100F22;
+  border: 0.5px solid rgba(74, 56, 184, 0.22);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.data-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 0.5px solid rgba(74, 56, 184, 0.2);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px;
+  color: rgba(232,230,255,0.45);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.data-panel-header .live {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #4ECDA4;
+  text-transform: none;
+}
+
+.data-panel-header .live .dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #4ECDA4;
+  box-shadow: 0 0 5px #4ECDA4;
+  animation: pulse 1.6s ease-in-out infinite;
+  display: inline-block;
 }
 
 .preview-row {
@@ -2546,12 +2630,6 @@ body {
   padding: 40px 40px;
 }
 
-.trust-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
-}
-
 .newsletter-section {
   padding: 64px 40px;
 }
@@ -2562,18 +2640,14 @@ body {
   justify-content: space-between;
   gap: 40px;
   flex-wrap: wrap;
-  background: rgba(74, 56, 184, 0.06);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(74, 56, 184, 0.18);
-  border-radius: 16px;
-  box-shadow: 0 4px 24px rgba(74, 56, 184, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  background: #100F22;
+  border: 0.5px solid rgba(74, 56, 184, 0.22);
+  border-radius: 8px;
   padding: 32px 40px;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: border-color 0.2s;
 }
 .newsletter-inner:hover {
-  border-color: rgba(74, 56, 184, 0.4);
-  box-shadow: 0 8px 32px rgba(74, 56, 184, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  border-color: rgba(74, 56, 184, 0.45);
 }
 
 .newsletter-form {
@@ -2667,10 +2741,6 @@ body {
   }
   .trust-stats-section {
     padding: 32px 24px;
-  }
-  .trust-stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 24px 16px;
   }
   .preview-tvl-col {
     display: none;

@@ -7,7 +7,6 @@ import {
 } from 'recharts';
 import DexarisLogo from './DexarisLogo';
 import { usePools } from '../contexts/PoolsContext';
-import { BackgroundPaths } from './ui/BackgroundPaths';
 import { calculateDexarisScore, getDexarisScoreColour } from '../utils/dexarisScore';
 
 interface HeroScatterPoint {
@@ -235,6 +234,50 @@ function scoreColour(score: number): string {
   return '#FF6B6B';
 }
 
+const BG_DOT_COLOURS = ['#4ECDA4', '#6B5FD4', '#FFB347', '#FF6B6B'];
+
+function HeroDataBackground() {
+  // Fixed once on mount (not re-rolled on re-render) — random positions/timings
+  // for an ambient field that echoes the score-tier colours used in the real
+  // chart, deliberately kept faint so it reads as texture, not a second chart.
+  const dots = useMemo(() => Array.from({ length: 18 }, (_, i) => ({
+    id: i,
+    left: Math.random() * 100,
+    top: Math.random() * 100,
+    size: 2 + Math.random() * 2.5,
+    colour: BG_DOT_COLOURS[i % BG_DOT_COLOURS.length],
+    dx: (Math.random() - 0.5) * 50,
+    dy: (Math.random() - 0.5) * 36,
+    driftDuration: 10 + Math.random() * 10,
+    pulseDuration: 4 + Math.random() * 4,
+    delay: Math.random() * -10,
+  })), []);
+
+  return (
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
+      <div className="bg-grid" />
+      <div className="bg-scan" />
+      {dots.map(d => (
+        <span
+          key={d.id}
+          className="bg-drift-dot"
+          style={{
+            left: `${d.left}%`,
+            top: `${d.top}%`,
+            width: d.size,
+            height: d.size,
+            background: d.colour,
+            ['--dx' as string]: `${d.dx}px`,
+            ['--dy' as string]: `${d.dy}px`,
+            animationDuration: `${d.driftDuration}s, ${d.pulseDuration}s`,
+            animationDelay: `${d.delay}s, ${d.delay}s`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 function HeroRiskRewardPanel() {
   const { allPools, isLoading } = usePools();
 
@@ -367,31 +410,27 @@ function TrustStatsBar() {
       transition={{ duration: 0.6 }}
       viewport={{ once: true, amount: 0.01 }}
       className="trust-stats-section"
-      style={{
-        maxWidth: '1100px',
-        margin: '0 auto',
-        width: '100%',
-        borderTop: '0.5px solid rgba(74,56,184,0.1)',
-        borderBottom: '0.5px solid rgba(74,56,184,0.1)',
-      }}
+      style={{ maxWidth: '1100px', margin: '0 auto', width: '100%' }}
     >
-      <div className="trust-stats-grid">
-        {items.map(({ value, label }) => (
-          <div key={label} style={{ textAlign: 'center' }}>
-            <p style={{ fontSize: '28px', fontWeight: 600, color: '#E8E6FF', margin: '0 0 4px' }}>{value}</p>
-            <p style={{ fontSize: '12px', color: 'rgba(232,230,255,0.4)', margin: 0 }}>{label}</p>
-          </div>
-        ))}
+      <div className="data-panel">
+        <div className="hero-stat-strip" style={{ borderTop: 'none' }}>
+          {items.map(({ value, label }) => (
+            <div key={label}>
+              <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '18px', fontWeight: 500, color: '#E8E6FF', margin: 0 }}>{value}</p>
+              <p style={{ fontSize: '10.5px', color: 'rgba(232,230,255,0.3)', margin: '2px 0 0', textTransform: 'uppercase', letterSpacing: '0.03em' }}>{label}</p>
+            </div>
+          ))}
+        </div>
+        <p style={{
+          textAlign: 'center',
+          fontSize: '11.5px',
+          color: 'rgba(232,230,255,0.3)',
+          padding: '16px 16px 0',
+          margin: '0 0 16px',
+        }}>
+          Live figures, pulled straight from DeFiLlama — no manual curation, no sponsored placements.
+        </p>
       </div>
-      <p style={{
-        textAlign: 'center',
-        fontSize: '11.5px',
-        color: 'rgba(232,230,255,0.3)',
-        marginTop: '20px',
-        marginBottom: 0,
-      }}>
-        Live figures, pulled straight from DeFiLlama — no manual curation, no sponsored placements.
-      </p>
     </motion.section>
   );
 }
@@ -462,7 +501,7 @@ export default function LandingPage() {
             color: '#fff',
             fontSize: '13px',
             padding: '8px 20px',
-            borderRadius: '20px',
+            borderRadius: '6px',
             border: 'none',
             cursor: 'pointer',
             fontFamily: "'Inter', sans-serif",
@@ -478,9 +517,9 @@ export default function LandingPage() {
         overflow: 'hidden',
         background: '#06050F',
       }}>
-        <BackgroundPaths />
+        <HeroDataBackground />
 
-        {/* Content sits above BackgroundPaths */}
+        {/* Content sits above HeroDataBackground */}
         <div className="hero-grid" style={{ position: 'relative', zIndex: 1 }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '24px', textAlign: 'left' }}>
             {/* Pill badge */}
@@ -490,9 +529,11 @@ export default function LandingPage() {
               gap: '8px',
               background: 'rgba(74,56,184,0.12)',
               border: '0.5px solid rgba(74,56,184,0.3)',
-              borderRadius: '20px',
+              borderRadius: '4px',
               padding: '5px 14px',
               fontSize: '11px',
+              fontFamily: "'Space Grotesk', sans-serif",
+              letterSpacing: '0.02em',
               color: 'rgba(74,56,184,0.9)',
             }}>
               <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#4A38B8', animation: 'pulse 2s ease-in-out infinite', display: 'inline-block' }} />
@@ -530,7 +571,7 @@ export default function LandingPage() {
                   color: '#fff',
                   fontSize: '14px',
                   padding: '12px 28px',
-                  borderRadius: '24px',
+                  borderRadius: '6px',
                   border: 'none',
                   cursor: 'pointer',
                   fontWeight: 500,
@@ -545,7 +586,7 @@ export default function LandingPage() {
                 style={{
                   fontSize: '14px',
                   padding: '12px 28px',
-                  borderRadius: '24px',
+                  borderRadius: '6px',
                   cursor: 'pointer',
                   fontWeight: 500,
                   textDecoration: 'none',
@@ -598,6 +639,7 @@ export default function LandingPage() {
             letterSpacing: '0.08em',
             color: 'rgba(232,230,255,0.4)',
             textTransform: 'uppercase',
+            fontFamily: "'Space Grotesk', sans-serif",
             marginBottom: '16px',
             margin: '0 0 16px',
           }}>
@@ -631,14 +673,12 @@ export default function LandingPage() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay }}
               viewport={{ once: true, amount: 0.01 }}
-              style={{ borderRadius: '16px', padding: '28px' }}
+              style={{ borderRadius: '8px', padding: '28px' }}
             >
               <div style={{
-                width: '48px', height: '48px',
-                background: 'rgba(74,56,184,0.15)',
-                border: '1px solid rgba(74,56,184,0.25)',
-                borderRadius: '12px',
-                boxShadow: '0 0 20px rgba(74,56,184,0.2)',
+                width: '40px', height: '40px',
+                border: '0.5px solid rgba(74,56,184,0.3)',
+                borderRadius: '6px',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 marginBottom: '16px',
               }}>
@@ -673,14 +713,12 @@ export default function LandingPage() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay }}
               viewport={{ once: true, amount: 0.01 }}
-              style={{ borderRadius: '16px', padding: '28px' }}
+              style={{ borderRadius: '8px', padding: '28px' }}
             >
               <div style={{
-                width: '48px', height: '48px',
-                background: 'rgba(74,56,184,0.15)',
-                border: '1px solid rgba(74,56,184,0.25)',
-                borderRadius: '12px',
-                boxShadow: '0 0 20px rgba(74,56,184,0.2)',
+                width: '40px', height: '40px',
+                border: '0.5px solid rgba(74,56,184,0.3)',
+                borderRadius: '6px',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 marginBottom: '16px',
               }}>
@@ -705,37 +743,25 @@ export default function LandingPage() {
         viewport={{ once: true, amount: 0.01 }}
         style={{ maxWidth: '1100px', margin: '0 auto', width: '100%' }}
       >
-        <p style={{
-          fontSize: '9px',
-          textTransform: 'uppercase',
-          color: 'rgba(232,230,255,0.25)',
-          letterSpacing: '0.1em',
-          marginBottom: '20px',
-        }}>
-          Live Yield Data
-        </p>
-
-        <div style={{
-          background: 'rgba(74, 56, 184, 0.06)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-          border: '1px solid rgba(74, 56, 184, 0.18)',
-          borderRadius: '16px',
-          boxShadow: '0 4px 24px rgba(74, 56, 184, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.04)',
-          overflow: 'hidden',
-        }}>
+        <div className="data-panel">
+          <div className="data-panel-header">
+            <span>Live Yield Data</span>
+            <span className="live"><span className="dot" />Live</span>
+          </div>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
-              <tr style={{ borderBottom: '0.5px solid rgba(74,56,184,0.12)' }}>
+              <tr>
                 {['Protocol', 'Chain', 'APY', 'TVL', 'Score'].map(col => (
                   <th key={col} className={col === 'TVL' ? 'preview-tvl-col' : undefined} style={{
                     padding: '12px 16px',
                     textAlign: col === 'APY' || col === 'TVL' || col === 'Score' ? 'right' : 'left',
-                    fontSize: '11px',
+                    fontSize: '10.5px',
                     fontWeight: 500,
-                    color: 'rgba(232,230,255,0.35)',
+                    fontFamily: "'Space Grotesk', sans-serif",
+                    color: 'rgba(232,230,255,0.3)',
                     textTransform: 'uppercase',
-                    letterSpacing: '0.06em',
+                    letterSpacing: '0.05em',
+                    borderBottom: '0.5px solid rgba(74,56,184,0.2)',
                   }}>{col}</th>
                 ))}
               </tr>
@@ -766,13 +792,13 @@ export default function LandingPage() {
                         <span style={{ fontSize: '11px', color: 'rgba(232,230,255,0.35)', marginLeft: '8px' }}>{pool.symbol}</span>
                       </td>
                       <td style={{ padding: '14px 16px', fontSize: '12px', color: 'rgba(232,230,255,0.5)' }}>{pool.chain}</td>
-                      <td style={{ padding: '14px 16px', fontSize: '13px', color: '#4ECDA4', textAlign: 'right', fontWeight: 500 }}>
+                      <td style={{ padding: '14px 16px', fontSize: '13px', fontFamily: "'Space Grotesk', sans-serif", color: '#4ECDA4', textAlign: 'right', fontWeight: 500 }}>
                         {(pool.apy ?? 0).toFixed(2)}%
                       </td>
-                      <td className="preview-tvl-col" style={{ padding: '14px 16px', fontSize: '13px', color: 'rgba(232,230,255,0.6)', textAlign: 'right' }}>
+                      <td className="preview-tvl-col" style={{ padding: '14px 16px', fontSize: '13px', fontFamily: "'Space Grotesk', sans-serif", color: 'rgba(232,230,255,0.6)', textAlign: 'right' }}>
                         {formatTvl(pool.tvlUsd)}
                       </td>
-                      <td style={{ padding: '14px 16px', fontSize: '13px', color: scoreColour(score), textAlign: 'right', fontWeight: 600 }}>
+                      <td style={{ padding: '14px 16px', fontSize: '13px', fontFamily: "'Space Grotesk', sans-serif", color: scoreColour(score), textAlign: 'right', fontWeight: 600 }}>
                         {score}
                       </td>
                     </tr>
@@ -796,8 +822,8 @@ export default function LandingPage() {
             }}
             style={{
               background: 'rgba(74,56,184,0.08)',
-              border: '1px solid rgba(74,56,184,0.4)',
-              borderRadius: '8px',
+              border: '0.5px solid rgba(74,56,184,0.4)',
+              borderRadius: '6px',
               padding: '10px 24px',
               color: '#6B5FD4',
               fontSize: '14px',
@@ -877,7 +903,7 @@ export default function LandingPage() {
                 style={{
                   background: 'rgba(74,56,184,0.08)',
                   border: '0.5px solid rgba(74,56,184,0.2)',
-                  borderRadius: '20px',
+                  borderRadius: '6px',
                   padding: '10px 18px',
                   fontSize: '13px',
                   color: '#E8E6FF',
@@ -892,7 +918,7 @@ export default function LandingPage() {
                 style={{
                   color: '#fff',
                   border: 'none',
-                  borderRadius: '20px',
+                  borderRadius: '6px',
                   padding: '10px 20px',
                   fontSize: '13px',
                   fontWeight: 500,
