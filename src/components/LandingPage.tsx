@@ -168,50 +168,55 @@ function ProtocolLogoStrip() {
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
       viewport={{ once: true, amount: 0.01 }}
-      style={{ width: '100%' }}
+      style={{ maxWidth: '1100px', margin: '0 auto', width: '100%', padding: '40px' }}
     >
-      <p style={{
-        textAlign: 'center',
-        fontSize: '13px',
-        color: 'rgba(232,230,255,0.4)',
-        fontFamily: "'Inter', sans-serif",
-        margin: 0,
-        padding: '48px 0 32px',
-      }}>
-        Live yield data across 6 chains and 140+ protocols
-      </p>
-      <div style={{
-        overflow: 'hidden',
-        width: '100%',
-        maskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)',
-        WebkitMaskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)',
-      }}>
-        <div
-          ref={scrollRef}
-          style={{
-            display: 'flex',
-            gap: '48px',
-            width: 'max-content',
-            willChange: 'transform',
-          }}
-        >
-          {repeated.map((chain, i) => (
-            <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-              <div style={{
-                width: '52px',
-                height: '52px',
-                borderRadius: '50%',
-                background: 'rgba(74,56,184,0.08)',
-                border: '1px solid rgba(74,56,184,0.15)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}>
-                <img src={chain.logo} alt={chain.name} style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'contain' }} />
+      <div className="data-panel">
+        <p style={{
+          textAlign: 'center',
+          fontSize: '10.5px',
+          fontFamily: "'Space Grotesk', sans-serif",
+          color: 'rgba(232,230,255,0.4)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+          margin: 0,
+          padding: '12px 16px',
+          borderBottom: '0.5px solid rgba(74,56,184,0.2)',
+        }}>
+          Live yield data across 6 chains and 140+ protocols
+        </p>
+        <div style={{ position: 'relative', overflow: 'hidden', width: '100%' }}>
+          {/* Edge scrims — a solid gradient overlay fades logos out cleanly
+              regardless of icon size, unlike a mask-image against a hard
+              overflow:hidden clip (which slices icons mid-shape). */}
+          <div style={{ position: 'absolute', top: 0, bottom: 0, left: 0, width: '80px', background: 'linear-gradient(to right, #100F22, transparent)', zIndex: 1, pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', top: 0, bottom: 0, right: 0, width: '80px', background: 'linear-gradient(to left, #100F22, transparent)', zIndex: 1, pointerEvents: 'none' }} />
+          <div
+            ref={scrollRef}
+            style={{
+              display: 'flex',
+              gap: '40px',
+              width: 'max-content',
+              willChange: 'transform',
+              padding: '20px 0',
+            }}
+          >
+            {repeated.map((chain, i) => (
+              <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                <div style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '6px',
+                  border: '0.5px solid rgba(74,56,184,0.3)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <img src={chain.logo} alt={chain.name} style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'contain' }} />
+                </div>
+                <span style={{ fontSize: '11px', color: 'rgba(232,230,255,0.4)', whiteSpace: 'nowrap' }}>{chain.name}</span>
               </div>
-              <span style={{ fontSize: '11px', color: 'rgba(232,230,255,0.4)', whiteSpace: 'nowrap' }}>{chain.name}</span>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </motion.section>
