@@ -1,113 +1,86 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import {
+  ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, ZAxis,
+} from 'recharts';
 import DexarisLogo from './DexarisLogo';
 import { usePools } from '../contexts/PoolsContext';
 import { BackgroundPaths } from './ui/BackgroundPaths';
-import { calculateDexarisScore } from '../utils/dexarisScore';
+import { calculateDexarisScore, getDexarisScoreColour } from '../utils/dexarisScore';
 
-interface TickerPool {
+interface HeroScatterPoint {
   project: string;
   symbol: string;
-  apy: number;
-  tvlUsd: number;
   chain: string;
+  apy: number;
+  tvlM: number;
   score: number;
 }
 
-// Minimum Dexaris Score for a pool to appear in the hero ticker — keeps the
-// platform's very first proof-point consistent with "find the yield worth
-// chasing" instead of surfacing Weak/Moderate-tier pools above the fold.
-const TICKER_MIN_SCORE = 60;
+const HERO_TIERS = [
+  { key: 'strong',   label: '80–100 Strong',  min: 80, colour: '#4ECDA4' },
+  { key: 'solid',    label: '60–79 Solid',    min: 60, colour: '#6B5FD4' },
+  { key: 'moderate', label: '40–59 Moderate', min: 40, colour: '#FFB347' },
+  { key: 'weak',     label: '0–39 Weak',      min: 0,  colour: '#FF6B6B' },
+] as const;
 
-function LiveTicker() {
-  const { allPools, isLoading } = usePools();
-  const [idx, setIdx] = useState(0);
-  const [visible, setVisible] = useState(true);
-  const [isMobile, setIsMobile] = useState(() => window.matchMedia('(max-width: 768px)').matches);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+function tierForScore(score: number) {
+  return HERO_TIERS.find(t => score >= t.min) ?? HERO_TIERS[HERO_TIERS.length - 1];
+}
 
-  useEffect(() => {
-    const mq = window.matchMedia('(max-width: 768px)');
-    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
-  }, []);
+function formatTvlLog(v: number) {
+  if (v >= 1000) return `$${(v / 1000).toFixed(0)}B`;
+  return `$${v.toFixed(0)}M`;
+}
 
-  // allPools (from PoolsContext) is already scoped to the platform's 6
-  // supported chains, so the ticker can never surface an unsupported chain
-  // the way the old raw yields.llama.fi/pools fetch could.
-  const pools: TickerPool[] = useMemo(() => allPools
-    .filter(p => p.tvlUsd > 10_000_000 && (p.apy ?? 0) > 0 && (p.apy ?? 0) <= 80)
-    .map(p => ({ ...p, apy: p.apy!, score: calculateDexarisScore(p) }))
-    .filter(p => p.score >= TICKER_MIN_SCORE)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 6), [allPools]);
+function HeroScatterDot({ cx, cy, fill }: { cx?: number; cy?: number; fill?: string }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <circle
+      cx={cx ?? 0}
+      cy={cy ?? 0}
+      r={hovered ? 6 : 4}
+      fill={fill ?? 'rgba(232,230,255,0.3)'}
+      fillOpacity={hovered ? 1 : 0.8}
+      stroke="rgba(10,9,16,0.6)"
+      strokeWidth={1}
+      style={{ transition: 'r 0.1s ease, fill-opacity 0.1s ease' }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    />
+  );
+}
 
-  const status: 'loading' | 'ready' | 'error' = isLoading ? 'loading' : pools.length === 0 ? 'error' : 'ready';
-
-  useEffect(() => {
-    if (status !== 'ready' || pools.length === 0) return;
-    intervalRef.current = setInterval(() => {
-      setVisible(false);
-      setTimeout(() => {
-        setIdx(i => (i + 1) % pools.length);
-        setVisible(true);
-      }, 400);
-    }, 3000);
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, [status, pools.length]);
-
-  if (status === 'error') return null;
-
-  if (status === 'loading') {
-    return (
-      <div style={{
-        maxWidth: 'min(480px, calc(100vw - 48px))', height: '40px', borderRadius: '40px',
-        margin: '0 auto',
-        background: 'rgba(74,56,184,0.08)', border: '1px solid rgba(74,56,184,0.15)',
-        animation: 'pulse 1.5s ease-in-out infinite',
-      }} />
-    );
-  }
-
-  const pool = pools[idx];
-  if (!pool) return null;
-
+function HeroScatterTooltip({ active, payload }: { active?: boolean; payload?: Array<{ payload: HeroScatterPoint }> }) {
+  if (!active || !payload?.[0]) return null;
+  const d = payload[0].payload;
+  const tvl = d.tvlM >= 1000 ? `$${(d.tvlM / 1000).toFixed(1)}B` : `$${d.tvlM.toFixed(1)}M`;
+  const row = (label: string, value: string, color?: string) => (
+    <p style={{ margin: 0, display: 'flex', gap: 8, justifyContent: 'space-between' }}>
+      <span style={{ color: 'rgba(232,230,255,0.4)' }}>{label}</span>
+      <span style={{ color: color ?? '#E8E6FF' }}>{value}</span>
+    </p>
+  );
   return (
     <div style={{
-      maxWidth: 'min(480px, calc(100vw - 48px))',
-      overflow: 'hidden',
-      margin: '0 auto',
-      background: 'rgba(74,56,184,0.08)',
-      border: '1px solid rgba(74,56,184,0.25)',
-      borderRadius: '40px',
-      padding: isMobile ? '8px 14px' : '10px 20px',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '8px',
-      fontSize: isMobile ? '12px' : '13px',
-      opacity: visible ? 1 : 0,
-      transition: 'opacity 0.4s ease',
-      userSelect: 'none',
+      background: '#0A0910',
+      border: '1px solid rgba(74,56,184,0.35)',
+      borderRadius: 6,
+      padding: '10px 12px',
+      fontFamily: "'Space Grotesk', sans-serif",
+      fontSize: 11,
+      color: '#E8E6FF',
+      lineHeight: 1.75,
+      minWidth: 150,
+      pointerEvents: 'none',
     }}>
-      <span style={{
-        width: '7px', height: '7px', borderRadius: '50%',
-        background: '#4ECDA4', flexShrink: 0,
-        animation: 'pulse 2s ease-in-out infinite',
-        display: 'inline-block',
-      }} />
-      <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
-        <span style={{ color: '#E8E6FF', fontWeight: 500 }}>{pool.project}</span>
-        <span style={{ color: 'rgba(232,230,255,0.35)' }}> · </span>
-        <span style={{ color: 'rgba(232,230,255,0.55)' }}>{pool.symbol}</span>
-        <span style={{ color: 'rgba(232,230,255,0.35)' }}> · </span>
-        <span style={{ color: '#4ECDA4', fontWeight: 700 }}>{pool.apy.toFixed(2)}%</span>
-        <span style={{ color: 'rgba(232,230,255,0.35)' }}> · </span>
-        <span style={{ color: 'rgba(232,230,255,0.35)' }}>Score <span style={{ color: '#6B5FD4', fontWeight: 700 }}>{pool.score}</span></span>
-        <span style={{ color: 'rgba(232,230,255,0.35)' }}> · </span>
-        <span style={{ color: 'rgba(232,230,255,0.35)' }}>{pool.chain}</span>
-      </span>
+      <p style={{ margin: '0 0 4px', fontWeight: 500 }}>{d.project} <span style={{ color: 'rgba(232,230,255,0.4)', fontWeight: 400 }}>{d.symbol}</span></p>
+      {row('Chain', d.chain)}
+      {row('APY', `${d.apy.toFixed(2)}%`, '#4ECDA4')}
+      {row('TVL', tvl)}
+      {row('Score', String(d.score), getDexarisScoreColour(d.score))}
     </div>
   );
 }
@@ -262,6 +235,115 @@ function scoreColour(score: number): string {
   return '#FF6B6B';
 }
 
+function HeroRiskRewardPanel() {
+  const { allPools, isLoading } = usePools();
+
+  const { tierGroups, stats } = useMemo(() => {
+    const groups: Record<string, HeroScatterPoint[]> = { strong: [], solid: [], moderate: [], weak: [] };
+    // Bounded to TVL >= $10M (keeps the log axis well-behaved) and APY <= 60%
+    // (keeps a single outlier from flattening every other point on the linear
+    // y-axis) — a curated display range, not a claim about the full dataset.
+    const eligible = allPools.filter(p => p.tvlUsd >= 10_000_000 && (p.apy ?? 0) > 0 && (p.apy ?? 0) <= 60);
+    for (const p of eligible) {
+      const score = calculateDexarisScore(p);
+      const tier = tierForScore(score);
+      groups[tier.key].push({ project: p.project, symbol: p.symbol, chain: p.chain, apy: p.apy!, tvlM: p.tvlUsd / 1_000_000, score });
+    }
+    const protocols = new Set(allPools.map(p => p.project)).size;
+    const totalTvl = allPools.reduce((sum, p) => sum + p.tvlUsd, 0);
+    return {
+      tierGroups: groups,
+      stats: { pools: allPools.length, protocols, totalTvl },
+    };
+  }, [allPools]);
+
+  const statItems: { value: string; label: string }[] = [
+    { value: isLoading ? '—' : `${stats.pools.toLocaleString()}+`, label: 'Pools' },
+    { value: isLoading ? '—' : `${stats.protocols}+`, label: 'Protocols' },
+    { value: isLoading ? '—' : formatTvl(stats.totalTvl), label: 'Tracked TVL' },
+    { value: '6', label: 'Chains' },
+  ];
+
+  return (
+    <div style={{
+      background: '#100F22',
+      border: '0.5px solid rgba(74,56,184,0.22)',
+      borderRadius: '8px',
+      overflow: 'hidden',
+    }}>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '12px 16px',
+        borderBottom: '0.5px solid rgba(74,56,184,0.2)',
+        fontFamily: "'Space Grotesk', sans-serif",
+        fontSize: '11px',
+        color: 'rgba(232,230,255,0.45)',
+        letterSpacing: '0.04em',
+        textTransform: 'uppercase',
+      }}>
+        <span>Risk / Reward — All chains</span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#4ECDA4', textTransform: 'none' }}>
+          <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#4ECDA4', boxShadow: '0 0 5px #4ECDA4', animation: 'pulse 1.6s ease-in-out infinite', display: 'inline-block' }} />
+          Live
+        </span>
+      </div>
+
+      <div style={{ padding: '16px 16px 0' }}>
+        {isLoading ? (
+          <div style={{ height: '240px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(232,230,255,0.3)', fontSize: '13px', fontFamily: "'Space Grotesk', sans-serif" }}>
+            Loading live pool data…
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height={240}>
+            <ScatterChart margin={{ top: 8, right: 12, bottom: 8, left: 4 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(232,230,255,0.05)" />
+              <XAxis
+                type="number" dataKey="tvlM" name="TVL" scale="log"
+                domain={['auto', 'auto']} ticks={[10, 50, 100, 500, 1000, 10000]}
+                tickFormatter={formatTvlLog}
+                tick={{ fill: 'rgba(232,230,255,0.4)', fontFamily: "'Space Grotesk', sans-serif", fontSize: 10 }}
+                tickLine={false} axisLine={false}
+              />
+              <YAxis
+                type="number" dataKey="apy" name="APY"
+                tickFormatter={v => `${v}%`}
+                tick={{ fill: 'rgba(232,230,255,0.4)', fontFamily: "'Space Grotesk', sans-serif", fontSize: 10 }}
+                tickLine={false} axisLine={false}
+                width={34}
+              />
+              <ZAxis range={[1, 1]} />
+              <Tooltip content={<HeroScatterTooltip />} wrapperStyle={{ overflow: 'visible', zIndex: 100 }} cursor={{ fill: 'rgba(74,56,184,0.06)' }} />
+              {HERO_TIERS.map(tier => (
+                <Scatter key={tier.key} name={tier.label} data={tierGroups[tier.key]} fill={tier.colour} shape={HeroScatterDot} />
+              ))}
+            </ScatterChart>
+          </ResponsiveContainer>
+        )}
+      </div>
+
+      <div style={{ display: 'flex', gap: '16px', padding: '4px 16px 16px', flexWrap: 'wrap', fontFamily: "'Space Grotesk', sans-serif", fontSize: '10.5px', color: 'rgba(232,230,255,0.4)' }}>
+        {HERO_TIERS.map(tier => (
+          <span key={tier.key} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: tier.colour, display: 'inline-block' }} />
+            {tier.label}
+          </span>
+        ))}
+      </div>
+
+      <div className="hero-stat-strip">
+        {statItems.map(({ value, label }) => (
+          <div key={label}>
+            <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '18px', fontWeight: 500, color: '#E8E6FF', margin: 0 }}>{value}</p>
+            <p style={{ fontSize: '10.5px', color: 'rgba(232,230,255,0.3)', margin: '2px 0 0', textTransform: 'uppercase', letterSpacing: '0.03em' }}>{label}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function TrustStatsBar() {
   const { allPools, isLoading } = usePools();
 
@@ -392,109 +474,105 @@ export default function LandingPage() {
 
       {/* ─── Hero ───────────────────────────────────────────────── */}
       <section className="hero-section" style={{
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
         position: 'relative',
         overflow: 'hidden',
-        textAlign: 'center',
         background: '#06050F',
       }}>
         <BackgroundPaths />
 
         {/* Content sits above BackgroundPaths */}
-        <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px' }}>
-          {/* Pill badge */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            background: 'rgba(74,56,184,0.12)',
-            border: '0.5px solid rgba(74,56,184,0.3)',
-            borderRadius: '20px',
-            padding: '5px 14px',
-            fontSize: '11px',
-            color: 'rgba(74,56,184,0.9)',
-          }}>
-            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#4A38B8', animation: 'pulse 2s ease-in-out infinite', display: 'inline-block' }} />
-            Live DeFi yield data — updated every 60 seconds
+        <div className="hero-grid" style={{ position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '24px', textAlign: 'left' }}>
+            {/* Pill badge */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(74,56,184,0.12)',
+              border: '0.5px solid rgba(74,56,184,0.3)',
+              borderRadius: '20px',
+              padding: '5px 14px',
+              fontSize: '11px',
+              color: 'rgba(74,56,184,0.9)',
+            }}>
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#4A38B8', animation: 'pulse 2s ease-in-out infinite', display: 'inline-block' }} />
+              Live DeFi yield data — updated every 60 seconds
+            </div>
+
+            {/* Headline */}
+            <h1 className="hero-headline" style={{
+              fontWeight: 500,
+              color: '#E8E6FF',
+              letterSpacing: '-0.02em',
+              lineHeight: 1.1,
+              margin: 0,
+            }}>
+              Find the yield<br />
+              <span style={{ color: '#6B5FD4' }}>worth chasing.</span>
+            </h1>
+
+            {/* Subtitle */}
+            <p className="hero-subtitle" style={{
+              color: 'rgba(232,230,255,0.45)',
+              maxWidth: '440px',
+              lineHeight: 1.6,
+              margin: 0,
+            }}>
+              Every pool scored on TVL size, APY sustainability and organic yield ratio — plotted so you can see risk vs. reward at a glance, not buried in a spreadsheet.
+            </p>
+
+            {/* CTA buttons */}
+            <div className="hero-cta-row">
+              <button
+                onClick={() => navigate('/app')}
+                className="btn-primary hero-cta-btn"
+                style={{
+                  color: '#fff',
+                  fontSize: '14px',
+                  padding: '12px 28px',
+                  borderRadius: '24px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontWeight: 500,
+                  fontFamily: "'Inter', sans-serif",
+                }}
+              >
+                Explore yields →
+              </button>
+              <a
+                href="#features"
+                className="btn-secondary hero-cta-btn"
+                style={{
+                  fontSize: '14px',
+                  padding: '12px 28px',
+                  borderRadius: '24px',
+                  cursor: 'pointer',
+                  fontWeight: 500,
+                  textDecoration: 'none',
+                  display: 'inline-block',
+                }}
+              >
+                Learn more
+              </a>
+            </div>
+
+            {/* Trust line */}
+            <p style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              color: 'rgba(232,230,255,0.35)',
+              fontSize: '12.5px',
+              margin: 0,
+            }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2 4 5v6c0 5.25 3.4 9.74 8 11 4.6-1.26 8-5.75 8-11V5z" />
+              </svg>
+              Non-custodial. We never hold your funds or ask for a wallet connection to browse data.
+            </p>
           </div>
 
-          {/* Headline */}
-          <h1 className="hero-headline" style={{
-            fontWeight: 500,
-            color: '#E8E6FF',
-            letterSpacing: '-0.02em',
-            lineHeight: 1.1,
-            margin: 0,
-          }}>
-            Find the yield<br />
-            <span style={{ color: '#6B5FD4' }}>worth chasing.</span>
-          </h1>
-
-          {/* Subtitle */}
-          <p className="hero-subtitle" style={{
-            color: 'rgba(232,230,255,0.45)',
-            maxWidth: '480px',
-            lineHeight: 1.6,
-            margin: 0,
-          }}>
-            Live APY and TVL intelligence across 140+ protocols on ETH, SOL, ARB, BASE and more. Free forever, no signup required.
-          </p>
-
-          <LiveTicker />
-
-          {/* CTA buttons */}
-          <div className="hero-cta-row">
-            <button
-              onClick={() => navigate('/app')}
-              className="btn-primary hero-cta-btn"
-              style={{
-                color: '#fff',
-                fontSize: '14px',
-                padding: '12px 28px',
-                borderRadius: '24px',
-                border: 'none',
-                cursor: 'pointer',
-                fontWeight: 500,
-                fontFamily: "'Inter', sans-serif",
-              }}
-            >
-              Explore yields →
-            </button>
-            <a
-              href="#features"
-              className="btn-secondary hero-cta-btn"
-              style={{
-                fontSize: '14px',
-                padding: '12px 28px',
-                borderRadius: '24px',
-                cursor: 'pointer',
-                fontWeight: 500,
-                textDecoration: 'none',
-                display: 'inline-block',
-              }}
-            >
-              Learn more
-            </a>
-          </div>
-
-          {/* Trust line */}
-          <p style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            color: 'rgba(232,230,255,0.35)',
-            fontSize: '12.5px',
-            margin: 0,
-          }}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 2 4 5v6c0 5.25 3.4 9.74 8 11 4.6-1.26 8-5.75 8-11V5z" />
-            </svg>
-            Non-custodial. We never hold your funds or ask for a wallet connection to browse data.
-          </p>
+          <HeroRiskRewardPanel />
         </div>
       </section>
 
