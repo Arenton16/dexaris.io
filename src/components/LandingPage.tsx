@@ -127,12 +127,15 @@ function ProtocolLogoStrip() {
     { name: 'Avalanche',logo: '/logos/chains/avalanche.png' },
     { name: 'Polygon',  logo: '/logos/chains/polygon.png' },
   ];
-  // Exactly 2 copies + a CSS keyframe translating to -50% is a seamless loop
-  // by construction (the browser computes the percentage against the track's
-  // own live width every frame) — unlike the old rAF version, which measured
-  // scrollWidth once in JS and reset via subtraction, where any sub-pixel
-  // rounding between the two measurements showed up as a visible jump.
-  const repeated = [...chains, ...chains];
+  // 4 copies + a CSS keyframe translating by exactly one set's width (-25%
+  // of the 4-copy track) is a seamless loop by construction (the browser
+  // computes the percentage against the track's own live width every frame,
+  // unlike the old rAF version's JS-measured reset, which drifted by
+  // sub-pixel rounding). 4 copies specifically — not 2 — because the panel
+  // is wide enough to show more than one full set of 6 icons at once; with
+  // only 2 copies the track ran out of rendered icons before the loop could
+  // wrap, showing empty space just before the reset.
+  const repeated = [...chains, ...chains, ...chains, ...chains];
 
   return (
     <motion.section
