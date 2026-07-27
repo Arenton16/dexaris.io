@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import DexarisLogo from './DexarisLogo';
@@ -15,17 +15,15 @@ interface TickerPool {
   score: number;
 }
 
-function quickScore(p: { apy: number; tvlUsd: number }): number {
-  const tvlScore = Math.min(p.tvlUsd / 1_000_000, 100) * 0.4;
-  const apyScore = Math.min(p.apy, 80) * 0.6;
-  return Math.round(tvlScore + apyScore);
-}
+// Minimum Dexaris Score for a pool to appear in the hero ticker — keeps the
+// platform's very first proof-point consistent with "find the yield worth
+// chasing" instead of surfacing Weak/Moderate-tier pools above the fold.
+const TICKER_MIN_SCORE = 60;
 
 function LiveTicker() {
-  const [pools, setPools] = useState<TickerPool[]>([]);
+  const { allPools, isLoading } = usePools();
   const [idx, setIdx] = useState(0);
   const [visible, setVisible] = useState(true);
-  const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [isMobile, setIsMobile] = useState(() => window.matchMedia('(max-width: 768px)').matches);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -36,26 +34,17 @@ function LiveTicker() {
     return () => mq.removeEventListener('change', handler);
   }, []);
 
-  useEffect(() => {
-    let cancelled = false;
-    fetch('https://yields.llama.fi/pools')
-      .then(r => r.json())
-      .then(data => {
-        if (cancelled) return;
-        const top: TickerPool[] = (data.data as Array<{
-          project: string; symbol: string; apy: number | null;
-          tvlUsd: number; chain: string;
-        }>)
-          .filter(p => p.tvlUsd > 10_000_000 && (p.apy ?? 0) > 0 && (p.apy ?? 0) <= 80)
-          .map(p => ({ ...p, apy: p.apy!, score: quickScore({ apy: p.apy!, tvlUsd: p.tvlUsd }) }))
-          .sort((a, b) => b.score - a.score)
-          .slice(0, 6);
-        setPools(top);
-        setStatus('ready');
-      })
-      .catch(() => { if (!cancelled) setStatus('error'); });
-    return () => { cancelled = true; };
-  }, []);
+  // allPools (from PoolsContext) is already scoped to the platform's 6
+  // supported chains, so the ticker can never surface an unsupported chain
+  // the way the old raw yields.llama.fi/pools fetch could.
+  const pools: TickerPool[] = useMemo(() => allPools
+    .filter(p => p.tvlUsd > 10_000_000 && (p.apy ?? 0) > 0 && (p.apy ?? 0) <= 80)
+    .map(p => ({ ...p, apy: p.apy!, score: calculateDexarisScore(p) }))
+    .filter(p => p.score >= TICKER_MIN_SCORE)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 6), [allPools]);
+
+  const status: 'loading' | 'ready' | 'error' = isLoading ? 'loading' : pools.length === 0 ? 'error' : 'ready';
 
   useEffect(() => {
     if (status !== 'ready' || pools.length === 0) return;
