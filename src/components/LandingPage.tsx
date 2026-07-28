@@ -500,7 +500,7 @@ export default function LandingPage() {
               lineHeight: 1.6,
               margin: 0,
             }}>
-              Every pool scored on TVL size, APY sustainability and organic yield ratio — plotted so you can see risk vs. reward at a glance, not buried in a spreadsheet.
+              Every pool gets a 0–100 Dexaris Score based on consistency, TVL depth, and organic yield ratio. Not just what a yield pays — whether it's earned it.
             </p>
 
             {/* CTA buttons */}
