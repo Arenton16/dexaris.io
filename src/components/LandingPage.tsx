@@ -391,6 +391,7 @@ export default function LandingPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [subStatus, setSubStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const { allPools, isLoading: loadingPools } = usePools();
   // Sorted by the real Dexaris Score (not raw APY) so the landing page's own
@@ -435,22 +436,68 @@ export default function LandingPage() {
           ))}
         </div>
 
-        <button
-          onClick={() => navigate('/app')}
-          className="nav-cta"
-          style={{
-            color: '#fff',
-            fontSize: '13px',
-            padding: '8px 20px',
-            borderRadius: '6px',
-            border: 'none',
-            cursor: 'pointer',
-            fontFamily: "'Inter', sans-serif",
-          }}
-        >
-          Launch app →
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <button
+            onClick={() => navigate('/app')}
+            className="nav-cta"
+            style={{
+              color: '#fff',
+              fontSize: '13px',
+              padding: '8px 20px',
+              borderRadius: '6px',
+              border: 'none',
+              cursor: 'pointer',
+              fontFamily: "'Inter', sans-serif",
+            }}
+          >
+            Launch app →
+          </button>
+
+          <button
+            onClick={() => setMobileNavOpen(o => !o)}
+            className="mobile-nav-toggle"
+            aria-label={mobileNavOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={mobileNavOpen}
+            style={{
+              background: 'transparent',
+              border: '0.5px solid rgba(74,56,184,0.3)',
+              borderRadius: '6px',
+              width: '36px',
+              height: '36px',
+              display: 'none',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              flexShrink: 0,
+            }}
+          >
+            {mobileNavOpen ? (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E8E6FF" strokeWidth="2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E8E6FF" strokeWidth="2" strokeLinecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+            )}
+          </button>
+        </div>
+
       </nav>
+
+      {mobileNavOpen && (
+        <div className="mobile-nav-dropdown">
+          {['Features', 'About', 'Newsletter'].map(label => (
+            <a
+              key={label}
+              href={`#${label.toLowerCase()}`}
+              className="mobile-nav-link"
+              onClick={e => {
+                scrollToId(label.toLowerCase())(e);
+                setMobileNavOpen(false);
+              }}
+            >
+              {label}
+            </a>
+          ))}
+        </div>
+      )}
 
       {/* ─── Hero ───────────────────────────────────────────────── */}
       <section className="hero-section" style={{
@@ -645,8 +692,10 @@ export default function LandingPage() {
               title: 'The Dexaris Score',
               desc: 'Every pool is rated 0–100 based on TVL size, APY sustainability, and organic yield ratio — so you can instantly compare pools across chains and protocols.',
               delay: 0.36,
+              link: '/methodology',
+              linkLabel: 'How it’s calculated',
             },
-          ].map(({ icon, title, desc, delay }) => (
+          ].map(({ icon, title, desc, delay, link, linkLabel }) => (
             <motion.div
               key={title}
               className="feature-card"
@@ -667,6 +716,15 @@ export default function LandingPage() {
               </div>
               <p style={{ fontSize: '14px', fontWeight: 500, color: '#E8E6FF', marginBottom: '8px' }}>{title}</p>
               <p style={{ fontSize: '12px', color: 'rgba(232,230,255,0.4)', lineHeight: 1.6, margin: 0 }}>{desc}</p>
+              {link && (
+                <a
+                  href={link}
+                  onClick={e => { e.preventDefault(); navigate(link); }}
+                  style={{ display: 'inline-block', fontSize: '12px', color: '#6B5FD4', marginTop: '12px', textDecoration: 'none' }}
+                >
+                  {linkLabel} →
+                </a>
+              )}
             </motion.div>
           ))}
         </div>
@@ -939,16 +997,18 @@ export default function LandingPage() {
 
         <div style={{ display: 'flex', gap: '20px' }}>
           {[
-            { label: 'Twitter',    href: 'https://x.com/DexarisHQ',                        external: true },
-            { label: 'LinkedIn',   href: 'https://www.linkedin.com/company/Dexaris',       external: true },
-            { label: 'Newsletter', href: '#newsletter',                                     external: false },
-            { label: 'dexaris.io', href: 'https://dexaris.io',             external: true },
-          ].map(({ label, href, external }) => (
+            { label: 'Twitter',      href: 'https://x.com/DexarisHQ',                  external: true, route: false },
+            { label: 'LinkedIn',     href: 'https://www.linkedin.com/company/Dexaris', external: true, route: false },
+            { label: 'Newsletter',   href: '#newsletter',                              external: false, route: false },
+            { label: 'Methodology', href: '/methodology',                             external: false, route: true },
+            { label: 'dexaris.io',   href: 'https://dexaris.io',                       external: true, route: false },
+          ].map(({ label, href, external, route }) => (
             <a
               key={label}
               href={href}
               {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-              {...(!external ? { onClick: scrollToId(href.slice(1)) } : {})}
+              {...(route ? { onClick: (e: React.MouseEvent) => { e.preventDefault(); navigate(href); } } : {})}
+              {...(!external && !route ? { onClick: scrollToId(href.slice(1)) } : {})}
               className="footer-link"
               style={{ fontSize: '12px', textDecoration: 'none' }}
             >

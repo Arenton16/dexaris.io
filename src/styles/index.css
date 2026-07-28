@@ -2531,6 +2531,35 @@ body {
   display: inline-block;
 }
 
+.mobile-nav-toggle {
+  display: none;
+}
+
+.mobile-nav-dropdown {
+  position: fixed;
+  top: 64px;
+  left: 0;
+  right: 0;
+  background: #0A0910;
+  border-bottom: 0.5px solid rgba(74,56,184,0.22);
+  display: flex;
+  flex-direction: column;
+  padding: 8px 20px 16px;
+  z-index: 100;
+}
+
+.mobile-nav-link {
+  padding: 14px 4px;
+  font-size: 14px;
+  color: rgba(232,230,255,0.7);
+  text-decoration: none;
+  border-bottom: 0.5px solid rgba(74,56,184,0.12);
+}
+
+.mobile-nav-link:last-child {
+  border-bottom: none;
+}
+
 .preview-row {
   transition: background 0.15s ease;
 }
@@ -2691,6 +2720,9 @@ body {
   }
   .landing-nav-links {
     display: none !important;
+  }
+  .mobile-nav-toggle {
+    display: flex !important;
   }
   .nav-cta {
     white-space: nowrap;
