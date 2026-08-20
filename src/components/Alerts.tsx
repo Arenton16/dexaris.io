@@ -7,12 +7,12 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 function ApyIcon() {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="12" cy="12" r="9" stroke="#4A38B8" strokeWidth="1.8" />
-      <circle cx="12" cy="12" r="4" stroke="#4A38B8" strokeWidth="1.8" />
-      <line x1="12" y1="3" x2="12" y2="6" stroke="#4A38B8" strokeWidth="1.8" strokeLinecap="round" />
-      <line x1="12" y1="18" x2="12" y2="21" stroke="#4A38B8" strokeWidth="1.8" strokeLinecap="round" />
-      <line x1="3" y1="12" x2="6" y2="12" stroke="#4A38B8" strokeWidth="1.8" strokeLinecap="round" />
-      <line x1="18" y1="12" x2="21" y2="12" stroke="#4A38B8" strokeWidth="1.8" strokeLinecap="round" />
+      <circle cx="12" cy="12" r="9" stroke="#0E7C7C" strokeWidth="1.8" />
+      <circle cx="12" cy="12" r="4" stroke="#0E7C7C" strokeWidth="1.8" />
+      <line x1="12" y1="3" x2="12" y2="6" stroke="#0E7C7C" strokeWidth="1.8" strokeLinecap="round" />
+      <line x1="12" y1="18" x2="12" y2="21" stroke="#0E7C7C" strokeWidth="1.8" strokeLinecap="round" />
+      <line x1="3" y1="12" x2="6" y2="12" stroke="#0E7C7C" strokeWidth="1.8" strokeLinecap="round" />
+      <line x1="18" y1="12" x2="21" y2="12" stroke="#0E7C7C" strokeWidth="1.8" strokeLinecap="round" />
     </svg>
   );
 }
@@ -20,8 +20,8 @@ function ApyIcon() {
 function ScoreIcon() {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <polyline points="2,7 8,13 13,8 22,17" stroke="#4A38B8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-      <polyline points="16,17 22,17 22,11" stroke="#4A38B8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      <polyline points="2,7 8,13 13,8 22,17" stroke="#0E7C7C" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      <polyline points="16,17 22,17 22,11" stroke="#0E7C7C" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -29,9 +29,9 @@ function ScoreIcon() {
 function TvlIcon() {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="2" y="14" width="4" height="8" rx="1" stroke="#4A38B8" strokeWidth="1.8" />
-      <rect x="9" y="9" width="4" height="13" rx="1" stroke="#4A38B8" strokeWidth="1.8" />
-      <rect x="16" y="4" width="4" height="18" rx="1" stroke="#4A38B8" strokeWidth="1.8" />
+      <rect x="2" y="14" width="4" height="8" rx="1" stroke="#0E7C7C" strokeWidth="1.8" />
+      <rect x="9" y="9" width="4" height="13" rx="1" stroke="#0E7C7C" strokeWidth="1.8" />
+      <rect x="16" y="4" width="4" height="18" rx="1" stroke="#0E7C7C" strokeWidth="1.8" />
     </svg>
   );
 }
@@ -80,7 +80,7 @@ export default function Alerts() {
   return (
     <div style={{
       minHeight: '100%',
-      background: '#0A0910',
+      background: '#080F0F',
       fontFamily: "'Inter', sans-serif",
       display: 'flex',
       flexDirection: 'column',
@@ -95,7 +95,7 @@ export default function Alerts() {
         <h1 style={{
           fontSize: 32,
           fontWeight: 700,
-          color: '#E8E6FF',
+          color: '#D0F0F0',
           margin: '0 0 12px',
           lineHeight: 1.2,
           letterSpacing: '-0.02em',
@@ -118,8 +118,8 @@ export default function Alerts() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 40 }}>
           {FEATURE_CARDS.map(({ Icon, title, description }) => (
             <div key={title} style={{
-              background: '#100F22',
-              border: '1px solid rgba(74,56,184,0.15)',
+              background: '#0D1A1A',
+              border: '1px solid rgba(14,124,124,0.15)',
               borderRadius: 12,
               padding: '16px 20px',
               display: 'flex',
@@ -130,7 +130,7 @@ export default function Alerts() {
                 width: 40,
                 height: 40,
                 borderRadius: 10,
-                background: 'rgba(74,56,184,0.1)',
+                background: 'rgba(14,124,124,0.1)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -139,7 +139,7 @@ export default function Alerts() {
                 <Icon />
               </div>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: '#E8E6FF', marginBottom: 2 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: '#D0F0F0', marginBottom: 2 }}>
                   {title}
                 </div>
                 <div style={{ fontSize: 13, color: '#9B97C0' }}>
@@ -152,13 +152,13 @@ export default function Alerts() {
 
         {/* Email capture */}
         <div style={{
-          background: '#100F22',
-          border: '1px solid rgba(74,56,184,0.2)',
+          background: '#0D1A1A',
+          border: '1px solid rgba(14,124,124,0.2)',
           borderRadius: 14,
           padding: '24px',
         }}>
           {status === 'success' ? (
-            <p style={{ margin: 0, fontSize: 14, color: '#6B5FD4', fontWeight: 500 }}>
+            <p style={{ margin: 0, fontSize: 14, color: '#14B8B8', fontWeight: 500 }}>
               You're on the list — we'll let you know when Alerts goes live.
             </p>
           ) : (
@@ -180,11 +180,11 @@ export default function Alerts() {
                   style={{
                     flex: '1 1 200px',
                     background: 'rgba(255,255,255,0.05)',
-                    border: status === 'error' ? '1px solid #FF6B6B' : '1px solid rgba(74,56,184,0.25)',
+                    border: status === 'error' ? '1px solid #FF6B6B' : '1px solid rgba(14,124,124,0.25)',
                     borderRadius: 8,
                     padding: '10px 14px',
                     fontSize: 14,
-                    color: '#E8E6FF',
+                    color: '#D0F0F0',
                     outline: 'none',
                     fontFamily: "'Inter', sans-serif",
                   }}
@@ -193,7 +193,7 @@ export default function Alerts() {
                   type="submit"
                   disabled={status === 'loading'}
                   style={{
-                    background: '#4A38B8',
+                    background: '#0E7C7C',
                     color: '#fff',
                     border: 'none',
                     borderRadius: 8,

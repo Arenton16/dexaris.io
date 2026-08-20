@@ -61,8 +61,8 @@ export default function TopBar({
                 <span className="topbar-countdown">↻ {Math.max(countdown, 1)}s</span>
                 {lastUpdatedStr && (
                   <>
-                    <span style={{ fontSize: '11px', color: 'rgba(232,230,255,0.3)' }}>·</span>
-                    <span style={{ fontSize: '11px', color: 'rgba(232,230,255,0.3)' }}>Last updated: {lastUpdatedStr}</span>
+                    <span style={{ fontSize: '11px', color: 'rgba(208,240,240,0.3)' }}>·</span>
+                    <span style={{ fontSize: '11px', color: 'rgba(208,240,240,0.3)' }}>Last updated: {lastUpdatedStr}</span>
                   </>
                 )}
               </span>

@@ -163,14 +163,14 @@ export default function Methodology() {
 const styles = {
   page: {
     minHeight: '100vh',
-    background: '#0A0910',
+    background: '#080F0F',
     fontFamily: 'Inter, sans-serif',
-    color: '#E8E6FF',
+    color: '#D0F0F0',
   } as React.CSSProperties,
 
   topBar: {
     padding: '16px 24px',
-    borderBottom: '1px solid rgba(74,56,184,0.12)',
+    borderBottom: '1px solid rgba(14,124,124,0.12)',
     background: 'rgba(17,16,40,0.8)',
     backdropFilter: 'blur(8px)',
     WebkitBackdropFilter: 'blur(8px)',
@@ -180,7 +180,7 @@ const styles = {
   } as React.CSSProperties,
 
   backLink: {
-    color: 'rgba(232,230,255,0.5)',
+    color: 'rgba(208,240,240,0.5)',
     textDecoration: 'none',
     fontSize: 13,
     fontWeight: 500,
@@ -207,9 +207,9 @@ const styles = {
     fontWeight: 600,
     letterSpacing: '0.12em',
     textTransform: 'uppercase' as const,
-    color: '#4A38B8',
-    background: 'rgba(74,56,184,0.12)',
-    border: '1px solid rgba(74,56,184,0.25)',
+    color: '#0E7C7C',
+    background: 'rgba(14,124,124,0.12)',
+    border: '1px solid rgba(14,124,124,0.25)',
     borderRadius: 4,
     padding: '3px 10px',
     marginBottom: 16,
@@ -218,7 +218,7 @@ const styles = {
   title: {
     fontSize: 28,
     fontWeight: 600,
-    color: '#E8E6FF',
+    color: '#D0F0F0',
     letterSpacing: '-0.3px',
     margin: '0 0 14px',
     lineHeight: 1.25,
@@ -226,15 +226,15 @@ const styles = {
 
   subtitle: {
     fontSize: 15,
-    color: 'rgba(232,230,255,0.55)',
+    color: 'rgba(208,240,240,0.55)',
     lineHeight: 1.65,
     margin: 0,
     maxWidth: 620,
   } as React.CSSProperties,
 
   card: {
-    background: 'rgba(74,56,184,0.05)',
-    border: '1px solid rgba(74,56,184,0.15)',
+    background: 'rgba(14,124,124,0.05)',
+    border: '1px solid rgba(14,124,124,0.15)',
     borderRadius: 12,
     padding: '28px 28px 24px',
     backdropFilter: 'blur(12px)',
@@ -246,13 +246,13 @@ const styles = {
     fontWeight: 600,
     letterSpacing: '0.08em',
     textTransform: 'uppercase' as const,
-    color: 'rgba(232,230,255,0.45)',
+    color: 'rgba(208,240,240,0.45)',
     margin: '0 0 6px',
   } as React.CSSProperties,
 
   cardSubtitle: {
     fontSize: 13,
-    color: 'rgba(232,230,255,0.40)',
+    color: 'rgba(208,240,240,0.40)',
     margin: '0 0 20px',
     lineHeight: 1.5,
   } as React.CSSProperties,
@@ -275,8 +275,8 @@ const styles = {
     fontWeight: 600,
     letterSpacing: '0.09em',
     textTransform: 'uppercase' as const,
-    color: 'rgba(232,230,255,0.35)',
-    borderBottom: '1px solid rgba(74,56,184,0.15)',
+    color: 'rgba(208,240,240,0.35)',
+    borderBottom: '1px solid rgba(14,124,124,0.15)',
     whiteSpace: 'nowrap' as const,
   } as React.CSSProperties,
 
@@ -293,12 +293,12 @@ const styles = {
   } as React.CSSProperties,
 
   trOdd: {
-    background: 'rgba(74,56,184,0.03)',
+    background: 'rgba(14,124,124,0.03)',
   } as React.CSSProperties,
 
   td: {
     padding: '13px 14px',
-    borderBottom: '1px solid rgba(74,56,184,0.07)',
+    borderBottom: '1px solid rgba(14,124,124,0.07)',
     verticalAlign: 'top' as const,
     lineHeight: 1.5,
   } as React.CSSProperties,
@@ -306,20 +306,20 @@ const styles = {
   tdName: {
     paddingLeft: 0,
     fontWeight: 500,
-    color: '#E8E6FF',
+    color: '#D0F0F0',
     whiteSpace: 'nowrap' as const,
     fontSize: 13,
   } as React.CSSProperties,
 
   tdWeight: {
     fontWeight: 700,
-    color: '#4A38B8',
+    color: '#0E7C7C',
     fontSize: 14,
     whiteSpace: 'nowrap' as const,
   } as React.CSSProperties,
 
   tdDesc: {
-    color: 'rgba(232,230,255,0.55)',
+    color: 'rgba(208,240,240,0.55)',
     fontSize: 13,
   } as React.CSSProperties,
 
@@ -359,7 +359,7 @@ const styles = {
   tierBar: {
     flex: 1,
     height: 4,
-    background: 'rgba(232,230,255,0.06)',
+    background: 'rgba(208,240,240,0.06)',
     borderRadius: 2,
     overflow: 'hidden' as const,
   } as React.CSSProperties,
@@ -380,23 +380,23 @@ const styles = {
 
   limitationsItem: {
     fontSize: 13,
-    color: 'rgba(232,230,255,0.55)',
+    color: 'rgba(208,240,240,0.55)',
     lineHeight: 1.65,
   } as React.CSSProperties,
 
   limitationsNote: {
     fontSize: 13,
-    color: 'rgba(232,230,255,0.4)',
+    color: 'rgba(208,240,240,0.4)',
     lineHeight: 1.6,
     margin: 0,
   } as React.CSSProperties,
 
   disclaimer: {
-    background: 'rgba(74,56,184,0.04)',
-    border: '1px solid rgba(74,56,184,0.3)',
+    background: 'rgba(14,124,124,0.04)',
+    border: '1px solid rgba(14,124,124,0.3)',
     borderRadius: 12,
     padding: '22px 24px',
-    boxShadow: '0 0 0 4px rgba(74,56,184,0.06)',
+    boxShadow: '0 0 0 4px rgba(14,124,124,0.06)',
   } as React.CSSProperties,
 
   disclaimerHeader: {
@@ -421,7 +421,7 @@ const styles = {
 
   disclaimerText: {
     fontSize: 13,
-    color: 'rgba(232,230,255,0.55)',
+    color: 'rgba(208,240,240,0.55)',
     lineHeight: 1.7,
     margin: 0,
   } as React.CSSProperties,

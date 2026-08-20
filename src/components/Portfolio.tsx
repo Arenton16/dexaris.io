@@ -14,9 +14,9 @@ import { ProtocolLogo } from './ProtocolLogo';
 const FONT = 'Inter, sans-serif';
 
 const CARD_STYLE: React.CSSProperties = {
-  background: '#100F22',
+  background: '#0D1A1A',
   borderRadius: 12,
-  border: '1px solid rgba(74,56,184,0.15)',
+  border: '1px solid rgba(14,124,124,0.15)',
   padding: 20,
   fontFamily: FONT,
   boxSizing: 'border-box',
@@ -33,20 +33,20 @@ const HOLDINGS_GRID: React.CSSProperties = {
 };
 
 const AXIS_TICK = {
-  fill: 'rgba(232,230,255,0.45)',
+  fill: 'rgba(208,240,240,0.45)',
   fontFamily: 'Inter, sans-serif',
   fontSize: 11,
 };
 
 const TOOLTIP_STYLE = {
   contentStyle: {
-    background: '#100F22',
-    border: '0.5px solid rgba(74,56,184,0.3)',
+    background: '#0D1A1A',
+    border: '0.5px solid rgba(14,124,124,0.3)',
     borderRadius: 6,
     fontFamily: 'Inter, sans-serif',
     fontSize: 11,
   },
-  labelStyle: { color: '#6B5FD4', fontFamily: 'Inter, sans-serif' },
+  labelStyle: { color: '#14B8B8', fontFamily: 'Inter, sans-serif' },
 };
 
 // ── Types ─────────────────────────────────────────────────────────────────
@@ -146,14 +146,14 @@ function SkeletonRow({ height = 48 }: { height?: number }) {
     <div style={{
       height,
       borderRadius: 8,
-      background: 'rgba(232,230,255,0.06)',
+      background: 'rgba(208,240,240,0.06)',
     }} />
   );
 }
 
 function Sparkline({ points }: { points: number[] }) {
   if (points.length < 3) {
-    return <span style={{ fontSize: 11, color: 'rgba(232,230,255,0.35)', fontFamily: FONT }}>Building...</span>;
+    return <span style={{ fontSize: 11, color: 'rgba(208,240,240,0.35)', fontFamily: FONT }}>Building...</span>;
   }
   const width = 80;
   const height = 28;
@@ -169,7 +169,7 @@ function Sparkline({ points }: { points: number[] }) {
     .join(' ');
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
-      <polyline points={coords} fill="none" stroke="#4A38B8" strokeWidth="1.5" />
+      <polyline points={coords} fill="none" stroke="#0E7C7C" strokeWidth="1.5" />
     </svg>
   );
 }
@@ -229,7 +229,7 @@ function PerformanceChartSection({
 
   return (
     <div style={CARD_STYLE}>
-      <h2 style={{ margin: '0 0 16px', fontSize: 15, fontWeight: 600, color: '#E8E6FF' }}>
+      <h2 style={{ margin: '0 0 16px', fontSize: 15, fontWeight: 600, color: '#D0F0F0' }}>
         Portfolio Performance
       </h2>
 
@@ -246,7 +246,7 @@ function PerformanceChartSection({
         </p>
       ) : !positions || positions.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '32px 0' }}>
-          <p style={{ margin: '0 0 12px', fontSize: 14, color: 'rgba(232,230,255,0.45)', fontFamily: FONT }}>
+          <p style={{ margin: '0 0 12px', fontSize: 14, color: 'rgba(208,240,240,0.45)', fontFamily: FONT }}>
             Add pools from the Yield Explorer to track your portfolio
           </p>
           {onNavigateToYields && (
@@ -254,8 +254,8 @@ function PerformanceChartSection({
               onClick={onNavigateToYields}
               style={{
                 background: 'transparent',
-                border: '1px solid #4A38B8',
-                color: '#6B5FD4',
+                border: '1px solid #0E7C7C',
+                color: '#14B8B8',
                 borderRadius: 8,
                 padding: '8px 18px',
                 fontSize: 13,
@@ -269,7 +269,7 @@ function PerformanceChartSection({
           )}
         </div>
       ) : timeframeSeries.length < 3 ? (
-        <p style={{ margin: 0, fontSize: 13, color: 'rgba(232,230,255,0.45)', fontFamily: FONT, padding: '24px 0', textAlign: 'center' }}>
+        <p style={{ margin: 0, fontSize: 13, color: 'rgba(208,240,240,0.45)', fontFamily: FONT, padding: '24px 0', textAlign: 'center' }}>
           Portfolio history is still building — check back soon
         </p>
       ) : (
@@ -277,20 +277,20 @@ function PerformanceChartSection({
           {/* Headline stats */}
           <div style={{ display: 'flex', gap: 32, marginBottom: 20 }}>
             <div>
-              <div style={{ fontSize: 28, fontWeight: 700, color: '#E8E6FF' }}>
+              <div style={{ fontSize: 28, fontWeight: 700, color: '#D0F0F0' }}>
                 {avgApyLive !== null ? `${avgApyLive.toFixed(2)}%` : '—'}
               </div>
-              <div style={{ fontSize: 12, color: 'rgba(232,230,255,0.45)', marginTop: 4 }}>Avg APY</div>
+              <div style={{ fontSize: 12, color: 'rgba(208,240,240,0.45)', marginTop: 4 }}>Avg APY</div>
             </div>
             <div>
               <div style={{
                 fontSize: 28,
                 fontWeight: 700,
-                color: sevenDayChange === null ? '#E8E6FF' : sevenDayChange >= 0 ? '#4ECDA4' : '#FF6B6B',
+                color: sevenDayChange === null ? '#D0F0F0' : sevenDayChange >= 0 ? '#4ECDA4' : '#FF6B6B',
               }}>
                 {sevenDayChange !== null ? fmtPct(sevenDayChange) : '—'}
               </div>
-              <div style={{ fontSize: 12, color: 'rgba(232,230,255,0.45)', marginTop: 4 }}>7D Change</div>
+              <div style={{ fontSize: 12, color: 'rgba(208,240,240,0.45)', marginTop: 4 }}>7D Change</div>
             </div>
 
             {/* Timeframe toggle */}
@@ -306,9 +306,9 @@ function PerformanceChartSection({
                     fontWeight: 600,
                     cursor: 'pointer',
                     fontFamily: FONT,
-                    background: timeframe === tf ? '#4A38B8' : 'transparent',
-                    border: timeframe === tf ? '1px solid #4A38B8' : '1px solid rgba(232,230,255,0.2)',
-                    color: timeframe === tf ? '#fff' : 'rgba(232,230,255,0.5)',
+                    background: timeframe === tf ? '#0E7C7C' : 'transparent',
+                    border: timeframe === tf ? '1px solid #0E7C7C' : '1px solid rgba(208,240,240,0.2)',
+                    color: timeframe === tf ? '#fff' : 'rgba(208,240,240,0.5)',
                   }}
                 >
                   {tf}
@@ -319,12 +319,12 @@ function PerformanceChartSection({
 
           <ResponsiveContainer width="100%" height={280}>
             <LineChart data={timeframeSeries} margin={{ top: 8, right: 16, bottom: 4, left: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(232,230,255,0.06)" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(208,240,240,0.06)" vertical={false} />
               <XAxis dataKey="date" tick={AXIS_TICK} tickLine={false} axisLine={false} />
               <YAxis tick={AXIS_TICK} tickLine={false} axisLine={false} tickFormatter={v => `${v}%`} />
               <Tooltip {...TOOLTIP_STYLE} formatter={(value) => [`${Number(value).toFixed(2)}%`, 'Avg APY']} />
-              <Area type="monotone" dataKey="apy" stroke="none" fill="rgba(74,56,184,0.08)" />
-              <Line type="monotone" dataKey="apy" stroke="#4A38B8" strokeWidth={2} dot={false} />
+              <Area type="monotone" dataKey="apy" stroke="none" fill="rgba(14,124,124,0.08)" />
+              <Line type="monotone" dataKey="apy" stroke="#0E7C7C" strokeWidth={2} dot={false} />
             </LineChart>
           </ResponsiveContainer>
         </>
@@ -720,13 +720,13 @@ function HoldingsSection({
   return (
     <div style={CARD_STYLE}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-        <h2 style={{ margin: 0, fontSize: 15, fontWeight: 600, color: '#E8E6FF' }}>
+        <h2 style={{ margin: 0, fontSize: 15, fontWeight: 600, color: '#D0F0F0' }}>
           Holdings
         </h2>
         <button
           onClick={onToggleAddForm}
           style={{
-            background: '#4A38B8',
+            background: '#0E7C7C',
             color: '#fff',
             border: 'none',
             borderRadius: 6,
@@ -761,23 +761,23 @@ function HoldingsSection({
           Couldn&apos;t load holdings: {error}
         </p>
       ) : rows.length === 0 ? (
-        <p style={{ margin: 0, fontSize: 13, color: 'rgba(232,230,255,0.45)', fontFamily: FONT }}>
+        <p style={{ margin: 0, fontSize: 13, color: 'rgba(208,240,240,0.45)', fontFamily: FONT }}>
           No positions yet.
         </p>
       ) : (
         <>
           <div style={{ ...HOLDINGS_GRID, padding: '0 12px', marginBottom: 6 }}>
             <span />
-            <span style={{ fontSize: 11, color: 'rgba(232,230,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>
+            <span style={{ fontSize: 11, color: 'rgba(208,240,240,0.35)', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>
               Entry APY
             </span>
-            <span style={{ fontSize: 11, color: 'rgba(232,230,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>
+            <span style={{ fontSize: 11, color: 'rgba(208,240,240,0.35)', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>
               Amount
             </span>
-            <span style={{ fontSize: 11, color: 'rgba(232,230,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>
+            <span style={{ fontSize: 11, color: 'rgba(208,240,240,0.35)', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>
               Current
             </span>
-            <span style={{ fontSize: 11, color: 'rgba(232,230,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'center' }}>
+            <span style={{ fontSize: 11, color: 'rgba(208,240,240,0.35)', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'center' }}>
               P/L
             </span>
           </div>
@@ -789,8 +789,8 @@ function HoldingsSection({
               const currentApy = liveMatch?.apy ?? null;
               const delta = currentApy !== null && pos.entryApy !== null ? currentApy - pos.entryApy : null;
               const plColor = delta === null
-                ? 'rgba(232,230,255,0.3)'
-                : delta > 0 ? '#4ECDA4' : delta < 0 ? '#FF6B6B' : 'rgba(232,230,255,0.45)';
+                ? 'rgba(208,240,240,0.3)'
+                : delta > 0 ? '#4ECDA4' : delta < 0 ? '#FF6B6B' : 'rgba(208,240,240,0.45)';
 
               return (
                 <div
@@ -799,37 +799,37 @@ function HoldingsSection({
                     ...HOLDINGS_GRID,
                     padding: '10px 12px',
                     borderRadius: 8,
-                    background: 'rgba(74,56,184,0.04)',
-                    border: '1px solid rgba(74,56,184,0.08)',
+                    background: 'rgba(14,124,124,0.04)',
+                    border: '1px solid rgba(14,124,124,0.08)',
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
                     <ProtocolLogo project={pos.protocol ?? ''} size={24} />
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: 13, fontWeight: 500, color: '#E8E6FF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <div style={{ fontSize: 13, fontWeight: 500, color: '#D0F0F0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {name}
                       </div>
-                      <div style={{ fontSize: 11, color: 'rgba(232,230,255,0.45)', marginTop: 2 }}>
+                      <div style={{ fontSize: 11, color: 'rgba(208,240,240,0.45)', marginTop: 2 }}>
                         {pos.chain ?? '—'}
                       </div>
                     </div>
                   </div>
 
-                  <div style={{ fontSize: 13, color: '#E8E6FF', textAlign: 'right' }}>
+                  <div style={{ fontSize: 13, color: '#D0F0F0', textAlign: 'right' }}>
                     {pos.entryApy !== null ? `${pos.entryApy.toFixed(2)}%` : '—'}
                   </div>
 
-                  <div style={{ fontSize: 13, color: '#E8E6FF', textAlign: 'right' }}>
+                  <div style={{ fontSize: 13, color: '#D0F0F0', textAlign: 'right' }}>
                     {pos.amountUsd !== null ? fmtUsd(pos.amountUsd) : '—'}
                   </div>
 
                   <div style={{ textAlign: 'right' }}>
                     {currentApy !== null ? (
-                      <span style={{ fontSize: 13, color: '#E8E6FF' }}>
+                      <span style={{ fontSize: 13, color: '#D0F0F0' }}>
                         {currentApy.toFixed(2)}%
                       </span>
                     ) : (
-                      <span style={{ fontSize: 13, color: 'rgba(232,230,255,0.3)' }}>—</span>
+                      <span style={{ fontSize: 13, color: 'rgba(208,240,240,0.3)' }}>—</span>
                     )}
                   </div>
 
@@ -848,7 +848,7 @@ function HoldingsSection({
                 marginTop: 12,
                 background: 'transparent',
                 border: 'none',
-                color: '#6B5FD4',
+                color: '#14B8B8',
                 fontSize: 12,
                 fontWeight: 500,
                 cursor: 'pointer',
@@ -918,7 +918,7 @@ function WatchlistSection({
 
   return (
     <div style={CARD_STYLE}>
-      <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 600, color: '#E8E6FF' }}>
+      <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 600, color: '#D0F0F0' }}>
         Watchlist
       </h2>
 
@@ -931,7 +931,7 @@ function WatchlistSection({
           Couldn&apos;t load watchlist: {watchlistError}
         </p>
       ) : rows.length === 0 ? (
-        <p style={{ margin: 0, fontSize: 13, color: 'rgba(232,230,255,0.45)', fontFamily: FONT }}>
+        <p style={{ margin: 0, fontSize: 13, color: 'rgba(208,240,240,0.45)', fontFamily: FONT }}>
           {onNavigateToYields ? (
             <>Save pools from the Yield Explorer to monitor yield changes</>
           ) : (
@@ -940,8 +940,8 @@ function WatchlistSection({
         </p>
       ) : (
         <>
-          <p style={{ margin: '0 0 16px', fontSize: 12, color: 'rgba(232,230,255,0.45)', fontFamily: FONT }}>
-            <strong style={{ color: '#E8E6FF' }}>{upToday}</strong> of <strong style={{ color: '#E8E6FF' }}>{rows.length}</strong> watched pools up today
+          <p style={{ margin: '0 0 16px', fontSize: 12, color: 'rgba(208,240,240,0.45)', fontFamily: FONT }}>
+            <strong style={{ color: '#D0F0F0' }}>{upToday}</strong> of <strong style={{ color: '#D0F0F0' }}>{rows.length}</strong> watched pools up today
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -954,16 +954,16 @@ function WatchlistSection({
                   gap: 12,
                   padding: '10px 12px',
                   borderRadius: 8,
-                  background: 'rgba(74,56,184,0.04)',
-                  border: '1px solid rgba(74,56,184,0.08)',
+                  background: 'rgba(14,124,124,0.04)',
+                  border: '1px solid rgba(14,124,124,0.08)',
                 }}
               >
                 <ProtocolLogo project={row.name.split(' — ')[0]} size={22} />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 12, fontWeight: 500, color: '#E8E6FF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <div style={{ fontSize: 12, fontWeight: 500, color: '#D0F0F0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {row.name}
                   </div>
-                  <div style={{ fontSize: 10, color: 'rgba(232,230,255,0.4)', marginTop: 2 }}>
+                  <div style={{ fontSize: 10, color: 'rgba(208,240,240,0.4)', marginTop: 2 }}>
                     {row.currentApy !== null ? `${row.currentApy.toFixed(2)}%` : '—'}
                     {row.delta !== null && (
                       <span style={{ marginLeft: 6, color: row.delta >= 0 ? '#4ECDA4' : '#FF6B6B' }}>
@@ -971,7 +971,7 @@ function WatchlistSection({
                       </span>
                     )}
                     {row.delta === null && (
-                      <span style={{ marginLeft: 6, color: 'rgba(232,230,255,0.3)' }}>—</span>
+                      <span style={{ marginLeft: 6, color: 'rgba(208,240,240,0.3)' }}>—</span>
                     )}
                   </div>
                 </div>
@@ -1191,8 +1191,8 @@ export default function Portfolio({ onNavigateToYields }: PortfolioProps) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20, fontFamily: FONT }}>
       <div>
-        <h1 style={{ margin: '0 0 4px', fontSize: 24, fontWeight: 700, color: '#E8E6FF' }}>Portfolio</h1>
-        <p style={{ margin: 0, fontSize: 13, color: 'rgba(232,230,255,0.45)' }}>
+        <h1 style={{ margin: '0 0 4px', fontSize: 24, fontWeight: 700, color: '#D0F0F0' }}>Portfolio</h1>
+        <p style={{ margin: 0, fontSize: 13, color: 'rgba(208,240,240,0.45)' }}>
           Track your DeFi positions with live Dexaris intelligence
         </p>
       </div>

@@ -7,13 +7,13 @@ export default function DexarisIcon({ size = 32 }: DexarisIconProps) {
     <svg
       width={size}
       height={size}
-      viewBox="0 0 44 44"
+      viewBox="0 0 36 34"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <polygon points="4,42 10,26 16,26 10,42" fill="rgba(74,56,184,0.3)" />
-      <polygon points="16,42 22,16 28,16 22,42" fill="rgba(74,56,184,0.6)" />
-      <polygon points="28,42 34,5 40,5 34,42" fill="#4A38B8" />
+      <rect x="0" y="20" width="9" height="14" fill="rgba(20,184,184,0.35)" rx="2" />
+      <rect x="12" y="10" width="9" height="24" fill="rgba(20,184,184,0.65)" rx="2" />
+      <rect x="24" y="1" width="9" height="33" fill="#14B8B8" rx="2" />
     </svg>
   );
 }

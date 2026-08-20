@@ -84,25 +84,25 @@ export default function StatsBar({ highestApy, totalTvl, protocolCount, chainCou
     {
       label: 'Highest Yield Today',
       value: `${highestApy.toFixed(2)}%`,
-      color: '#4A38B8',
+      color: '#0E7C7C',
       delta: apyDelta !== null && apyDelta > 0 ? `+${apyDelta.toFixed(2)}%` : null,
     },
     {
       label: 'Total TVL Tracked',
       value: formatTvl(totalTvl),
-      color: '#E8E6FF',
+      color: '#D0F0F0',
       delta: null,
     },
     {
       label: 'Protocols Tracked',
       value: String(protocolCount),
-      color: '#E8E6FF',
+      color: '#D0F0F0',
       delta: null,
     },
     {
       label: 'Chains Covered',
       value: String(chainCount),
-      color: '#E8E6FF',
+      color: '#D0F0F0',
       delta: null,
     },
   ];
@@ -120,7 +120,7 @@ export default function StatsBar({ highestApy, totalTvl, protocolCount, chainCou
           <div
             key={cell.label}
             className="stats-cell"
-            style={{ background: i % 2 === 0 ? '#100F22' : 'transparent' }}
+            style={{ background: i % 2 === 0 ? '#0D1A1A' : 'transparent' }}
           >
             <span className="stats-label">{cell.label}</span>
             <span className="stats-value" style={{ color: cell.color }}>{cell.value}</span>
@@ -129,8 +129,8 @@ export default function StatsBar({ highestApy, totalTvl, protocolCount, chainCou
         ))}
       </div>
       <div style={{
-        background: '#100F22',
-        border: '0.5px solid rgba(232,230,255,0.08)',
+        background: '#0D1A1A',
+        border: '0.5px solid rgba(208,240,240,0.08)',
         borderRadius: '10px',
         padding: '12px 16px',
         display: 'flex',
@@ -139,7 +139,7 @@ export default function StatsBar({ highestApy, totalTvl, protocolCount, chainCou
         marginTop: '14px',
         marginBottom: '14px',
         fontSize: '13px',
-        color: '#E8E6FF',
+        color: '#D0F0F0',
       }}>
         <span style={{
           width: '6px',

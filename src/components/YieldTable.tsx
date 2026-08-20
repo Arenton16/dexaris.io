@@ -43,7 +43,7 @@ const GROUP_LABEL_STYLE: React.CSSProperties = {
   fontWeight: 600,
   letterSpacing: '0.06em',
   textTransform: 'uppercase',
-  color: 'rgba(232,230,255,0.3)',
+  color: 'rgba(208,240,240,0.3)',
   marginRight: '2px',
   flexShrink: 0,
 };
@@ -63,7 +63,7 @@ function FilterChip({
   const style: React.CSSProperties = active
     ? (activeScheme === 'score'
       ? { background: 'rgba(78,205,164,0.1)', border: '0.5px solid rgba(78,205,164,0.3)', color: '#4ECDA4' }
-      : { background: 'rgba(74,56,184,0.15)', border: '0.5px solid rgba(107,84,255,0.35)', color: '#9488CC' })
+      : { background: 'rgba(14,124,124,0.15)', border: '0.5px solid rgba(107,84,255,0.35)', color: '#5DCACA' })
     : { background: 'transparent', border: `0.5px solid ${hovered ? '#3A3A4E' : '#2A2A3E'}`, color: hovered ? '#888888' : '#666666' };
   return (
     <button
@@ -125,11 +125,11 @@ function ReasonBar({ components }: { components: Component[] }) {
             height: '5px',
             flex: 1,
             borderRadius: '1px',
-            background: c.score > 0 ? getColour(c.score) : 'rgba(232,230,255,0.07)',
+            background: c.score > 0 ? getColour(c.score) : 'rgba(208,240,240,0.07)',
           }} />
         ))}
       </div>
-      <div style={{ fontSize: '8px', color: 'rgba(232,230,255,0.32)', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', width: '64px' }}>
+      <div style={{ fontSize: '8px', color: 'rgba(208,240,240,0.32)', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', width: '64px' }}>
         {generateCaption(components)}
       </div>
     </div>
@@ -309,7 +309,7 @@ export default function YieldTable({
                 border: 'none',
                 cursor: 'pointer',
                 fontSize: '11px',
-                color: 'rgba(232,230,255,0.4)',
+                color: 'rgba(208,240,240,0.4)',
                 textDecoration: 'underline',
                 padding: 0,
                 fontFamily: "'Inter', sans-serif",
@@ -405,13 +405,13 @@ export default function YieldTable({
                         <div className="protocol-cell">
                           <ProtocolLogo project={pool.project} />
                           {pool.project}
-                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', fontSize: '10px', fontWeight: 600, padding: '2px 7px', borderRadius: '10px', background: 'rgba(74,56,184,0.15)', border: '0.5px solid rgba(74,56,184,0.4)', color: '#6B5FD4', marginLeft: '8px', letterSpacing: '0.3px', textTransform: 'uppercase', visibility: pool.pool === bestPickId ? 'visible' : 'hidden' }}>✦ Best Pick</span>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', fontSize: '10px', fontWeight: 600, padding: '2px 7px', borderRadius: '10px', background: 'rgba(14,124,124,0.15)', border: '0.5px solid rgba(14,124,124,0.4)', color: '#14B8B8', marginLeft: '8px', letterSpacing: '0.3px', textTransform: 'uppercase', visibility: pool.pool === bestPickId ? 'visible' : 'hidden' }}>✦ Best Pick</span>
                         </div>
                       </td>
                       <td>{pool.symbol}</td>
                       <td>
                         {(() => {
-                          const cc = CHAIN_COLOURS[pool.chain] ?? 'rgba(232,230,255,0.4)';
+                          const cc = CHAIN_COLOURS[pool.chain] ?? 'rgba(208,240,240,0.4)';
                           return (
                             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '10px', padding: '3px 9px', borderRadius: '10px', background: 'rgba(50,50,65,0.5)', border: '0.5px solid #2E2E3E', color: '#888899' }}>
                               <img
@@ -521,8 +521,8 @@ function ScoreInfoModal({ open, onClose }: { open: boolean; onClose: () => void 
     >
       <div
         style={{
-          background: '#100F22',
-          border: '0.5px solid rgba(74,56,184,0.3)',
+          background: '#0D1A1A',
+          border: '0.5px solid rgba(14,124,124,0.3)',
           borderRadius: 12,
           padding: '28px 28px 24px',
           width: 360,
@@ -538,15 +538,15 @@ function ScoreInfoModal({ open, onClose }: { open: boolean; onClose: () => void 
           style={{
             position: 'absolute', top: 14, right: 14,
             background: 'none', border: 'none', cursor: 'pointer',
-            color: 'rgba(232,230,255,0.4)', fontSize: 18, lineHeight: 1,
+            color: 'rgba(208,240,240,0.4)', fontSize: 18, lineHeight: 1,
             padding: '2px 6px',
           }}
           aria-label="Close"
         >×</button>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
-          <span style={{ fontSize: 16, color: '#4A38B8' }}>ⓘ</span>
-          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: '#E8E6FF' }}>Dexaris Score</h3>
+          <span style={{ fontSize: 16, color: '#0E7C7C' }}>ⓘ</span>
+          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: '#D0F0F0' }}>Dexaris Score</h3>
         </div>
 
         <div style={{ marginBottom: 20 }}>
@@ -554,27 +554,27 @@ function ScoreInfoModal({ open, onClose }: { open: boolean; onClose: () => void 
             <div key={t.label} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 7 }}>
               <div style={{ width: 4, height: 28, borderRadius: 2, background: t.color, flexShrink: 0 }} />
               <span style={{ fontSize: 13, color: t.color, fontWeight: 600, minWidth: 72 }}>{t.label}</span>
-              <span style={{ fontSize: 12, color: 'rgba(232,230,255,0.4)' }}>{t.range}</span>
+              <span style={{ fontSize: 12, color: 'rgba(208,240,240,0.4)' }}>{t.range}</span>
             </div>
           ))}
         </div>
 
-        <div style={{ height: 1, background: 'rgba(74,56,184,0.15)', marginBottom: 20 }} />
+        <div style={{ height: 1, background: 'rgba(14,124,124,0.15)', marginBottom: 20 }} />
 
         <div style={{ marginBottom: 20 }}>
-          <p style={{ margin: '0 0 10px', fontSize: 11, color: 'rgba(232,230,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Components</p>
+          <p style={{ margin: '0 0 10px', fontSize: 11, color: 'rgba(208,240,240,0.35)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Components</p>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr>
-                <th style={{ textAlign: 'left', fontSize: 11, color: 'rgba(232,230,255,0.35)', fontWeight: 500, paddingBottom: 6, paddingRight: 8 }}>Component</th>
-                <th style={{ textAlign: 'right', fontSize: 11, color: 'rgba(232,230,255,0.35)', fontWeight: 500, paddingBottom: 6 }}>Weight</th>
+                <th style={{ textAlign: 'left', fontSize: 11, color: 'rgba(208,240,240,0.35)', fontWeight: 500, paddingBottom: 6, paddingRight: 8 }}>Component</th>
+                <th style={{ textAlign: 'right', fontSize: 11, color: 'rgba(208,240,240,0.35)', fontWeight: 500, paddingBottom: 6 }}>Weight</th>
               </tr>
             </thead>
             <tbody>
               {components.map((c, i) => (
-                <tr key={c.name} style={{ background: i % 2 === 0 ? 'rgba(74,56,184,0.04)' : 'transparent' }}>
-                  <td style={{ fontSize: 13, color: 'rgba(232,230,255,0.75)', padding: '6px 8px 6px 0' }}>{c.name}</td>
-                  <td style={{ fontSize: 13, color: '#4A38B8', fontWeight: 600, textAlign: 'right', padding: '6px 0' }}>{c.weight}</td>
+                <tr key={c.name} style={{ background: i % 2 === 0 ? 'rgba(14,124,124,0.04)' : 'transparent' }}>
+                  <td style={{ fontSize: 13, color: 'rgba(208,240,240,0.75)', padding: '6px 8px 6px 0' }}>{c.name}</td>
+                  <td style={{ fontSize: 13, color: '#0E7C7C', fontWeight: 600, textAlign: 'right', padding: '6px 0' }}>{c.weight}</td>
                 </tr>
               ))}
             </tbody>
@@ -599,10 +599,10 @@ function ScoreInfoModal({ open, onClose }: { open: boolean; onClose: () => void 
           style={{
             display: 'block', width: '100%',
             padding: '9px 0',
-            background: 'rgba(74,56,184,0.08)',
-            border: '0.5px solid rgba(74,56,184,0.25)',
+            background: 'rgba(14,124,124,0.08)',
+            border: '0.5px solid rgba(14,124,124,0.25)',
             borderRadius: 7,
-            color: 'rgba(232,230,255,0.65)',
+            color: 'rgba(208,240,240,0.65)',
             fontSize: 13,
             cursor: 'pointer',
             marginBottom: 14,
@@ -611,7 +611,7 @@ function ScoreInfoModal({ open, onClose }: { open: boolean; onClose: () => void 
           Read full methodology →
         </button>
 
-        <p style={{ margin: 0, fontSize: 11, color: 'rgba(232,230,255,0.25)', textAlign: 'center' }}>
+        <p style={{ margin: 0, fontSize: 11, color: 'rgba(208,240,240,0.25)', textAlign: 'center' }}>
           The Dexaris Score is an analytical tool, not financial advice.
         </p>
       </div>
@@ -629,7 +629,7 @@ function SkeletonRow() {
             width,
             height: 14,
             borderRadius: 6,
-            background: 'rgba(232,230,255,0.06)',
+            background: 'rgba(208,240,240,0.06)',
             animation: 'skeleton-pulse 1.5s ease-in-out infinite',
             animationDelay: `${i * 0.05}s`,
           }} />

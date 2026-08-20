@@ -31,14 +31,14 @@ interface ScoreHistoryPoint {
 const NEUTRAL_CHAIN_BADGE = { bg: 'rgba(50,50,65,0.5)', text: '#888899' };
 
 const AXIS_TICK = {
-  fill: 'rgba(232,230,255,0.3)',
+  fill: 'rgba(208,240,240,0.3)',
   fontFamily: 'Space Grotesk, sans-serif',
   fontSize: 9,
 } as const;
 
 const CARD = {
-  background: 'rgba(232,230,255,0.03)',
-  border: '0.5px solid rgba(232,230,255,0.08)',
+  background: 'rgba(208,240,240,0.03)',
+  border: '0.5px solid rgba(208,240,240,0.08)',
   borderRadius: '10px',
   padding: '16px',
 };
@@ -48,7 +48,7 @@ const SEC_LABEL = {
   fontWeight: 600,
   letterSpacing: '0.1em',
   textTransform: 'uppercase' as const,
-  color: 'rgba(232,230,255,0.4)',
+  color: 'rgba(208,240,240,0.4)',
   display: 'block',
   marginBottom: 12,
 };
@@ -127,7 +127,7 @@ function SparklineChart({ data, color }: { data: number[]; color: string }) {
         width: 56,
         height: 24,
         fontSize: 9,
-        color: 'rgba(232,230,255,0.3)',
+        color: 'rgba(208,240,240,0.3)',
         letterSpacing: '0.02em',
         flex: 'none',
       }}>
@@ -163,7 +163,7 @@ function SparklineChart({ data, color }: { data: number[]; color: string }) {
 }
 
 function ChangeLabel({ value }: { value: number | null }) {
-  if (value === null) return <span style={{ color: 'rgba(232,230,255,0.3)' }}>—</span>;
+  if (value === null) return <span style={{ color: 'rgba(208,240,240,0.3)' }}>—</span>;
   const color = value >= 0 ? '#4ECDA4' : '#FF6B6B';
   return (
     <span style={{ color, fontWeight: 500 }}>
@@ -195,21 +195,21 @@ function TokenPricesSection({
   return (
     <div style={{
       margin: noMargin ? 0 : '16px 0',
-      background: 'rgba(74,56,184,0.07)',
-      border: '1px solid rgba(74,56,184,0.2)',
+      background: 'rgba(14,124,124,0.07)',
+      border: '1px solid rgba(14,124,124,0.2)',
       borderRadius: 10,
       overflow: 'hidden',
     }}>
       <div style={{
         padding: '10px 14px 8px',
-        borderBottom: '1px solid rgba(74,56,184,0.1)',
+        borderBottom: '1px solid rgba(14,124,124,0.1)',
       }}>
         <span style={{
           fontSize: 10,
           fontWeight: 600,
           letterSpacing: '0.1em',
           textTransform: 'uppercase',
-          color: 'rgba(232,230,255,0.4)',
+          color: 'rgba(208,240,240,0.4)',
         }}>
           Token Prices
         </span>
@@ -221,7 +221,7 @@ function TokenPricesSection({
             margin: 0,
             padding: '14px 14px',
             fontSize: 12,
-            color: 'rgba(232,230,255,0.35)',
+            color: 'rgba(208,240,240,0.35)',
             fontStyle: 'italic',
           }}>
             Price data unavailable for this pool's tokens.
@@ -232,9 +232,9 @@ function TokenPricesSection({
               display: 'flex', alignItems: 'center', gap: 10,
               padding: '10px 14px',
             }}>
-              <div style={{ width: 36, height: 11, borderRadius: 4, background: 'rgba(232,230,255,0.07)', flex: 'none' }} />
-              <div style={{ flex: 1, height: 11, borderRadius: 4, background: 'rgba(232,230,255,0.05)' }} />
-              <div style={{ width: 56, height: 24, borderRadius: 4, background: 'rgba(232,230,255,0.05)' }} />
+              <div style={{ width: 36, height: 11, borderRadius: 4, background: 'rgba(208,240,240,0.07)', flex: 'none' }} />
+              <div style={{ flex: 1, height: 11, borderRadius: 4, background: 'rgba(208,240,240,0.05)' }} />
+              <div style={{ width: 56, height: 24, borderRadius: 4, background: 'rgba(208,240,240,0.05)' }} />
             </div>
           ))
         ) : (
@@ -248,12 +248,12 @@ function TokenPricesSection({
                 alignItems: 'center',
                 gap: 10,
                 padding: '9px 14px',
-                borderBottom: '1px solid rgba(74,56,184,0.06)',
+                borderBottom: '1px solid rgba(14,124,124,0.06)',
               }}>
-                <span style={{ fontSize: 12, fontWeight: 600, color: '#E8E6FF', minWidth: 48, flex: 'none' }}>
+                <span style={{ fontSize: 12, fontWeight: 600, color: '#D0F0F0', minWidth: 48, flex: 'none' }}>
                   {sym}
                 </span>
-                <span style={{ fontSize: 13, fontWeight: 500, color: '#E8E6FF', flex: 1, fontVariantNumeric: 'tabular-nums' }}>
+                <span style={{ fontSize: 13, fontWeight: 500, color: '#D0F0F0', flex: 1, fontVariantNumeric: 'tabular-nums' }}>
                   {p.price !== null
                     ? p.isStable
                       ? `$${p.price.toFixed(4)}`
@@ -264,17 +264,17 @@ function TokenPricesSection({
                   }
                 </span>
                 {p.isStable ? (
-                  <span style={{ fontSize: 10, color: 'rgba(232,230,255,0.3)', letterSpacing: '0.06em', textTransform: 'uppercase', flex: 'none' }}>
+                  <span style={{ fontSize: 10, color: 'rgba(208,240,240,0.3)', letterSpacing: '0.06em', textTransform: 'uppercase', flex: 'none' }}>
                     Stablecoin
                   </span>
                 ) : (
                   <>
                     <span style={{ fontSize: 11, flex: 'none', minWidth: 52, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
-                      <span style={{ fontSize: 9, color: 'rgba(232,230,255,0.3)', display: 'block', marginBottom: 1 }}>24h</span>
+                      <span style={{ fontSize: 9, color: 'rgba(208,240,240,0.3)', display: 'block', marginBottom: 1 }}>24h</span>
                       <ChangeLabel value={p.change24h} />
                     </span>
                     <span style={{ fontSize: 11, flex: 'none', minWidth: 52, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
-                      <span style={{ fontSize: 9, color: 'rgba(232,230,255,0.3)', display: 'block', marginBottom: 1 }}>7d</span>
+                      <span style={{ fontSize: 9, color: 'rgba(208,240,240,0.3)', display: 'block', marginBottom: 1 }}>7d</span>
                       <ChangeLabel value={p.change7d} />
                     </span>
                     <SparklineChart data={p.sparkline} color={positive7d ? '#4ECDA4' : '#FF6B6B'} />
@@ -491,8 +491,8 @@ export default function PoolDetail({ pool, onClose }: Props) {
                 width: 52,
                 height: 52,
                 borderRadius: 14,
-                background: 'rgba(74,56,184,0.08)',
-                border: '1px solid rgba(74,56,184,0.25)',
+                background: 'rgba(14,124,124,0.08)',
+                border: '1px solid rgba(14,124,124,0.25)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -525,11 +525,11 @@ export default function PoolDetail({ pool, onClose }: Props) {
 
           const breakdownRows = breakdown.components.map(comp => (
             <div key={comp.label} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-              <span style={{ fontSize: 11, color: 'rgba(232,230,255,0.45)', minWidth: 92, flex: 'none' }}>{comp.label}</span>
-              <div style={{ flex: 1, height: 4, background: 'rgba(232,230,255,0.08)', borderRadius: 2, overflow: 'hidden' }}>
+              <span style={{ fontSize: 11, color: 'rgba(208,240,240,0.45)', minWidth: 92, flex: 'none' }}>{comp.label}</span>
+              <div style={{ flex: 1, height: 4, background: 'rgba(208,240,240,0.08)', borderRadius: 2, overflow: 'hidden' }}>
                 <div style={{ width: `${(comp.score / 10) * 100}%`, height: '100%', background: scoreColour, borderRadius: 2 }} />
               </div>
-              <span style={{ fontSize: 11, color: 'rgba(232,230,255,0.45)', minWidth: 36, textAlign: 'right', flex: 'none', fontVariantNumeric: 'tabular-nums' }}>{comp.score.toFixed(1)}/10</span>
+              <span style={{ fontSize: 11, color: 'rgba(208,240,240,0.45)', minWidth: 36, textAlign: 'right', flex: 'none', fontVariantNumeric: 'tabular-nums' }}>{comp.score.toFixed(1)}/10</span>
             </div>
           ));
 
@@ -537,9 +537,9 @@ export default function PoolDetail({ pool, onClose }: Props) {
           const scoreSparklineEl = (() => {
             if (scoreHistoryData.length < MIN_SCORE_HISTORY) {
               return (
-                <div style={{ marginTop: 14, paddingTop: 12, borderTop: '0.5px solid rgba(232,230,255,0.07)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(232,230,255,0.25)' }}>Score (30d)</span>
-                  <span style={{ fontSize: 10, color: 'rgba(232,230,255,0.25)', fontStyle: 'italic' }}>Building score history…</span>
+                <div style={{ marginTop: 14, paddingTop: 12, borderTop: '0.5px solid rgba(208,240,240,0.07)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(208,240,240,0.25)' }}>Score (30d)</span>
+                  <span style={{ fontSize: 10, color: 'rgba(208,240,240,0.25)', fontStyle: 'italic' }}>Building score history…</span>
                 </div>
               );
             }
@@ -548,9 +548,9 @@ export default function PoolDetail({ pool, onClose }: Props) {
             const deltaColor = delta >= 0 ? '#4ECDA4' : '#FF6B6B';
             const sparkColor = delta >= 0 ? '#4ECDA4' : '#FF6B6B';
             return (
-              <div style={{ marginTop: 14, paddingTop: 12, borderTop: '0.5px solid rgba(232,230,255,0.07)' }}>
+              <div style={{ marginTop: 14, paddingTop: 12, borderTop: '0.5px solid rgba(208,240,240,0.07)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                  <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(232,230,255,0.4)' }}>Score (30d)</span>
+                  <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(208,240,240,0.4)' }}>Score (30d)</span>
                   <span style={{ fontSize: 11, color: deltaColor, fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>
                     {delta >= 0 ? '+' : ''}{delta}
                   </span>
@@ -591,7 +591,7 @@ export default function PoolDetail({ pool, onClose }: Props) {
             <p style={{
               margin: 0,
               fontSize: '12px',
-              color: 'rgba(232,230,255,0.5)',
+              color: 'rgba(208,240,240,0.5)',
               ...(compositionFallback.isWarning ? { borderLeft: '2px solid #FFB347', paddingLeft: '10px' } : {}),
             }}>
               {compositionFallback.text}
@@ -599,7 +599,7 @@ export default function PoolDetail({ pool, onClose }: Props) {
           ) : (!extPool.apyReward) ? (
             <>
               <div style={{ height: 8, background: '#4ECDA4', borderRadius: 4, marginBottom: 10 }} />
-              <p style={{ margin: 0, fontSize: 11, color: 'rgba(232,230,255,0.45)' }}>100% organic yield</p>
+              <p style={{ margin: 0, fontSize: 11, color: 'rgba(208,240,240,0.45)' }}>100% organic yield</p>
             </>
           ) : (
             <>
@@ -610,11 +610,11 @@ export default function PoolDetail({ pool, onClose }: Props) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span style={{ width: 8, height: 8, borderRadius: 2, background: '#4ECDA4', flex: 'none', display: 'inline-block' }} />
-                  <span style={{ fontSize: 11, color: 'rgba(232,230,255,0.45)' }}>Organic {pool.apyBase.toFixed(2)}%</span>
+                  <span style={{ fontSize: 11, color: 'rgba(208,240,240,0.45)' }}>Organic {pool.apyBase.toFixed(2)}%</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span style={{ width: 8, height: 8, borderRadius: 2, background: '#FFB347', flex: 'none', display: 'inline-block' }} />
-                  <span style={{ fontSize: 11, color: 'rgba(232,230,255,0.45)' }}>Incentive {extPool.apyReward.toFixed(2)}%</span>
+                  <span style={{ fontSize: 11, color: 'rgba(208,240,240,0.45)' }}>Incentive {extPool.apyReward.toFixed(2)}%</span>
                 </div>
               </div>
             </>
@@ -629,27 +629,27 @@ export default function PoolDetail({ pool, onClose }: Props) {
                   <AreaChart data={historyData} margin={{ top: 4, right: 4, bottom: 0, left: -8 }}>
                     <defs>
                       <linearGradient id="apyGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%"  stopColor="#4A38B8" stopOpacity={0.2} />
-                        <stop offset="95%" stopColor="#4A38B8" stopOpacity={0} />
+                        <stop offset="5%"  stopColor="#0E7C7C" stopOpacity={0.2} />
+                        <stop offset="95%" stopColor="#0E7C7C" stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(74,56,184,0.08)" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(14,124,124,0.08)" />
                     <XAxis dataKey="date" tick={AXIS_TICK} tickLine={false} axisLine={false} interval="preserveStartEnd" />
                     <YAxis tickFormatter={v => `${v}%`} tick={AXIS_TICK} tickLine={false} axisLine={false} width={36} />
                     <Tooltip
-                      contentStyle={{ background: '#100F22', border: '0.5px solid rgba(74,56,184,0.25)', borderRadius: 6, fontFamily: 'Space Grotesk, sans-serif', fontSize: 12 }}
-                      labelStyle={{ color: '#6B5FD4', fontFamily: 'Space Grotesk, sans-serif' }}
-                      itemStyle={{ color: '#E8E6FF' }}
+                      contentStyle={{ background: '#0D1A1A', border: '0.5px solid rgba(14,124,124,0.25)', borderRadius: 6, fontFamily: 'Space Grotesk, sans-serif', fontSize: 12 }}
+                      labelStyle={{ color: '#14B8B8', fontFamily: 'Space Grotesk, sans-serif' }}
+                      itemStyle={{ color: '#D0F0F0' }}
                       formatter={(v) => [`${Number(v).toFixed(2)}%`, 'APY']}
                     />
-                    <Area type="monotone" dataKey="apy" stroke="#4A38B8" strokeWidth={1.5} fill="url(#apyGrad)" dot={false} activeDot={{ r: 3, fill: '#4A38B8' }} />
+                    <Area type="monotone" dataKey="apy" stroke="#0E7C7C" strokeWidth={1.5} fill="url(#apyGrad)" dot={false} activeDot={{ r: 3, fill: '#0E7C7C' }} />
                   </AreaChart>
                 </ResponsiveContainer>
               )}
             </>
           );
 
-          const chipStyle = { fontSize: 11, padding: '3px 10px', borderRadius: 20, background: 'rgba(232,230,255,0.06)', border: '0.5px solid rgba(232,230,255,0.15)', color: 'rgba(232,230,255,0.55)' };
+          const chipStyle = { fontSize: 11, padding: '3px 10px', borderRadius: 20, background: 'rgba(208,240,240,0.06)', border: '0.5px solid rgba(208,240,240,0.15)', color: 'rgba(208,240,240,0.55)' };
           const isSingle = extPool.exposure === 'single';
           const factsChips = (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
@@ -668,10 +668,10 @@ export default function PoolDetail({ pool, onClose }: Props) {
           );
 
           const yieldSourceEl = (
-            <div style={{ background: 'rgba(232,230,255,0.03)', border: '0.5px solid rgba(232,230,255,0.08)', borderRadius: '10px', padding: '14px 16px' }}>
+            <div style={{ background: 'rgba(208,240,240,0.03)', border: '0.5px solid rgba(208,240,240,0.08)', borderRadius: '10px', padding: '14px 16px' }}>
               <span style={SEC_LABEL}>Yield Source</span>
-              <span style={{ fontSize: '15px', fontWeight: 600, color: '#E8E6FF', display: 'block', marginBottom: '6px' }}>{yieldSource.label}</span>
-              <span style={{ fontSize: '12px', color: 'rgba(232,230,255,0.45)', lineHeight: 1.6, display: 'block' }}>{yieldSource.description}</span>
+              <span style={{ fontSize: '15px', fontWeight: 600, color: '#D0F0F0', display: 'block', marginBottom: '6px' }}>{yieldSource.label}</span>
+              <span style={{ fontSize: '12px', color: 'rgba(208,240,240,0.45)', lineHeight: 1.6, display: 'block' }}>{yieldSource.description}</span>
             </div>
           );
 
@@ -702,8 +702,8 @@ export default function PoolDetail({ pool, onClose }: Props) {
                 {/* Row 1 — Stats strip */}
                 <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
                   {(() => {
-                    const statCard = { flex: 1, background: 'rgba(232,230,255,0.03)', border: '0.5px solid rgba(232,230,255,0.08)', borderRadius: '10px', padding: '14px 16px', display: 'flex', flexDirection: 'column' as const, gap: '6px' };
-                    const statLabel = { fontSize: '10px', fontWeight: 400, color: 'rgba(232,230,255,0.4)', textTransform: 'uppercase' as const, letterSpacing: '0.5px' };
+                    const statCard = { flex: 1, background: 'rgba(208,240,240,0.03)', border: '0.5px solid rgba(208,240,240,0.08)', borderRadius: '10px', padding: '14px 16px', display: 'flex', flexDirection: 'column' as const, gap: '6px' };
+                    const statLabel = { fontSize: '10px', fontWeight: 400, color: 'rgba(208,240,240,0.4)', textTransform: 'uppercase' as const, letterSpacing: '0.5px' };
                     const statValue = { fontSize: '22px', fontWeight: 600, lineHeight: 1.2 };
                     return (
                       <>
@@ -763,9 +763,9 @@ export default function PoolDetail({ pool, onClose }: Props) {
                       <span style={SEC_LABEL}>Quick Stats</span>
                       {(() => {
                         const rowStyle = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0' };
-                        const labelStyle = { fontSize: '11px', color: 'rgba(232,230,255,0.4)' };
-                        const valueStyle = { fontSize: '11px', color: 'rgba(232,230,255,0.8)', fontWeight: 500 };
-                        const divStyle = { height: '0.5px', background: 'rgba(232,230,255,0.06)' };
+                        const labelStyle = { fontSize: '11px', color: 'rgba(208,240,240,0.4)' };
+                        const valueStyle = { fontSize: '11px', color: 'rgba(208,240,240,0.8)', fontWeight: 500 };
+                        const divStyle = { height: '0.5px', background: 'rgba(208,240,240,0.06)' };
                         return (
                           <>
                             <div style={rowStyle}>
@@ -795,10 +795,10 @@ export default function PoolDetail({ pool, onClose }: Props) {
                 </div>
 
                 {/* Row 3 — Pool Insight */}
-                <div style={{ background: 'rgba(74,56,184,0.07)', border: '0.5px solid rgba(74,56,184,0.2)', borderRadius: '10px', padding: '16px' }}>
-                  <span style={{ ...SEC_LABEL, color: 'rgba(107,95,212,0.7)' }}>Pool Insight</span>
-                  <p style={{ margin: 0, fontSize: '13px', lineHeight: 1.7, color: 'rgba(232,230,255,0.65)' }}>{insightText}</p>
-                  <p style={{ margin: 0, marginTop: '10px', fontSize: '13px', lineHeight: 1.7, color: 'rgba(232,230,255,0.65)' }}>{insightSynthesis}</p>
+                <div style={{ background: 'rgba(14,124,124,0.07)', border: '0.5px solid rgba(14,124,124,0.2)', borderRadius: '10px', padding: '16px' }}>
+                  <span style={{ ...SEC_LABEL, color: 'rgba(20,184,184,0.7)' }}>Pool Insight</span>
+                  <p style={{ margin: 0, fontSize: '13px', lineHeight: 1.7, color: 'rgba(208,240,240,0.65)' }}>{insightText}</p>
+                  <p style={{ margin: 0, marginTop: '10px', fontSize: '13px', lineHeight: 1.7, color: 'rgba(208,240,240,0.65)' }}>{insightSynthesis}</p>
                 </div>
 
                 {/* Row 4 — APY history */}
@@ -853,9 +853,9 @@ export default function PoolDetail({ pool, onClose }: Props) {
               />
 
               {/* Score Breakdown */}
-              <div style={{ margin: '16px 0', background: 'rgba(74,56,184,0.07)', border: '1px solid rgba(74,56,184,0.2)', borderRadius: 10, overflow: 'hidden' }}>
-                <div style={{ padding: '10px 14px 8px', borderBottom: '1px solid rgba(74,56,184,0.1)' }}>
-                  <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(232,230,255,0.4)' }}>Score Breakdown</span>
+              <div style={{ margin: '16px 0', background: 'rgba(14,124,124,0.07)', border: '1px solid rgba(14,124,124,0.2)', borderRadius: 10, overflow: 'hidden' }}>
+                <div style={{ padding: '10px 14px 8px', borderBottom: '1px solid rgba(14,124,124,0.1)' }}>
+                  <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(208,240,240,0.4)' }}>Score Breakdown</span>
                 </div>
                 <div style={{ padding: '14px 14px 10px' }}>
                   <div className="detail-score-main" style={{ marginBottom: 10 }}>
@@ -872,9 +872,9 @@ export default function PoolDetail({ pool, onClose }: Props) {
               </div>
 
               {/* Yield Composition */}
-              <div style={{ margin: '16px 0', background: 'rgba(74,56,184,0.07)', border: '1px solid rgba(74,56,184,0.2)', borderRadius: 10, overflow: 'hidden' }}>
-                <div style={{ padding: '10px 14px 8px', borderBottom: '1px solid rgba(74,56,184,0.1)' }}>
-                  <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(232,230,255,0.4)' }}>Yield Composition</span>
+              <div style={{ margin: '16px 0', background: 'rgba(14,124,124,0.07)', border: '1px solid rgba(14,124,124,0.2)', borderRadius: 10, overflow: 'hidden' }}>
+                <div style={{ padding: '10px 14px 8px', borderBottom: '1px solid rgba(14,124,124,0.1)' }}>
+                  <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(208,240,240,0.4)' }}>Yield Composition</span>
                 </div>
                 <div style={{ padding: '14px 14px 12px' }}>
                   {yieldCompBody}
@@ -893,9 +893,9 @@ export default function PoolDetail({ pool, onClose }: Props) {
               </div>
 
               {/* Pool Facts */}
-              <div style={{ margin: '16px 0 0', background: 'rgba(74,56,184,0.07)', border: '1px solid rgba(74,56,184,0.2)', borderRadius: 10, overflow: 'hidden' }}>
-                <div style={{ padding: '10px 14px 8px', borderBottom: '1px solid rgba(74,56,184,0.1)' }}>
-                  <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(232,230,255,0.4)' }}>Pool Facts</span>
+              <div style={{ margin: '16px 0 0', background: 'rgba(14,124,124,0.07)', border: '1px solid rgba(14,124,124,0.2)', borderRadius: 10, overflow: 'hidden' }}>
+                <div style={{ padding: '10px 14px 8px', borderBottom: '1px solid rgba(14,124,124,0.1)' }}>
+                  <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(208,240,240,0.4)' }}>Pool Facts</span>
                 </div>
                 <div style={{ padding: '12px 14px' }}>
                   {factsChips}
