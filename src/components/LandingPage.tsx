@@ -41,9 +41,9 @@ function HeroScatterDot({ cx, cy, fill }: { cx?: number; cy?: number; fill?: str
       cx={cx ?? 0}
       cy={cy ?? 0}
       r={hovered ? 6 : 4}
-      fill={fill ?? 'rgba(208,240,240,0.3)'}
+      fill={fill ?? 'rgba(242,242,242,0.3)'}
       fillOpacity={hovered ? 1 : 0.8}
-      stroke="rgba(8,15,15,0.6)"
+      stroke="rgba(5,5,5,0.6)"
       strokeWidth={1}
       style={{ transition: 'r 0.1s ease, fill-opacity 0.1s ease' }}
       onMouseEnter={() => setHovered(true)}
@@ -58,24 +58,24 @@ function HeroScatterTooltip({ active, payload }: { active?: boolean; payload?: A
   const tvl = d.tvlM >= 1000 ? `$${(d.tvlM / 1000).toFixed(1)}B` : `$${d.tvlM.toFixed(1)}M`;
   const row = (label: string, value: string, color?: string) => (
     <p style={{ margin: 0, display: 'flex', gap: 8, justifyContent: 'space-between' }}>
-      <span style={{ color: 'rgba(208,240,240,0.4)' }}>{label}</span>
-      <span style={{ color: color ?? '#D0F0F0' }}>{value}</span>
+      <span style={{ color: 'rgba(242,242,242,0.4)' }}>{label}</span>
+      <span style={{ color: color ?? '#F2F2F2' }}>{value}</span>
     </p>
   );
   return (
     <div style={{
-      background: '#080F0F',
-      border: '1px solid rgba(14,124,124,0.35)',
+      background: '#050505',
+      border: '1px solid rgba(255,255,255,0.35)',
       borderRadius: 6,
       padding: '10px 12px',
       fontFamily: "'Space Grotesk', sans-serif",
       fontSize: 11,
-      color: '#D0F0F0',
+      color: '#F2F2F2',
       lineHeight: 1.75,
       minWidth: 150,
       pointerEvents: 'none',
     }}>
-      <p style={{ margin: '0 0 4px', fontWeight: 500 }}>{d.project} <span style={{ color: 'rgba(208,240,240,0.4)', fontWeight: 400 }}>{d.symbol}</span></p>
+      <p style={{ margin: '0 0 4px', fontWeight: 500 }}>{d.project} <span style={{ color: 'rgba(242,242,242,0.4)', fontWeight: 400 }}>{d.symbol}</span></p>
       {row('Chain', d.chain)}
       {row('APY', `${d.apy.toFixed(2)}%`, '#4ECDA4')}
       {row('TVL', tvl)}
@@ -110,8 +110,8 @@ function StarIcon() {
 function D4Icon() {
   return (
     <svg width="24" height="24" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <polygon points="4,42 10,26 16,26 10,42" fill="rgba(14,124,124,0.5)" />
-      <polygon points="16,42 22,16 28,16 22,42" fill="rgba(14,124,124,0.75)" />
+      <polygon points="4,42 10,26 16,26 10,42" fill="rgba(255,255,255,0.5)" />
+      <polygon points="16,42 22,16 28,16 22,42" fill="rgba(255,255,255,0.75)" />
       <polygon points="28,42 34,5 40,5 34,42" fill="#0E7C7C" />
     </svg>
   );
@@ -150,12 +150,12 @@ function ProtocolLogoStrip() {
           textAlign: 'center',
           fontSize: '10.5px',
           fontFamily: "'Space Grotesk', sans-serif",
-          color: 'rgba(208,240,240,0.4)',
+          color: 'rgba(242,242,242,0.4)',
           textTransform: 'uppercase',
           letterSpacing: '0.05em',
           margin: 0,
           padding: '12px 16px',
-          borderBottom: '0.5px solid rgba(14,124,124,0.2)',
+          borderBottom: '0.5px solid rgba(255,255,255,0.2)',
         }}>
           Live yield data across 6 chains and 140+ protocols
         </p>
@@ -163,8 +163,8 @@ function ProtocolLogoStrip() {
           {/* Edge scrims — a solid gradient overlay fades logos out cleanly
               regardless of icon size, unlike a mask-image against a hard
               overflow:hidden clip (which slices icons mid-shape). */}
-          <div style={{ position: 'absolute', top: 0, bottom: 0, left: 0, width: '80px', background: 'linear-gradient(to right, #0D1A1A, transparent)', zIndex: 1, pointerEvents: 'none' }} />
-          <div style={{ position: 'absolute', top: 0, bottom: 0, right: 0, width: '80px', background: 'linear-gradient(to left, #0D1A1A, transparent)', zIndex: 1, pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', top: 0, bottom: 0, left: 0, width: '80px', background: 'linear-gradient(to right, #0A0A0A, transparent)', zIndex: 1, pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', top: 0, bottom: 0, right: 0, width: '80px', background: 'linear-gradient(to left, #0A0A0A, transparent)', zIndex: 1, pointerEvents: 'none' }} />
           <div
             className="chain-marquee-track"
             style={{
@@ -180,14 +180,14 @@ function ProtocolLogoStrip() {
                   width: '40px',
                   height: '40px',
                   borderRadius: '6px',
-                  border: '0.5px solid rgba(14,124,124,0.3)',
+                  border: '0.5px solid rgba(255,255,255,0.3)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}>
                   <img src={chain.logo} alt={chain.name} style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'contain' }} />
                 </div>
-                <span style={{ fontSize: '11px', color: 'rgba(208,240,240,0.4)', whiteSpace: 'nowrap' }}>{chain.name}</span>
+                <span style={{ fontSize: '11px', color: 'rgba(242,242,242,0.4)', whiteSpace: 'nowrap' }}>{chain.name}</span>
               </div>
             ))}
           </div>
@@ -288,8 +288,8 @@ function HeroRiskRewardPanel() {
 
   return (
     <div style={{
-      background: '#0D1A1A',
-      border: '0.5px solid rgba(14,124,124,0.22)',
+      background: '#0A0A0A',
+      border: '0.5px solid rgba(255,255,255,0.22)',
       borderRadius: '8px',
       overflow: 'hidden',
     }}>
@@ -298,10 +298,10 @@ function HeroRiskRewardPanel() {
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: '12px 16px',
-        borderBottom: '0.5px solid rgba(14,124,124,0.2)',
+        borderBottom: '0.5px solid rgba(255,255,255,0.2)',
         fontFamily: "'Space Grotesk', sans-serif",
         fontSize: '11px',
-        color: 'rgba(208,240,240,0.45)',
+        color: 'rgba(242,242,242,0.45)',
         letterSpacing: '0.04em',
         textTransform: 'uppercase',
       }}>
@@ -314,29 +314,29 @@ function HeroRiskRewardPanel() {
 
       <div style={{ padding: '16px 16px 0' }}>
         {isLoading ? (
-          <div style={{ height: '240px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(208,240,240,0.3)', fontSize: '13px', fontFamily: "'Space Grotesk', sans-serif" }}>
+          <div style={{ height: '240px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(242,242,242,0.3)', fontSize: '13px', fontFamily: "'Space Grotesk', sans-serif" }}>
             Loading live pool data…
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={240}>
             <ScatterChart margin={{ top: 8, right: 12, bottom: 8, left: 4 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(208,240,240,0.05)" />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(242,242,242,0.05)" />
               <XAxis
                 type="number" dataKey="tvlM" name="TVL" scale="log"
                 domain={['auto', 'auto']} ticks={[10, 50, 100, 500, 1000, 10000]}
                 tickFormatter={formatTvlLog}
-                tick={{ fill: 'rgba(208,240,240,0.4)', fontFamily: "'Space Grotesk', sans-serif", fontSize: 10 }}
+                tick={{ fill: 'rgba(242,242,242,0.4)', fontFamily: "'Space Grotesk', sans-serif", fontSize: 10 }}
                 tickLine={false} axisLine={false}
               />
               <YAxis
                 type="number" dataKey="apy" name="APY"
                 tickFormatter={v => `${v}%`}
-                tick={{ fill: 'rgba(208,240,240,0.4)', fontFamily: "'Space Grotesk', sans-serif", fontSize: 10 }}
+                tick={{ fill: 'rgba(242,242,242,0.4)', fontFamily: "'Space Grotesk', sans-serif", fontSize: 10 }}
                 tickLine={false} axisLine={false}
                 width={34}
               />
               <ZAxis range={[1, 1]} />
-              <Tooltip content={<HeroScatterTooltip />} wrapperStyle={{ overflow: 'visible', zIndex: 100 }} cursor={{ fill: 'rgba(14,124,124,0.06)' }} />
+              <Tooltip content={<HeroScatterTooltip />} wrapperStyle={{ overflow: 'visible', zIndex: 100 }} cursor={{ fill: 'rgba(255,255,255,0.06)' }} />
               {HERO_TIERS.map(tier => (
                 <Scatter key={tier.key} name={tier.label} data={tierGroups[tier.key]} fill={tier.colour} shape={HeroScatterDot} />
               ))}
@@ -345,7 +345,7 @@ function HeroRiskRewardPanel() {
         )}
       </div>
 
-      <div style={{ display: 'flex', gap: '16px', padding: '4px 16px 16px', flexWrap: 'wrap', fontFamily: "'Space Grotesk', sans-serif", fontSize: '10.5px', color: 'rgba(208,240,240,0.4)' }}>
+      <div style={{ display: 'flex', gap: '16px', padding: '4px 16px 16px', flexWrap: 'wrap', fontFamily: "'Space Grotesk', sans-serif", fontSize: '10.5px', color: 'rgba(242,242,242,0.4)' }}>
         {HERO_TIERS.map(tier => (
           <span key={tier.key} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: tier.colour, display: 'inline-block' }} />
@@ -357,16 +357,16 @@ function HeroRiskRewardPanel() {
       <div className="hero-stat-strip">
         {statItems.map(({ value, label }) => (
           <div key={label}>
-            <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '18px', fontWeight: 500, color: '#D0F0F0', margin: 0 }}>{value}</p>
-            <p style={{ fontSize: '10.5px', color: 'rgba(208,240,240,0.3)', margin: '2px 0 0', textTransform: 'uppercase', letterSpacing: '0.03em' }}>{label}</p>
+            <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '18px', fontWeight: 500, color: '#F2F2F2', margin: 0 }}>{value}</p>
+            <p style={{ fontSize: '10.5px', color: 'rgba(242,242,242,0.3)', margin: '2px 0 0', textTransform: 'uppercase', letterSpacing: '0.03em' }}>{label}</p>
           </div>
         ))}
       </div>
       <p style={{
         textAlign: 'center',
         fontSize: '11px',
-        color: 'rgba(208,240,240,0.3)',
-        borderTop: '0.5px solid rgba(14,124,124,0.12)',
+        color: 'rgba(242,242,242,0.3)',
+        borderTop: '0.5px solid rgba(255,255,255,0.12)',
         padding: '10px 16px',
         margin: 0,
       }}>
@@ -405,14 +405,14 @@ export default function LandingPage() {
     .slice(0, 5);
 
   return (
-    <div style={{ background: '#080F0F', minHeight: '100vh', fontFamily: "'Inter', sans-serif", color: '#D0F0F0' }}>
+    <div style={{ background: '#050505', minHeight: '100vh', fontFamily: "'Inter', sans-serif", color: '#F2F2F2' }}>
 
       {/* ─── Navbar ─────────────────────────────────────────────── */}
       <nav className="landing-nav" style={{
         height: '64px',
-        background: 'rgba(8,7,20,0.9)',
+        background: 'rgba(5,5,5,0.9)',
         backdropFilter: 'blur(12px)',
-        borderBottom: '0.5px solid rgba(14,124,124,0.12)',
+        borderBottom: '0.5px solid rgba(255,255,255,0.12)',
         position: 'sticky',
         top: 0,
         zIndex: 100,
@@ -460,7 +460,7 @@ export default function LandingPage() {
             aria-expanded={mobileNavOpen}
             style={{
               background: 'transparent',
-              border: '0.5px solid rgba(14,124,124,0.3)',
+              border: '0.5px solid rgba(255,255,255,0.3)',
               borderRadius: '6px',
               width: '36px',
               height: '36px',
@@ -472,9 +472,9 @@ export default function LandingPage() {
             }}
           >
             {mobileNavOpen ? (
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D0F0F0" strokeWidth="2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F2F2F2" strokeWidth="2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
             ) : (
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D0F0F0" strokeWidth="2" strokeLinecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F2F2F2" strokeWidth="2" strokeLinecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
             )}
           </button>
         </div>
@@ -503,7 +503,7 @@ export default function LandingPage() {
       <section className="hero-section" style={{
         position: 'relative',
         overflow: 'hidden',
-        background: '#050C0C',
+        background: '#050505',
       }}>
         <HeroDataBackground />
 
@@ -515,14 +515,14 @@ export default function LandingPage() {
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              background: 'rgba(14,124,124,0.12)',
-              border: '0.5px solid rgba(14,124,124,0.3)',
+              background: 'rgba(255,255,255,0.12)',
+              border: '0.5px solid rgba(255,255,255,0.3)',
               borderRadius: '4px',
               padding: '5px 14px',
               fontSize: '11px',
               fontFamily: "'Space Grotesk', sans-serif",
               letterSpacing: '0.02em',
-              color: 'rgba(14,124,124,0.9)',
+              color: 'rgba(255,255,255,0.9)',
             }}>
               <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#0E7C7C', animation: 'pulse 2s ease-in-out infinite', display: 'inline-block' }} />
               Live DeFi yield data — updated every 60 seconds
@@ -531,7 +531,7 @@ export default function LandingPage() {
             {/* Headline */}
             <h1 className="hero-headline" style={{
               fontWeight: 500,
-              color: '#D0F0F0',
+              color: '#F2F2F2',
               letterSpacing: '-0.02em',
               lineHeight: 1.1,
               margin: 0,
@@ -542,7 +542,7 @@ export default function LandingPage() {
 
             {/* Subtitle */}
             <p className="hero-subtitle" style={{
-              color: 'rgba(208,240,240,0.45)',
+              color: 'rgba(242,242,242,0.45)',
               maxWidth: '440px',
               lineHeight: 1.6,
               margin: 0,
@@ -590,7 +590,7 @@ export default function LandingPage() {
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              color: 'rgba(208,240,240,0.35)',
+              color: 'rgba(242,242,242,0.35)',
               fontSize: '12.5px',
               margin: 0,
             }}>
@@ -610,7 +610,7 @@ export default function LandingPage() {
 
       {/* ─── Features ───────────────────────────────────────────── */}
       <section id="features" className="features-section" style={{
-        borderTop: '0.5px solid rgba(14,124,124,0.1)',
+        borderTop: '0.5px solid rgba(255,255,255,0.1)',
         maxWidth: '1100px',
         margin: '0 auto',
         width: '100%',
@@ -625,7 +625,7 @@ export default function LandingPage() {
           <p style={{
             fontSize: '13px',
             letterSpacing: '0.08em',
-            color: 'rgba(208,240,240,0.4)',
+            color: 'rgba(242,242,242,0.4)',
             textTransform: 'uppercase',
             fontFamily: "'Space Grotesk', sans-serif",
             marginBottom: '16px',
@@ -633,7 +633,7 @@ export default function LandingPage() {
           }}>
             What makes Dexaris different
           </p>
-          <h2 style={{ fontSize: '36px', fontWeight: 600, color: '#D0F0F0', margin: 0 }}>
+          <h2 style={{ fontSize: '36px', fontWeight: 600, color: '#F2F2F2', margin: 0 }}>
             Built for yield intelligence.
           </h2>
         </motion.div>
@@ -665,15 +665,15 @@ export default function LandingPage() {
             >
               <div style={{
                 width: '40px', height: '40px',
-                border: '0.5px solid rgba(14,124,124,0.3)',
+                border: '0.5px solid rgba(255,255,255,0.3)',
                 borderRadius: '6px',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 marginBottom: '16px',
               }}>
                 {icon}
               </div>
-              <p style={{ fontSize: '14px', fontWeight: 500, color: '#D0F0F0', marginBottom: '8px' }}>{title}</p>
-              <p style={{ fontSize: '12px', color: 'rgba(208,240,240,0.4)', lineHeight: 1.6, margin: 0 }}>{desc}</p>
+              <p style={{ fontSize: '14px', fontWeight: 500, color: '#F2F2F2', marginBottom: '8px' }}>{title}</p>
+              <p style={{ fontSize: '12px', color: 'rgba(242,242,242,0.4)', lineHeight: 1.6, margin: 0 }}>{desc}</p>
             </motion.div>
           ))}
         </div>
@@ -707,15 +707,15 @@ export default function LandingPage() {
             >
               <div style={{
                 width: '40px', height: '40px',
-                border: '0.5px solid rgba(14,124,124,0.3)',
+                border: '0.5px solid rgba(255,255,255,0.3)',
                 borderRadius: '6px',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 marginBottom: '16px',
               }}>
                 {icon}
               </div>
-              <p style={{ fontSize: '14px', fontWeight: 500, color: '#D0F0F0', marginBottom: '8px' }}>{title}</p>
-              <p style={{ fontSize: '12px', color: 'rgba(208,240,240,0.4)', lineHeight: 1.6, margin: 0 }}>{desc}</p>
+              <p style={{ fontSize: '14px', fontWeight: 500, color: '#F2F2F2', marginBottom: '8px' }}>{title}</p>
+              <p style={{ fontSize: '12px', color: 'rgba(242,242,242,0.4)', lineHeight: 1.6, margin: 0 }}>{desc}</p>
               {link && (
                 <a
                   href={link}
@@ -754,10 +754,10 @@ export default function LandingPage() {
                     fontSize: '10.5px',
                     fontWeight: 500,
                     fontFamily: "'Space Grotesk', sans-serif",
-                    color: 'rgba(208,240,240,0.3)',
+                    color: 'rgba(242,242,242,0.3)',
                     textTransform: 'uppercase',
                     letterSpacing: '0.05em',
-                    borderBottom: '0.5px solid rgba(14,124,124,0.2)',
+                    borderBottom: '0.5px solid rgba(255,255,255,0.2)',
                   }}>{col}</th>
                 ))}
               </tr>
@@ -765,13 +765,13 @@ export default function LandingPage() {
             <tbody>
               {loadingPools
                 ? Array.from({ length: 5 }).map((_, i) => (
-                    <tr key={i} style={{ borderBottom: '0.5px solid rgba(14,124,124,0.06)' }}>
+                    <tr key={i} style={{ borderBottom: '0.5px solid rgba(255,255,255,0.06)' }}>
                       {Array.from({ length: 5 }).map((_, j) => (
                         <td key={j} style={{ padding: '14px 16px' }}>
                           <div style={{
                             height: '12px',
                             borderRadius: '4px',
-                            background: 'rgba(14,124,124,0.1)',
+                            background: 'rgba(255,255,255,0.1)',
                             width: j === 0 ? '120px' : j === 1 ? '80px' : '60px',
                             animation: 'pulse 1.5s ease-in-out infinite',
                           }} />
@@ -782,16 +782,16 @@ export default function LandingPage() {
                 : pools.map((pool, i) => {
                     const score = pool.previewScore;
                     return (
-                    <tr key={i} className="preview-row" style={{ borderBottom: i < pools.length - 1 ? '0.5px solid rgba(14,124,124,0.06)' : 'none' }}>
-                      <td style={{ padding: '14px 16px', fontSize: '13px', color: '#D0F0F0' }}>
+                    <tr key={i} className="preview-row" style={{ borderBottom: i < pools.length - 1 ? '0.5px solid rgba(255,255,255,0.06)' : 'none' }}>
+                      <td style={{ padding: '14px 16px', fontSize: '13px', color: '#F2F2F2' }}>
                         <span style={{ textTransform: 'capitalize' }}>{pool.project}</span>
-                        <span style={{ fontSize: '11px', color: 'rgba(208,240,240,0.35)', marginLeft: '8px' }}>{pool.symbol}</span>
+                        <span style={{ fontSize: '11px', color: 'rgba(242,242,242,0.35)', marginLeft: '8px' }}>{pool.symbol}</span>
                       </td>
-                      <td style={{ padding: '14px 16px', fontSize: '12px', color: 'rgba(208,240,240,0.5)' }}>{pool.chain}</td>
+                      <td style={{ padding: '14px 16px', fontSize: '12px', color: 'rgba(242,242,242,0.5)' }}>{pool.chain}</td>
                       <td style={{ padding: '14px 16px', fontSize: '13px', fontFamily: "'Space Grotesk', sans-serif", color: '#4ECDA4', textAlign: 'right', fontWeight: 500 }}>
                         {(pool.apy ?? 0).toFixed(2)}%
                       </td>
-                      <td className="preview-tvl-col" style={{ padding: '14px 16px', fontSize: '13px', fontFamily: "'Space Grotesk', sans-serif", color: 'rgba(208,240,240,0.6)', textAlign: 'right' }}>
+                      <td className="preview-tvl-col" style={{ padding: '14px 16px', fontSize: '13px', fontFamily: "'Space Grotesk', sans-serif", color: 'rgba(242,242,242,0.6)', textAlign: 'right' }}>
                         {formatTvl(pool.tvlUsd)}
                       </td>
                       <td style={{ padding: '14px 16px', fontSize: '13px', fontFamily: "'Space Grotesk', sans-serif", color: scoreColour(score), textAlign: 'right', fontWeight: 600 }}>
@@ -809,16 +809,16 @@ export default function LandingPage() {
           <button
             onClick={() => navigate('/app')}
             onMouseEnter={e => {
-              e.currentTarget.style.background = 'rgba(14,124,124,0.15)';
-              e.currentTarget.style.borderColor = 'rgba(14,124,124,0.6)';
+              e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
+              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.6)';
             }}
             onMouseLeave={e => {
-              e.currentTarget.style.background = 'rgba(14,124,124,0.08)';
-              e.currentTarget.style.borderColor = 'rgba(14,124,124,0.4)';
+              e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.4)';
             }}
             style={{
-              background: 'rgba(14,124,124,0.08)',
-              border: '0.5px solid rgba(14,124,124,0.4)',
+              background: 'rgba(255,255,255,0.08)',
+              border: '0.5px solid rgba(255,255,255,0.4)',
               borderRadius: '6px',
               padding: '10px 24px',
               color: '#14B8B8',
@@ -835,7 +835,7 @@ export default function LandingPage() {
 
       {/* ─── Newsletter ─────────────────────────────────────────── */}
       <section id="newsletter" className="newsletter-section" style={{
-        borderTop: '0.5px solid rgba(14,124,124,0.1)',
+        borderTop: '0.5px solid rgba(255,255,255,0.1)',
       }}>
         <motion.div
           className="newsletter-inner"
@@ -849,10 +849,10 @@ export default function LandingPage() {
           }}
         >
           <div>
-            <h2 style={{ fontSize: '18px', fontWeight: 500, color: '#D0F0F0', marginBottom: '8px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 500, color: '#F2F2F2', marginBottom: '8px' }}>
               Stay ahead of the market
             </h2>
-            <p style={{ fontSize: '13px', color: 'rgba(208,240,240,0.4)' }}>
+            <p style={{ fontSize: '13px', color: 'rgba(242,242,242,0.4)' }}>
               Get the best DeFi yields delivered to your inbox every week.
             </p>
           </div>
@@ -903,12 +903,12 @@ export default function LandingPage() {
                 className="newsletter-input"
                 autoComplete="email"
                 style={{
-                  background: 'rgba(14,124,124,0.08)',
-                  border: '0.5px solid rgba(14,124,124,0.2)',
+                  background: 'rgba(255,255,255,0.08)',
+                  border: '0.5px solid rgba(255,255,255,0.2)',
                   borderRadius: '6px',
                   padding: '10px 18px',
                   fontSize: '13px',
-                  color: '#D0F0F0',
+                  color: '#F2F2F2',
                   outline: 'none',
                   fontFamily: "'Inter', sans-serif",
                 }}
@@ -956,7 +956,7 @@ export default function LandingPage() {
           </div>
           <p style={{
             fontSize: '14px',
-            color: 'rgba(208,240,240,0.5)',
+            color: 'rgba(242,242,242,0.5)',
             lineHeight: 1.8,
             textAlign: 'center',
             maxWidth: '640px',
@@ -970,13 +970,13 @@ export default function LandingPage() {
 
       {/* ─── Legal disclaimer ───────────────────────────────────── */}
       <div style={{
-        borderTop: '1px solid rgba(208,240,240,0.06)',
+        borderTop: '1px solid rgba(242,242,242,0.06)',
         padding: '24px 20px',
         textAlign: 'center',
       }}>
         <p style={{
           fontSize: '12px',
-          color: 'rgba(208,240,240,0.35)',
+          color: 'rgba(242,242,242,0.35)',
           maxWidth: '800px',
           margin: '0 auto',
           lineHeight: 1.7,
@@ -987,11 +987,11 @@ export default function LandingPage() {
 
       {/* ─── Footer ─────────────────────────────────────────────── */}
       <footer className="landing-footer" style={{
-        borderTop: '0.5px solid rgba(14,124,124,0.1)',
+        borderTop: '0.5px solid rgba(255,255,255,0.1)',
       }}>
         <DexarisLogo iconSize={20} fontSize={13} />
 
-        <span style={{ fontSize: '11px', color: 'rgba(208,240,240,0.2)', flex: 1, textAlign: 'center' }}>
+        <span style={{ fontSize: '11px', color: 'rgba(242,242,242,0.2)', flex: 1, textAlign: 'center' }}>
           Built on DeFiLlama data
         </span>
 

@@ -514,15 +514,15 @@ function PasswordGate({ onUnlock }: { onUnlock: () => void }) {
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#080F0F',
+      background: '#050505',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       fontFamily: "'Inter', sans-serif",
     }}>
       <div style={{
-        background: '#0D1A1A',
-        border: '1px solid rgba(14,124,124,0.3)',
+        background: '#0A0A0A',
+        border: '1px solid rgba(255,255,255,0.3)',
         borderRadius: '16px',
         padding: '40px 36px',
         width: '100%',
@@ -535,10 +535,10 @@ function PasswordGate({ onUnlock }: { onUnlock: () => void }) {
         <DexarisLogo iconSize={28} fontSize={17} />
 
         <div style={{ textAlign: 'center' }}>
-          <p style={{ fontSize: '16px', fontWeight: 500, color: '#D0F0F0', margin: '0 0 6px' }}>
+          <p style={{ fontSize: '16px', fontWeight: 500, color: '#F2F2F2', margin: '0 0 6px' }}>
             Internal Tool
           </p>
-          <p style={{ fontSize: '13px', color: 'rgba(208,240,240,0.4)', margin: 0, lineHeight: 1.5 }}>
+          <p style={{ fontSize: '13px', color: 'rgba(242,242,242,0.4)', margin: 0, lineHeight: 1.5 }}>
             This page is restricted to Dexaris team members
           </p>
         </div>
@@ -552,12 +552,12 @@ function PasswordGate({ onUnlock }: { onUnlock: () => void }) {
             onChange={e => { setValue(e.target.value); setError(false); }}
             style={{
               width: '100%',
-              background: 'rgba(14,124,124,0.08)',
-              border: `0.5px solid ${error ? '#FF6B6B' : 'rgba(14,124,124,0.25)'}`,
+              background: 'rgba(255,255,255,0.08)',
+              border: `0.5px solid ${error ? '#FF6B6B' : 'rgba(255,255,255,0.25)'}`,
               borderRadius: '10px',
               padding: '10px 14px',
               fontSize: '14px',
-              color: '#D0F0F0',
+              color: '#F2F2F2',
               outline: 'none',
               fontFamily: "'Inter', sans-serif",
               boxSizing: 'border-box',
@@ -632,7 +632,7 @@ function ChartExportSection({ pools }: { pools: Pool[] }) {
     setExporting(true);
     try {
       const canvas = await html2canvas(chartRef.current, {
-        background: '#080F0F',
+        background: '#050505',
         useCORS: true,
         scale: 2,
       } as Parameters<typeof html2canvas>[1]);
@@ -657,10 +657,10 @@ function ChartExportSection({ pools }: { pools: Pool[] }) {
       {/* Section header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
         <div>
-          <p style={{ ...S, margin: 0, fontSize: '14px', fontWeight: 600, color: '#D0F0F0' }}>
+          <p style={{ ...S, margin: 0, fontSize: '14px', fontWeight: 600, color: '#F2F2F2' }}>
             Chart Export
           </p>
-          <p style={{ ...S, margin: '2px 0 0', fontSize: '12px', color: 'rgba(208,240,240,0.4)' }}>
+          <p style={{ ...S, margin: '2px 0 0', fontSize: '12px', color: 'rgba(242,242,242,0.4)' }}>
             Export APY charts to attach to your X posts
           </p>
         </div>
@@ -670,15 +670,15 @@ function ChartExportSection({ pools }: { pools: Pool[] }) {
           style={{
             ...S,
             background: (exporting || chartLoading || displayData.length === 0)
-              ? 'rgba(14,124,124,0.2)'
-              : 'rgba(14,124,124,0.15)',
-            border: '1px solid rgba(14,124,124,0.3)',
+              ? 'rgba(255,255,255,0.2)'
+              : 'rgba(255,255,255,0.15)',
+            border: '1px solid rgba(255,255,255,0.3)',
             borderRadius: '8px',
             padding: '8px 18px',
             fontSize: '13px',
             fontWeight: 500,
             color: (exporting || chartLoading || displayData.length === 0)
-              ? 'rgba(20,184,184,0.4)'
+              ? 'rgba(255,255,255,0.4)'
               : '#14B8B8',
             cursor: (exporting || chartLoading || displayData.length === 0) ? 'not-allowed' : 'pointer',
             transition: 'all 0.15s',
@@ -701,7 +701,7 @@ function ChartExportSection({ pools }: { pools: Pool[] }) {
               style={{
                 ...S,
                 flex: '1 1 160px',
-                background: selected ? 'rgba(14,124,124,0.12)' : '#0D1A1A',
+                background: selected ? 'rgba(14,124,124,0.12)' : '#0A0A0A',
                 border: `1px solid ${selected ? 'rgba(14,124,124,0.5)' : 'rgba(14,124,124,0.15)'}`,
                 borderRadius: '10px',
                 padding: '12px 14px',
@@ -713,10 +713,10 @@ function ChartExportSection({ pools }: { pools: Pool[] }) {
                 gap: '4px',
               }}
             >
-              <span style={{ ...S, fontSize: '13px', fontWeight: 600, color: '#D0F0F0', lineHeight: 1.2 }}>
+              <span style={{ ...S, fontSize: '13px', fontWeight: 600, color: '#F2F2F2', lineHeight: 1.2 }}>
                 {pool.project}
               </span>
-              <span style={{ ...S, fontSize: '11px', color: 'rgba(208,240,240,0.45)' }}>
+              <span style={{ ...S, fontSize: '11px', color: 'rgba(242,242,242,0.45)' }}>
                 {pool.symbol} · {pool.chain}
               </span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
@@ -745,8 +745,8 @@ function ChartExportSection({ pools }: { pools: Pool[] }) {
       <div
         ref={chartRef}
         style={{
-          background: '#080F0F',
-          border: '1px solid rgba(14,124,124,0.2)',
+          background: '#050505',
+          border: '1px solid rgba(255,255,255,0.2)',
           borderRadius: '12px',
           padding: '24px',
           position: 'relative',
@@ -755,10 +755,10 @@ function ChartExportSection({ pools }: { pools: Pool[] }) {
         {/* Chart header */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
           <div>
-            <p style={{ ...S, margin: 0, fontSize: '15px', fontWeight: 700, color: '#D0F0F0' }}>
+            <p style={{ ...S, margin: 0, fontSize: '15px', fontWeight: 700, color: '#F2F2F2' }}>
               {selectedPool?.project} — {selectedPool?.symbol}
             </p>
-            <p style={{ ...S, margin: '3px 0 0', fontSize: '12px', color: 'rgba(208,240,240,0.4)' }}>
+            <p style={{ ...S, margin: '3px 0 0', fontSize: '12px', color: 'rgba(242,242,242,0.4)' }}>
               {selectedPool?.chain} · APY history · TVL {fmtTvl(selectedPool?.tvlUsd ?? 0)}
             </p>
           </div>
@@ -790,7 +790,7 @@ function ChartExportSection({ pools }: { pools: Pool[] }) {
                 padding: '4px 12px',
                 fontSize: '12px',
                 fontWeight: timeRange === range ? 600 : 400,
-                color: timeRange === range ? '#14B8B8' : 'rgba(208,240,240,0.4)',
+                color: timeRange === range ? '#14B8B8' : 'rgba(242,242,242,0.4)',
                 cursor: 'pointer',
                 transition: 'all 0.15s',
               }}
@@ -806,7 +806,7 @@ function ChartExportSection({ pools }: { pools: Pool[] }) {
             {[60, 80, 50, 90, 70, 85, 55].map((h, i) => (
               <div key={i} style={{
                 height: `${h}%`,
-                background: 'linear-gradient(90deg, rgba(14,124,124,0.06) 0%, rgba(14,124,124,0.12) 50%, rgba(14,124,124,0.06) 100%)',
+                background: 'linear-gradient(90deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.06) 100%)',
                 borderRadius: '4px',
                 animation: 'nlgen-spin 1.4s ease-in-out infinite',
               }} />
@@ -836,7 +836,7 @@ function ChartExportSection({ pools }: { pools: Pool[] }) {
             alignItems: 'center',
             justifyContent: 'center',
             fontSize: '13px',
-            color: 'rgba(208,240,240,0.3)',
+            color: 'rgba(242,242,242,0.3)',
           }}>
             No historical data available for this pool
           </div>
@@ -851,16 +851,16 @@ function ChartExportSection({ pools }: { pools: Pool[] }) {
                   <stop offset="95%" stopColor="#0E7C7C" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(14,124,124,0.1)" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" vertical={false} />
               <XAxis
                 dataKey="date"
-                tick={{ fontSize: 11, fill: 'rgba(208,240,240,0.35)', fontFamily: 'Inter, sans-serif' }}
+                tick={{ fontSize: 11, fill: 'rgba(242,242,242,0.35)', fontFamily: 'Inter, sans-serif' }}
                 axisLine={false}
                 tickLine={false}
                 interval="preserveStartEnd"
               />
               <YAxis
-                tick={{ fontSize: 11, fill: 'rgba(208,240,240,0.35)', fontFamily: 'Inter, sans-serif' }}
+                tick={{ fontSize: 11, fill: 'rgba(242,242,242,0.35)', fontFamily: 'Inter, sans-serif' }}
                 axisLine={false}
                 tickLine={false}
                 tickFormatter={v => `${v}%`}
@@ -868,16 +868,16 @@ function ChartExportSection({ pools }: { pools: Pool[] }) {
               />
               <Tooltip
                 contentStyle={{
-                  background: '#0D1A1A',
-                  border: '1px solid rgba(14,124,124,0.3)',
+                  background: '#0A0A0A',
+                  border: '1px solid rgba(255,255,255,0.3)',
                   borderRadius: '8px',
                   fontSize: '12px',
-                  color: '#D0F0F0',
+                  color: '#F2F2F2',
                   fontFamily: 'Inter, sans-serif',
                 }}
                 formatter={(value) => [`${Number(value).toFixed(2)}%`, 'APY']}
-                labelStyle={{ color: 'rgba(208,240,240,0.5)', marginBottom: '2px' }}
-                cursor={{ stroke: 'rgba(14,124,124,0.4)', strokeWidth: 1 }}
+                labelStyle={{ color: 'rgba(242,242,242,0.5)', marginBottom: '2px' }}
+                cursor={{ stroke: 'rgba(255,255,255,0.4)', strokeWidth: 1 }}
               />
               <Area
                 type="monotone"
@@ -901,7 +901,7 @@ function ChartExportSection({ pools }: { pools: Pool[] }) {
           margin: 0,
           fontSize: '11px',
           fontWeight: 600,
-          color: 'rgba(14,124,124,0.4)',
+          color: 'rgba(255,255,255,0.4)',
           letterSpacing: '0.04em',
           pointerEvents: 'none',
           userSelect: 'none',
@@ -1074,7 +1074,7 @@ function XContentTab() {
         style={{
           ...S,
           alignSelf: 'flex-start',
-          background: loading ? 'rgba(14,124,124,0.4)' : '#0E7C7C',
+          background: loading ? 'rgba(255,255,255,0.4)' : '#0E7C7C',
           border: 'none',
           borderRadius: '10px',
           padding: '12px 28px',
@@ -1118,12 +1118,12 @@ function XContentTab() {
       {posts.length === 0 && !loading && !error && (
         <div style={{
           ...S,
-          background: 'rgba(14,124,124,0.06)',
-          border: '0.5px solid rgba(14,124,124,0.2)',
+          background: 'rgba(255,255,255,0.06)',
+          border: '0.5px solid rgba(255,255,255,0.2)',
           borderRadius: '10px',
           padding: '14px 16px',
           fontSize: '13px',
-          color: 'rgba(208,240,240,0.45)',
+          color: 'rgba(242,242,242,0.45)',
           lineHeight: 1.6,
         }}>
           Posts are generated from live DeFi yield data and scored with the Dexaris algorithm.
@@ -1144,8 +1144,8 @@ function XContentTab() {
               onClick={copyAll}
               style={{
                 ...S,
-                background: 'rgba(14,124,124,0.15)',
-                border: '1px solid rgba(14,124,124,0.3)',
+                background: 'rgba(255,255,255,0.15)',
+                border: '1px solid rgba(255,255,255,0.3)',
                 borderRadius: '8px',
                 padding: '8px 18px',
                 fontSize: '13px',
@@ -1157,7 +1157,7 @@ function XContentTab() {
             >
               {allCopied ? '✓ All 3 copied!' : 'Copy all 3'}
             </button>
-            <span style={{ ...S, fontSize: '12px', color: 'rgba(208,240,240,0.3)' }}>
+            <span style={{ ...S, fontSize: '12px', color: 'rgba(242,242,242,0.3)' }}>
               Click any post to edit before scheduling
             </span>
           </div>
@@ -1169,8 +1169,8 @@ function XContentTab() {
             const isThread = splitThreadBeats(post.text) !== null;
             return (
               <div key={post.slot} style={{
-                background: '#0D1A1A',
-                border: '1px solid rgba(14,124,124,0.18)',
+                background: '#0A0A0A',
+                border: '1px solid rgba(255,255,255,0.18)',
                 borderRadius: '12px',
                 padding: '20px',
                 display: 'flex',
@@ -1193,10 +1193,10 @@ function XContentTab() {
                   }}>
                     {post.slot}
                   </span>
-                  <span style={{ ...S, fontSize: '13px', fontWeight: 500, color: '#D0F0F0' }}>
+                  <span style={{ ...S, fontSize: '13px', fontWeight: 500, color: '#F2F2F2' }}>
                     {post.type}
                   </span>
-                  <span style={{ ...S, fontSize: '12px', color: 'rgba(208,240,240,0.35)' }}>
+                  <span style={{ ...S, fontSize: '12px', color: 'rgba(242,242,242,0.35)' }}>
                     {post.time}
                   </span>
                   <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -1204,7 +1204,7 @@ function XContentTab() {
                       ...S,
                       fontSize: '12px',
                       fontWeight: 500,
-                      color: overLimit ? '#FF6B6B' : 'rgba(208,240,240,0.35)',
+                      color: overLimit ? '#FF6B6B' : 'rgba(242,242,242,0.35)',
                       transition: 'color 0.15s',
                     }}>
                       {isThread ? `Longest tweet: ${post.chars} / 280` : `${post.chars} / 280`}
@@ -1213,8 +1213,8 @@ function XContentTab() {
                       onClick={() => copyPost(idx)}
                       style={{
                         ...S,
-                        background: copiedIdx === idx ? 'rgba(52,211,153,0.12)' : 'rgba(14,124,124,0.1)',
-                        border: `1px solid ${copiedIdx === idx ? 'rgba(52,211,153,0.3)' : 'rgba(14,124,124,0.25)'}`,
+                        background: copiedIdx === idx ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.1)',
+                        border: `1px solid ${copiedIdx === idx ? 'rgba(52,211,153,0.3)' : 'rgba(255,255,255,0.25)'}`,
                         borderRadius: '6px',
                         padding: '4px 12px',
                         fontSize: '12px',
@@ -1235,7 +1235,7 @@ function XContentTab() {
                   margin: 0,
                   fontSize: '14px',
                   lineHeight: 1.65,
-                  color: '#D0F0F0',
+                  color: '#F2F2F2',
                   whiteSpace: 'pre-wrap',
                   wordBreak: 'break-word',
                 }}>
@@ -1248,12 +1248,12 @@ function XContentTab() {
           {/* Scheduler CTA */}
           <div style={{
             ...S,
-            background: 'rgba(14,124,124,0.06)',
-            border: '0.5px solid rgba(14,124,124,0.2)',
+            background: 'rgba(255,255,255,0.06)',
+            border: '0.5px solid rgba(255,255,255,0.2)',
             borderRadius: '10px',
             padding: '14px 16px',
             fontSize: '13px',
-            color: 'rgba(208,240,240,0.45)',
+            color: 'rgba(242,242,242,0.45)',
             display: 'flex',
             alignItems: 'center',
             gap: '6px',
@@ -1271,7 +1271,7 @@ function XContentTab() {
           {/* Chart export */}
           {topPools.length > 0 && (
             <>
-              <div style={{ height: '1px', background: 'rgba(14,124,124,0.12)', margin: '4px 0' }} />
+              <div style={{ height: '1px', background: 'rgba(255,255,255,0.12)', margin: '4px 0' }} />
               <ChartExportSection pools={topPools} />
             </>
           )}
@@ -1391,7 +1391,7 @@ export default function NewsletterGenerator() {
       padding: '8px 20px',
       fontSize: '13px',
       fontWeight: active ? 600 : 400,
-      color: active ? '#14B8B8' : 'rgba(208,240,240,0.45)',
+      color: active ? '#14B8B8' : 'rgba(242,242,242,0.45)',
       cursor: 'pointer',
       transition: 'all 0.15s',
     };
@@ -1410,8 +1410,8 @@ export default function NewsletterGenerator() {
         display: 'flex',
         gap: '6px',
         padding: '4px',
-        background: 'rgba(14,124,124,0.05)',
-        border: '1px solid rgba(14,124,124,0.12)',
+        background: 'rgba(255,255,255,0.05)',
+        border: '1px solid rgba(255,255,255,0.12)',
         borderRadius: '10px',
         width: 'fit-content',
         marginBottom: '4px',

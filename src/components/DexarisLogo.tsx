@@ -45,9 +45,9 @@ export default function DexarisLogo({ iconSize = 28, fontSize = 18 }: DexarisLog
         xmlns="http://www.w3.org/2000/svg"
         style={{ display: 'block', flexShrink: 0, verticalAlign: 'middle', width: iconSize, height: iconSize }}
       >
-        <rect x="0" y="20" width="9" height="14" fill="rgba(20,184,184,0.35)" rx="2" />
-        <rect x="12" y="10" width="9" height="24" fill="rgba(20,184,184,0.65)" rx="2" />
-        <rect x="24" y="1" width="9" height="33" fill="#14B8B8" rx="2" />
+        <rect x="0" y="20" width="9" height="14" fill="#FF6B6B" rx="2" />
+        <rect x="12" y="10" width="9" height="24" fill="#14B8B8" rx="2" />
+        <rect x="24" y="1" width="9" height="33" fill="#4ECDA4" rx="2" />
       </svg>
       <span
         style={{
@@ -55,7 +55,7 @@ export default function DexarisLogo({ iconSize = 28, fontSize = 18 }: DexarisLog
           fontWeight: 600,
           fontSize: `${fontSize}px`,
           letterSpacing: '0.12em',
-          color: '#D0F0F0',
+          color: '#F2F2F2',
           lineHeight: 1,
           textTransform: 'uppercase',
           display: 'flex',

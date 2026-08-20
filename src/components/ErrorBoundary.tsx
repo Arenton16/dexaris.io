@@ -28,16 +28,16 @@ export default class ErrorBoundary extends Component<Props, State> {
           alignItems: 'center',
           justifyContent: 'center',
           minHeight: '100vh',
-          background: '#080F0F',
-          color: '#D0F0F0',
+          background: '#050505',
+          color: '#F2F2F2',
           fontFamily: "'Inter', sans-serif",
           gap: '16px',
           padding: '24px',
           textAlign: 'center',
         }}>
           <svg width="36" height="36" viewBox="0 0 44 44" fill="none">
-            <polygon points="4,42 10,26 16,26 10,42" fill="rgba(14,124,124,0.3)" />
-            <polygon points="16,42 22,16 28,16 22,42" fill="rgba(14,124,124,0.6)" />
+            <polygon points="4,42 10,26 16,26 10,42" fill="rgba(255,255,255,0.3)" />
+            <polygon points="16,42 22,16 28,16 22,42" fill="rgba(255,255,255,0.6)" />
             <polygon points="28,42 34,5 40,5 34,42"  fill="#0E7C7C" />
           </svg>
           <p style={{ fontSize: '18px', fontWeight: 500, margin: 0 }}>
@@ -45,7 +45,7 @@ export default class ErrorBoundary extends Component<Props, State> {
           </p>
           <p style={{
             fontSize: '13px',
-            color: 'rgba(208,240,240,0.45)',
+            color: 'rgba(242,242,242,0.45)',
             margin: 0,
             maxWidth: '360px',
             lineHeight: 1.6,

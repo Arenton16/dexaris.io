@@ -53,11 +53,11 @@ function ReasonBar({ components }: { components: Component[] }) {
             height: '5px',
             flex: 1,
             borderRadius: '1px',
-            background: c.score > 0 ? getColour(c.score) : 'rgba(208,240,240,0.07)',
+            background: c.score > 0 ? getColour(c.score) : 'rgba(242,242,242,0.07)',
           }} />
         ))}
       </div>
-      <div style={{ fontSize: '8px', color: 'rgba(208,240,240,0.32)', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', width: '64px' }}>
+      <div style={{ fontSize: '8px', color: 'rgba(242,242,242,0.32)', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', width: '64px' }}>
         {generateCaption(components)}
       </div>
     </div>
@@ -83,7 +83,7 @@ function get24hChange(pool: Pool): number | null {
 // ── 7D Trend sparkline — pure inline SVG, no chart library ──────
 function Sparkline({ values }: { values: number[] }) {
   if (values.length < 3) {
-    return <span style={{ fontSize: 11, color: 'rgba(208,240,240,0.3)' }}>—</span>;
+    return <span style={{ fontSize: 11, color: 'rgba(242,242,242,0.3)' }}>—</span>;
   }
   const min = Math.min(...values);
   const max = Math.max(...values);
@@ -192,7 +192,7 @@ export default function Watchlist({ allPools, watchlistedIds, onToggleWatchlist,
     cursor: 'pointer',
     userSelect: 'none',
     whiteSpace: 'nowrap',
-    color: sortBy === key ? 'var(--accent-text)' : hoveredSortCol === key ? 'rgba(208,240,240,0.7)' : undefined,
+    color: sortBy === key ? 'var(--accent-text)' : hoveredSortCol === key ? 'rgba(242,242,242,0.7)' : undefined,
   });
 
   // Score and 24h change are precomputed once here (rather than inside the
@@ -234,16 +234,16 @@ export default function Watchlist({ allPools, watchlistedIds, onToggleWatchlist,
             width: 72,
             height: 72,
             borderRadius: '50%',
-            background: 'rgba(14,124,124,0.1)',
-            border: '1px solid rgba(14,124,124,0.2)',
+            background: 'rgba(255,255,255,0.1)',
+            border: '1px solid rgba(255,255,255,0.2)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             margin: '0 auto 20px',
             fontSize: 28,
           }}>★</div>
-          <p style={{ color: '#D0F0F0', fontSize: 18, fontWeight: 500, margin: '0 0 8px' }}>No pools saved yet</p>
-          <p style={{ color: 'rgba(208,240,240,0.45)', fontSize: 14, margin: '0 0 24px' }}>Star any pool from the Yields page to track it here</p>
+          <p style={{ color: '#F2F2F2', fontSize: 18, fontWeight: 500, margin: '0 0 8px' }}>No pools saved yet</p>
+          <p style={{ color: 'rgba(242,242,242,0.45)', fontSize: 14, margin: '0 0 24px' }}>Star any pool from the Yields page to track it here</p>
           <button
             style={{
               background: '#0E7C7C',
@@ -350,7 +350,7 @@ export default function Watchlist({ allPools, watchlistedIds, onToggleWatchlist,
                       <td style={{ width: COL_WIDTHS.asset }}>{pool.symbol}</td>
                       <td style={{ width: COL_WIDTHS.chain }}>
                         {(() => {
-                          const cc = CHAIN_COLOURS[pool.chain] ?? 'rgba(208,240,240,0.4)';
+                          const cc = CHAIN_COLOURS[pool.chain] ?? 'rgba(242,242,242,0.4)';
                           return (
                             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '10px', padding: '3px 9px', borderRadius: '10px', background: 'rgba(50,50,65,0.5)', border: '0.5px solid #2E2E3E', color: '#888899' }}>
                               <img
@@ -392,7 +392,7 @@ export default function Watchlist({ allPools, watchlistedIds, onToggleWatchlist,
                             {change24h >= 0 ? '+' : ''}{change24h.toFixed(2)}%
                           </span>
                         ) : (
-                          <span style={{ fontSize: 12, color: 'rgba(208,240,240,0.3)' }}>—</span>
+                          <span style={{ fontSize: 12, color: 'rgba(242,242,242,0.3)' }}>—</span>
                         )}
                       </td>
                       <td className="hide-mobile" style={{ width: COL_WIDTHS.trend }}>

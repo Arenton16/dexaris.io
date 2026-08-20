@@ -90,19 +90,19 @@ export default function StatsBar({ highestApy, totalTvl, protocolCount, chainCou
     {
       label: 'Total TVL Tracked',
       value: formatTvl(totalTvl),
-      color: '#D0F0F0',
+      color: '#F2F2F2',
       delta: null,
     },
     {
       label: 'Protocols Tracked',
       value: String(protocolCount),
-      color: '#D0F0F0',
+      color: '#F2F2F2',
       delta: null,
     },
     {
       label: 'Chains Covered',
       value: String(chainCount),
-      color: '#D0F0F0',
+      color: '#F2F2F2',
       delta: null,
     },
   ];
@@ -120,7 +120,7 @@ export default function StatsBar({ highestApy, totalTvl, protocolCount, chainCou
           <div
             key={cell.label}
             className="stats-cell"
-            style={{ background: i % 2 === 0 ? '#0D1A1A' : 'transparent' }}
+            style={{ background: i % 2 === 0 ? '#0A0A0A' : 'transparent' }}
           >
             <span className="stats-label">{cell.label}</span>
             <span className="stats-value" style={{ color: cell.color }}>{cell.value}</span>
@@ -129,8 +129,8 @@ export default function StatsBar({ highestApy, totalTvl, protocolCount, chainCou
         ))}
       </div>
       <div style={{
-        background: '#0D1A1A',
-        border: '0.5px solid rgba(208,240,240,0.08)',
+        background: '#0A0A0A',
+        border: '0.5px solid rgba(242,242,242,0.08)',
         borderRadius: '10px',
         padding: '12px 16px',
         display: 'flex',
@@ -139,7 +139,7 @@ export default function StatsBar({ highestApy, totalTvl, protocolCount, chainCou
         marginTop: '14px',
         marginBottom: '14px',
         fontSize: '13px',
-        color: '#D0F0F0',
+        color: '#F2F2F2',
       }}>
         <span style={{
           width: '6px',

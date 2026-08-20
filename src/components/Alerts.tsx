@@ -80,7 +80,7 @@ export default function Alerts() {
   return (
     <div style={{
       minHeight: '100%',
-      background: '#080F0F',
+      background: '#050505',
       fontFamily: "'Inter', sans-serif",
       display: 'flex',
       flexDirection: 'column',
@@ -95,7 +95,7 @@ export default function Alerts() {
         <h1 style={{
           fontSize: 32,
           fontWeight: 700,
-          color: '#D0F0F0',
+          color: '#F2F2F2',
           margin: '0 0 12px',
           lineHeight: 1.2,
           letterSpacing: '-0.02em',
@@ -118,8 +118,8 @@ export default function Alerts() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 40 }}>
           {FEATURE_CARDS.map(({ Icon, title, description }) => (
             <div key={title} style={{
-              background: '#0D1A1A',
-              border: '1px solid rgba(14,124,124,0.15)',
+              background: '#0A0A0A',
+              border: '1px solid rgba(255,255,255,0.15)',
               borderRadius: 12,
               padding: '16px 20px',
               display: 'flex',
@@ -130,7 +130,7 @@ export default function Alerts() {
                 width: 40,
                 height: 40,
                 borderRadius: 10,
-                background: 'rgba(14,124,124,0.1)',
+                background: 'rgba(255,255,255,0.1)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -139,7 +139,7 @@ export default function Alerts() {
                 <Icon />
               </div>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: '#D0F0F0', marginBottom: 2 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: '#F2F2F2', marginBottom: 2 }}>
                   {title}
                 </div>
                 <div style={{ fontSize: 13, color: '#9B97C0' }}>
@@ -152,8 +152,8 @@ export default function Alerts() {
 
         {/* Email capture */}
         <div style={{
-          background: '#0D1A1A',
-          border: '1px solid rgba(14,124,124,0.2)',
+          background: '#0A0A0A',
+          border: '1px solid rgba(255,255,255,0.2)',
           borderRadius: 14,
           padding: '24px',
         }}>
@@ -180,11 +180,11 @@ export default function Alerts() {
                   style={{
                     flex: '1 1 200px',
                     background: 'rgba(255,255,255,0.05)',
-                    border: status === 'error' ? '1px solid #FF6B6B' : '1px solid rgba(14,124,124,0.25)',
+                    border: status === 'error' ? '1px solid #FF6B6B' : '1px solid rgba(255,255,255,0.25)',
                     borderRadius: 8,
                     padding: '10px 14px',
                     fontSize: 14,
-                    color: '#D0F0F0',
+                    color: '#F2F2F2',
                     outline: 'none',
                     fontFamily: "'Inter', sans-serif",
                   }}
