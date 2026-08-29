@@ -1,12 +1,4 @@
 @font-face {
-  font-family: 'Space Grotesk';
-  font-style: normal;
-  font-weight: 500;
-  font-display: swap;
-  src: url('/fonts/SpaceGrotesk-Medium.woff2') format('woff2');
-}
-
-@font-face {
   font-family: 'Inter';
   font-style: normal;
   font-weight: 400;
@@ -384,7 +376,7 @@ body {
 }
 
 .nav-disclaimer-title {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 15px;
   font-weight: 500;
   color: rgba(242,242,242,0.7);
@@ -1383,7 +1375,7 @@ body {
 }
 
 .stat-card-value {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 36px;
   font-weight: 500;
   color: #F2F2F2;
@@ -1452,7 +1444,7 @@ body {
 }
 
 .score-table-rank {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 10px;
   font-weight: 700;
   color: rgba(242,242,242,0.3);
@@ -1488,7 +1480,7 @@ body {
 }
 
 .score-table-apy {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 11px;
   font-weight: 500;
   color: #4ECDA4;
@@ -1509,7 +1501,7 @@ body {
 }
 
 .score-table-score-num {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 11px;
   font-weight: 500;
   color: #F2F2F2;
@@ -2506,7 +2498,7 @@ body {
   justify-content: space-between;
   padding: 12px 16px;
   border-bottom: 0.5px solid rgba(255,255,255, 0.2);
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 11px;
   color: rgba(242,242,242,0.45);
   letter-spacing: 0.04em;

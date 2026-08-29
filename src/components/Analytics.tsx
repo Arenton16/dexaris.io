@@ -28,7 +28,7 @@ const SCORE_THRESHOLD = 50;
 
 const AXIS_TICK = {
   fill: 'rgba(242,242,242,0.45)',
-  fontFamily: 'Space Grotesk, sans-serif',
+  fontFamily: 'Inter, sans-serif',
   fontSize: 11,
 } as const;
 
@@ -37,11 +37,11 @@ const TOOLTIP_STYLE = {
     background: '#0A0A0A',
     border: '0.5px solid rgba(255,255,255,0.3)',
     borderRadius: 6,
-    fontFamily: 'Space Grotesk, sans-serif',
+    fontFamily: 'Inter, sans-serif',
     fontSize: 11,
   },
-  labelStyle:  { color: '#14B8B8', fontFamily: 'Space Grotesk, sans-serif' },
-  itemStyle:   { color: '#F2F2F2', fontFamily: 'Space Grotesk, sans-serif' },
+  labelStyle:  { color: '#14B8B8', fontFamily: 'Inter, sans-serif' },
+  itemStyle:   { color: '#F2F2F2', fontFamily: 'Inter, sans-serif' },
   cursor:      { fill: 'rgba(255,255,255,0.06)' },
 };
 
@@ -186,7 +186,7 @@ function ScatterTooltip({ active, payload }: { active?: boolean; payload?: Array
     </p>
   );
   return (
-    <div style={{ background: '#0A0A0A', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 6, padding: '10px 12px', fontFamily: 'Space Grotesk, sans-serif', fontSize: 11, color: '#F2F2F2', lineHeight: 1.75, minWidth: 160, pointerEvents: 'none' }}>
+    <div style={{ background: '#0A0A0A', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 6, padding: '10px 12px', fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#F2F2F2', lineHeight: 1.75, minWidth: 160, pointerEvents: 'none' }}>
       <p style={{ margin: '0 0 4px', fontWeight: 500 }}>{d.project} <span style={{ color: 'rgba(242,242,242,0.4)', fontWeight: 400 }}>{d.symbol}</span></p>
       {row('Chain', d.chain)}
       {row('APY', `${(d.apy ?? 0).toFixed(2)}%`)}
@@ -206,7 +206,7 @@ function ScoreScatterTooltip({ active, payload }: { active?: boolean; payload?: 
     </p>
   );
   return (
-    <div style={{ background: '#0A0A0A', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 6, padding: '10px 12px', fontFamily: 'Space Grotesk, sans-serif', fontSize: 11, color: '#F2F2F2', lineHeight: 1.75, minWidth: 140, pointerEvents: 'none' }}>
+    <div style={{ background: '#0A0A0A', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 6, padding: '10px 12px', fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#F2F2F2', lineHeight: 1.75, minWidth: 140, pointerEvents: 'none' }}>
       <p style={{ margin: '0 0 4px', fontWeight: 500 }}>{d.project}</p>
       {row('Chain', d.chain)}
       {row('APY', `${d.apy.toFixed(2)}%`)}
@@ -242,7 +242,7 @@ function QuadrantOverlay() {
   const thresholdX = xScale(TVL_THRESHOLD);
   const thresholdY = yScale(APY_THRESHOLD);
   if (thresholdX == null || thresholdY == null) return null;
-  const ap = { fontSize: 9, fontFamily: 'Space Grotesk, sans-serif', fill: 'rgba(242,242,242,0.3)' } as const;
+  const ap = { fontSize: 9, fontFamily: 'Inter, sans-serif', fill: 'rgba(242,242,242,0.3)' } as const;
   return (
     <g>
       <line x1={thresholdX} y1={top}       x2={thresholdX} y2={top + h}   stroke="rgba(255,255,255,0.2)"  strokeDasharray="4 4" strokeWidth={1} />
@@ -261,7 +261,7 @@ function ApyScoreQuadrant() {
   const thresholdX = xScale(SCORE_THRESHOLD);
   const thresholdY = yScale(APY_THRESHOLD);
   if (thresholdX == null || thresholdY == null) return null;
-  const ap = { fontSize: 8, fontFamily: 'Space Grotesk, sans-serif', fill: 'rgba(242,242,242,0.2)' } as const;
+  const ap = { fontSize: 8, fontFamily: 'Inter, sans-serif', fill: 'rgba(242,242,242,0.2)' } as const;
   return (
     <g>
       <line x1={thresholdX} y1={top}       x2={thresholdX} y2={top + h}   stroke="rgba(255,255,255,0.15)" strokeDasharray="4 4" strokeWidth={1} />
@@ -403,7 +403,7 @@ export default function Analytics({ displayPools }: Props) {
           dominantBaseline="middle"
           fill={entry.colour}
           fontSize={10}
-          fontFamily="Space Grotesk, sans-serif"
+          fontFamily="Inter, sans-serif"
         >
           {entry.score}
         </text>
@@ -579,12 +579,12 @@ export default function Analytics({ displayPools }: Props) {
                 type="number" dataKey="tvlM" name="TVL" scale="log"
                 domain={['auto', 'auto']} ticks={[10, 50, 100, 500, 1000, 10000]}
                 tickFormatter={formatTvlLog} tick={AXIS_TICK} tickLine={false} axisLine={false}
-                label={{ value: 'TVL', position: 'insideBottom', offset: -14, fill: 'rgba(242,242,242,0.45)', fontSize: 9, fontFamily: 'Space Grotesk, sans-serif' }}
+                label={{ value: 'TVL', position: 'insideBottom', offset: -14, fill: 'rgba(242,242,242,0.45)', fontSize: 9, fontFamily: 'Inter, sans-serif' }}
               />
               <YAxis
                 type="number" dataKey="apy" name="APY"
                 tickFormatter={v => `${v}%`} tick={AXIS_TICK} tickLine={false} axisLine={false}
-                label={{ value: 'APY %', angle: -90, position: 'insideLeft', offset: 10, fill: 'rgba(242,242,242,0.45)', fontSize: 9, fontFamily: 'Space Grotesk, sans-serif' }}
+                label={{ value: 'APY %', angle: -90, position: 'insideLeft', offset: 10, fill: 'rgba(242,242,242,0.45)', fontSize: 9, fontFamily: 'Inter, sans-serif' }}
               />
               <ZAxis range={[1, 1]} />
               <QuadrantOverlay />
@@ -689,12 +689,12 @@ export default function Analytics({ displayPools }: Props) {
               <XAxis
                 type="number" dataKey="score" name="Score" domain={[0, 100]}
                 tick={AXIS_TICK} tickLine={false} axisLine={false}
-                label={{ value: 'Dexaris Score', position: 'insideBottom', offset: -14, fill: 'rgba(242,242,242,0.45)', fontSize: 9, fontFamily: 'Space Grotesk, sans-serif' }}
+                label={{ value: 'Dexaris Score', position: 'insideBottom', offset: -14, fill: 'rgba(242,242,242,0.45)', fontSize: 9, fontFamily: 'Inter, sans-serif' }}
               />
               <YAxis
                 type="number" dataKey="apy" name="APY"
                 tickFormatter={v => `${v}%`} tick={AXIS_TICK} tickLine={false} axisLine={false}
-                label={{ value: 'APY %', angle: -90, position: 'insideLeft', offset: 10, fill: 'rgba(242,242,242,0.45)', fontSize: 9, fontFamily: 'Space Grotesk, sans-serif' }}
+                label={{ value: 'APY %', angle: -90, position: 'insideLeft', offset: 10, fill: 'rgba(242,242,242,0.45)', fontSize: 9, fontFamily: 'Inter, sans-serif' }}
               />
               <ZAxis range={[1, 1]} />
               <ApyScoreQuadrant />

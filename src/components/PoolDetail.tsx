@@ -32,7 +32,7 @@ const NEUTRAL_CHAIN_BADGE = { bg: 'rgba(50,50,65,0.5)', text: '#888899' };
 
 const AXIS_TICK = {
   fill: 'rgba(242,242,242,0.3)',
-  fontFamily: 'Space Grotesk, sans-serif',
+  fontFamily: 'Inter, sans-serif',
   fontSize: 9,
 } as const;
 
@@ -637,8 +637,8 @@ export default function PoolDetail({ pool, onClose }: Props) {
                     <XAxis dataKey="date" tick={AXIS_TICK} tickLine={false} axisLine={false} interval="preserveStartEnd" />
                     <YAxis tickFormatter={v => `${v}%`} tick={AXIS_TICK} tickLine={false} axisLine={false} width={36} />
                     <Tooltip
-                      contentStyle={{ background: '#0A0A0A', border: '0.5px solid rgba(255,255,255,0.25)', borderRadius: 6, fontFamily: 'Space Grotesk, sans-serif', fontSize: 12 }}
-                      labelStyle={{ color: '#14B8B8', fontFamily: 'Space Grotesk, sans-serif' }}
+                      contentStyle={{ background: '#0A0A0A', border: '0.5px solid rgba(255,255,255,0.25)', borderRadius: 6, fontFamily: 'Inter, sans-serif', fontSize: 12 }}
+                      labelStyle={{ color: '#14B8B8', fontFamily: 'Inter, sans-serif' }}
                       itemStyle={{ color: '#F2F2F2' }}
                       formatter={(v) => [`${Number(v).toFixed(2)}%`, 'APY']}
                     />

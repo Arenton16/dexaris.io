@@ -68,7 +68,7 @@ function HeroScatterTooltip({ active, payload }: { active?: boolean; payload?: A
       border: '1px solid rgba(255,255,255,0.35)',
       borderRadius: 6,
       padding: '10px 12px',
-      fontFamily: "'Space Grotesk', sans-serif",
+      fontFamily: "'Inter', sans-serif",
       fontSize: 11,
       color: '#F2F2F2',
       lineHeight: 1.75,
@@ -149,7 +149,7 @@ function ProtocolLogoStrip() {
         <p style={{
           textAlign: 'center',
           fontSize: '10.5px',
-          fontFamily: "'Space Grotesk', sans-serif",
+          fontFamily: "'Inter', sans-serif",
           color: 'rgba(242,242,242,0.4)',
           textTransform: 'uppercase',
           letterSpacing: '0.05em',
@@ -299,7 +299,7 @@ function HeroRiskRewardPanel() {
         justifyContent: 'space-between',
         padding: '12px 16px',
         borderBottom: '0.5px solid rgba(255,255,255,0.2)',
-        fontFamily: "'Space Grotesk', sans-serif",
+        fontFamily: "'Inter', sans-serif",
         fontSize: '11px',
         color: 'rgba(242,242,242,0.45)',
         letterSpacing: '0.04em',
@@ -314,7 +314,7 @@ function HeroRiskRewardPanel() {
 
       <div style={{ padding: '16px 16px 0' }}>
         {isLoading ? (
-          <div style={{ height: '240px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(242,242,242,0.3)', fontSize: '13px', fontFamily: "'Space Grotesk', sans-serif" }}>
+          <div style={{ height: '240px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(242,242,242,0.3)', fontSize: '13px', fontFamily: "'Inter', sans-serif" }}>
             Loading live pool data…
           </div>
         ) : (
@@ -325,13 +325,13 @@ function HeroRiskRewardPanel() {
                 type="number" dataKey="tvlM" name="TVL" scale="log"
                 domain={['auto', 'auto']} ticks={[10, 50, 100, 500, 1000, 10000]}
                 tickFormatter={formatTvlLog}
-                tick={{ fill: 'rgba(242,242,242,0.4)', fontFamily: "'Space Grotesk', sans-serif", fontSize: 10 }}
+                tick={{ fill: 'rgba(242,242,242,0.4)', fontFamily: "'Inter', sans-serif", fontSize: 10 }}
                 tickLine={false} axisLine={false}
               />
               <YAxis
                 type="number" dataKey="apy" name="APY"
                 tickFormatter={v => `${v}%`}
-                tick={{ fill: 'rgba(242,242,242,0.4)', fontFamily: "'Space Grotesk', sans-serif", fontSize: 10 }}
+                tick={{ fill: 'rgba(242,242,242,0.4)', fontFamily: "'Inter', sans-serif", fontSize: 10 }}
                 tickLine={false} axisLine={false}
                 width={34}
               />
@@ -345,7 +345,7 @@ function HeroRiskRewardPanel() {
         )}
       </div>
 
-      <div style={{ display: 'flex', gap: '16px', padding: '4px 16px 16px', flexWrap: 'wrap', fontFamily: "'Space Grotesk', sans-serif", fontSize: '10.5px', color: 'rgba(242,242,242,0.4)' }}>
+      <div style={{ display: 'flex', gap: '16px', padding: '4px 16px 16px', flexWrap: 'wrap', fontFamily: "'Inter', sans-serif", fontSize: '10.5px', color: 'rgba(242,242,242,0.4)' }}>
         {HERO_TIERS.map(tier => (
           <span key={tier.key} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: tier.colour, display: 'inline-block' }} />
@@ -357,7 +357,7 @@ function HeroRiskRewardPanel() {
       <div className="hero-stat-strip">
         {statItems.map(({ value, label }) => (
           <div key={label}>
-            <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '18px', fontWeight: 500, color: '#F2F2F2', margin: 0 }}>{value}</p>
+            <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '18px', fontWeight: 500, color: '#F2F2F2', margin: 0 }}>{value}</p>
             <p style={{ fontSize: '10.5px', color: 'rgba(242,242,242,0.3)', margin: '2px 0 0', textTransform: 'uppercase', letterSpacing: '0.03em' }}>{label}</p>
           </div>
         ))}
@@ -520,7 +520,7 @@ export default function LandingPage() {
               borderRadius: '4px',
               padding: '5px 14px',
               fontSize: '11px',
-              fontFamily: "'Space Grotesk', sans-serif",
+              fontFamily: "'Inter', sans-serif",
               letterSpacing: '0.02em',
               color: 'rgba(255,255,255,0.9)',
             }}>
@@ -627,7 +627,7 @@ export default function LandingPage() {
             letterSpacing: '0.08em',
             color: 'rgba(242,242,242,0.4)',
             textTransform: 'uppercase',
-            fontFamily: "'Space Grotesk', sans-serif",
+            fontFamily: "'Inter', sans-serif",
             marginBottom: '16px',
             margin: '0 0 16px',
           }}>
@@ -753,7 +753,7 @@ export default function LandingPage() {
                     textAlign: col === 'APY' || col === 'TVL' || col === 'Score' ? 'right' : 'left',
                     fontSize: '10.5px',
                     fontWeight: 500,
-                    fontFamily: "'Space Grotesk', sans-serif",
+                    fontFamily: "'Inter', sans-serif",
                     color: 'rgba(242,242,242,0.3)',
                     textTransform: 'uppercase',
                     letterSpacing: '0.05em',
@@ -788,13 +788,13 @@ export default function LandingPage() {
                         <span style={{ fontSize: '11px', color: 'rgba(242,242,242,0.35)', marginLeft: '8px' }}>{pool.symbol}</span>
                       </td>
                       <td style={{ padding: '14px 16px', fontSize: '12px', color: 'rgba(242,242,242,0.5)' }}>{pool.chain}</td>
-                      <td style={{ padding: '14px 16px', fontSize: '13px', fontFamily: "'Space Grotesk', sans-serif", color: '#4ECDA4', textAlign: 'right', fontWeight: 500 }}>
+                      <td style={{ padding: '14px 16px', fontSize: '13px', fontFamily: "'Inter', sans-serif", color: '#4ECDA4', textAlign: 'right', fontWeight: 500 }}>
                         {(pool.apy ?? 0).toFixed(2)}%
                       </td>
-                      <td className="preview-tvl-col" style={{ padding: '14px 16px', fontSize: '13px', fontFamily: "'Space Grotesk', sans-serif", color: 'rgba(242,242,242,0.6)', textAlign: 'right' }}>
+                      <td className="preview-tvl-col" style={{ padding: '14px 16px', fontSize: '13px', fontFamily: "'Inter', sans-serif", color: 'rgba(242,242,242,0.6)', textAlign: 'right' }}>
                         {formatTvl(pool.tvlUsd)}
                       </td>
-                      <td style={{ padding: '14px 16px', fontSize: '13px', fontFamily: "'Space Grotesk', sans-serif", color: scoreColour(score), textAlign: 'right', fontWeight: 600 }}>
+                      <td style={{ padding: '14px 16px', fontSize: '13px', fontFamily: "'Inter', sans-serif", color: scoreColour(score), textAlign: 'right', fontWeight: 600 }}>
                         {score}
                       </td>
                     </tr>
