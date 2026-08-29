@@ -106,7 +106,7 @@ export default function Alerts() {
         {/* Description */}
         <p style={{
           fontSize: 15,
-          color: '#9B97C0',
+          color: 'rgba(242,242,242,0.45)',
           margin: '0 0 40px',
           lineHeight: 1.6,
           maxWidth: 480,
@@ -142,7 +142,7 @@ export default function Alerts() {
                 <div style={{ fontSize: 14, fontWeight: 600, color: '#F2F2F2', marginBottom: 2 }}>
                   {title}
                 </div>
-                <div style={{ fontSize: 13, color: '#9B97C0' }}>
+                <div style={{ fontSize: 13, color: 'rgba(242,242,242,0.45)' }}>
                   {description}
                 </div>
               </div>
@@ -163,7 +163,7 @@ export default function Alerts() {
             </p>
           ) : (
             <>
-              <p style={{ margin: '0 0 16px', fontSize: 14, color: '#9B97C0' }}>
+              <p style={{ margin: '0 0 16px', fontSize: 14, color: 'rgba(242,242,242,0.45)' }}>
                 Be the first to know when Alerts launches.
               </p>
               <form onSubmit={handleSubmit} noValidate style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
