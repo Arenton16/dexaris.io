@@ -2,30 +2,14 @@
 
 <br/>
 
-# DEXARIS.
+# DEXARIS
 
 ### DeFi Yield Intelligence
 
-**The smartest way to find, compare and maximise DeFi yield.**
+**Find the yield worth chasing.**
 
-[![Status](https://img.shields.io/badge/Status-Coming%20Soon-C9A84C?style=for-the-badge&labelColor=080E1A)](https://dexaris.io)
-[![Launch](https://img.shields.io/badge/Launch-Q3%202026-3B9EFF?style=for-the-badge&labelColor=080E1A)](https://dexaris.io)
-[![Website](https://img.shields.io/badge/Website-dexaris.io-ffffff?style=for-the-badge&labelColor=080E1A)](https://dexaris.io)
-[![Newsletter](https://img.shields.io/badge/Newsletter-Subscribe-C9A84C?style=for-the-badge&labelColor=080E1A)](https://dexaris.io)
-
-</div>
-
----
-
-<div align="center">
-
-```
-╔═══════════════════════════════════════════════════════════╗
-║                                                           ║
-║     47 Protocols  ·  6 Chains  ·  $2.4B Tracked         ║
-║                                                           ║
-╚═══════════════════════════════════════════════════════════╝
-```
+[![Website](https://img.shields.io/badge/Website-dexaris.io-14B8B8?style=for-the-badge&labelColor=050505)](https://dexaris.io)
+[![Status](https://img.shields.io/badge/Status-Live-4ECDA4?style=for-the-badge&labelColor=050505)](https://dexaris.io)
 
 </div>
 
@@ -33,97 +17,38 @@
 
 ## What is Dexaris?
 
-Dexaris is a **DeFi yield intelligence platform** built for sophisticated crypto investors. We aggregate, compare, and analyse live yield and staking rates across every major DeFi protocol and blockchain network — delivering the data intelligence edge you need to maximise returns.
+Dexaris is a free DeFi yield intelligence platform. It aggregates live yield and staking data from DeFiLlama across 6 chains and 200+ protocols, then scores every pool 0–100 with the **Dexaris Score** — a weighted measure of APY consistency, TVL depth, and organic (vs incentive-driven) yield, so users can see which yields are worth the risk and which aren't.
 
-Think **Bloomberg for DeFi yield.** Clean. Precise. Built for professionals.
-
----
-
-## The Problem
-
-> *There is an estimated $400B+ in crypto sitting idle in wallets.*
-
-Most holders know yield exists. Few know where to find it, how to compare it, or whether it is actually safe. Existing options are either too technical, too opaque, or too unreliable.
-
-**Nobody has built the definitive intelligence layer for DeFi yield. Until now.**
+Not custodial, no wallet connection required to browse.
 
 ---
 
-## What We Are Building
+## Features
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                                                             │
-│   PHASE 1 — Intelligence Layer          [ IN PROGRESS ]    │
-│   ├── Live yield comparison across 47+ protocols           │
-│   ├── Risk ratings: Low / Medium / High                    │
-│   ├── 6 chains: ETH, SOL, ARB, BASE, AVAX, MATIC          │
-│   └── The Dexaris Intelligence Brief — weekly newsletter   │
-│                                                             │
-│   PHASE 2 — Full Platform               [ COMING SOON ]    │
-│   ├── Real-time API data feeds                             │
-│   ├── Protocol deep-dives and analytics                    │
-│   ├── SEO content and yield guides                         │
-│   └── Affiliate and premium tier monetisation             │
-│                                                             │
-│   PHASE 3 — DeFi Intelligence Hub       [ ROADMAP ]        │
-│   ├── Wallet connect and portfolio view                    │
-│   ├── Institutional data feeds                             │
-│   ├── Risk intelligence engine                             │
-│   └── API access for professional users                    │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
-```
+- **Yield Explorer** — live, filterable, sortable table of every tracked pool, with the Dexaris Score, chain/score/organic-only filters, and search.
+- **Analytics** — score distribution, average APY, risk-vs-reward scatter, and best-performing chain, computed live across all tracked pools.
+- **Watchlist** — save pools and track their APY, TVL and Score over time (browser-local).
+- **Portfolio** — log real holdings and track their performance, backed by Supabase.
+- **Alerts** — waitlist for APY-target, score-drop, and TVL-movement notifications (not yet live).
+- **Methodology page** — full public breakdown of how the Dexaris Score is calculated, including its known limitations.
+- **Newsletter** — Beehiiv-powered weekly digest, with an internal (non-public) Claude-assisted content generator for drafting issues.
 
 ---
 
 ## Tech Stack
 
-<div align="center">
-
-![HTML](https://img.shields.io/badge/HTML5-080E1A?style=for-the-badge&logo=html5&logoColor=C9A84C)
-![CSS](https://img.shields.io/badge/CSS3-080E1A?style=for-the-badge&logo=css3&logoColor=3B9EFF)
-![JavaScript](https://img.shields.io/badge/JavaScript-080E1A?style=for-the-badge&logo=javascript&logoColor=C9A84C)
-![Vercel](https://img.shields.io/badge/Vercel-080E1A?style=for-the-badge&logo=vercel&logoColor=white)
-![GitHub](https://img.shields.io/badge/GitHub-080E1A?style=for-the-badge&logo=github&logoColor=white)
-
-</div>
-
-| Layer | Tool | Purpose |
-|---|---|---|
-| Frontend | HTML / CSS / JS | Coming soon page and MVP platform |
-| Framework | Next.js *(Phase 2)* | Full comparison platform |
-| Hosting | Vercel | Auto-deployment from GitHub |
-| Data | DeFiLlama API | Live yield and protocol data |
-| Prices | CoinGecko API | Asset price data |
-| Newsletter | Beehiiv | The Dexaris Intelligence Brief |
-| Domain | dexaris.io | Registered via Namecheap |
-
----
-
-## Data Sources
-
-```javascript
-const dataSources = {
-  yield:    "DeFiLlama  —  free, open API, 47+ protocols",
-  prices:   "CoinGecko  —  free tier, 30 calls/min",
-  onChain:  "The Graph  —  decentralised indexing",
-  cost:     "£0 at MVP launch"
-}
-```
-
----
-
-## Brand
-
-| Token | Value |
+| Layer | Tool |
 |---|---|
-| Primary Background | `#080E1A` — Deep Navy |
-| Gold Accent | `#C9A84C` — Primary brand colour |
-| Electric Blue | `#3B9EFF` — Data and secondary elements |
-| Success | `#4ECDA4` — Low risk indicators |
-| Danger | `#FF6B6B` — High risk indicators |
-| Font | Arial Thin — letter-spacing: 8px |
+| Frontend | React 19 + TypeScript + Vite |
+| Routing | React Router |
+| Charts | Recharts |
+| Animation | Framer Motion |
+| Data | Supabase (Portfolio, pool snapshot history) |
+| Hosting | Vercel — auto-deploy from `main`, daily cron snapshot |
+| Yield data | [DeFiLlama](https://defillama.com) API |
+| Token prices | CoinGecko API (proxied via `/api/token-prices`) |
+| Newsletter | Beehiiv (`/api/subscribe`) |
+| Content generation | Anthropic API (`/api/generate-content`, internal tool) |
 
 ---
 
@@ -131,21 +56,22 @@ const dataSources = {
 
 ```
 dexaris/
-│
-├── index.html              # Coming soon page
-├── README.md               # You are here
-│
-├── platform/               # Phase 2 — full comparison platform
-│   ├── index.html
-│   ├── styles/
-│   └── scripts/
-│
-├── blog/                   # SEO content and yield guides
-│
-└── assets/
-    ├── logo/               # DEXARIS. wordmark and icon files
-    ├── icons/              # Yield pulse arrow and UI icons
-    └── images/             # Open graph and social images
+├── index.html               # Vite entry point
+├── src/
+│   ├── components/          # LandingPage, YieldTable, Analytics, Portfolio, Watchlist, Alerts, Methodology, ...
+│   ├── contexts/            # PoolsContext (live DeFiLlama pool data)
+│   ├── hooks/                # useWatchlist, etc.
+│   ├── lib/                  # Supabase client
+│   ├── styles/               # index.css — single shared stylesheet
+│   ├── types/                 # Pool, ChainKey, CHAIN_LABELS
+│   └── utils/                 # dexarisScore.ts — scoring algorithm
+├── api/                      # Vercel serverless functions
+│   ├── subscribe.mjs          # Beehiiv newsletter signup
+│   ├── snapshot.mjs           # Daily cron — writes pool_snapshots to Supabase
+│   ├── token-prices.mjs       # CoinGecko price proxy
+│   └── generate-content.mjs   # Internal newsletter content generator
+├── public/                    # Static assets, favicon, OG image, robots.txt, sitemap.xml
+└── vercel.json                # SPA rewrite + cron config
 ```
 
 ---
@@ -153,69 +79,41 @@ dexaris/
 ## Getting Started
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/dexaris.git
+git clone https://github.com/Arenton16/dexaris.io.git
+cd dexaris.io
+npm install
 
-# Navigate into the project
-cd dexaris
+# Requires a .env.local with:
+#   VITE_SUPABASE_URL=...
+#   VITE_SUPABASE_ANON_KEY=...
 
-# Open in your browser
-open index.html
-
-# Or serve locally
-npx serve .
+npm run dev       # start dev server
+npm run build     # typecheck + production build
+npm run preview   # preview the production build
 ```
 
-> **Deployment** is handled automatically via Vercel. Every push to `main` triggers a live deployment to `dexaris.io`.
+Deployment is automatic via Vercel — every push to `main` triggers a production deploy to `dexaris.io`, and the daily snapshot cron (`/api/snapshot`) runs at 00:00 UTC.
 
 ---
 
-## Roadmap
+## Brand
 
-- [x] Brand identity — DEXARIS. wordmark, yield pulse icon, colour system
-- [x] Domain registered — dexaris.io
-- [x] GitHub repository created
-- [x] Vercel deployment pipeline connected
-- [ ] Coming soon page live
-- [ ] Newsletter launched — The Dexaris Intelligence Brief
-- [ ] Twitter/X and LinkedIn profiles live
-- [ ] Full comparison platform — Phase 2
-- [ ] DeFiLlama API integration
-- [ ] SEO blog launched
-- [ ] 500+ newsletter subscribers
-- [ ] Premium tier launched
-- [ ] Phase 3 — wallet connect and portfolio view
-
----
-
-## Newsletter
-
-**The Dexaris Intelligence Brief** — weekly yield opportunities, protocol analysis, and risk alerts. Every Tuesday.
-
-> *Join the waitlist at [dexaris.io](https://dexaris.io)*
-
----
-
-## Connect
-
-<div align="center">
-
-[![Twitter](https://img.shields.io/badge/Twitter%20%2F%20X-@dexaris-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white&labelColor=080E1A)](https://twitter.com/dexaris)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Dexaris-0077B5?style=for-the-badge&logo=linkedin&logoColor=white&labelColor=080E1A)](https://linkedin.com/company/dexaris)
-[![Website](https://img.shields.io/badge/Website-dexaris.io-C9A84C?style=for-the-badge&labelColor=080E1A)](https://dexaris.io)
-
-</div>
+| Token | Value |
+|---|---|
+| Background | `#050505` |
+| Panel / Surface | `#0A0A0A` |
+| Accent (teal) | `#0E7C7C` |
+| Accent text | `#14B8B8` |
+| Score — Strong / Positive | `#4ECDA4` |
+| Score — Moderate | `#FFB347` |
+| Score — Weak / Danger | `#FF6B6B` |
+| Primary text | `#F2F2F2` |
+| Font | Inter |
 
 ---
 
 <div align="center">
 
-**DEXARIS.**&nbsp;&nbsp;·&nbsp;&nbsp;DeFi Yield Intelligence&nbsp;&nbsp;·&nbsp;&nbsp;[dexaris.io](https://dexaris.io)
-
-*Built with precision. Powered by data. Made for sophisticated investors.*
-
-<br/>
-
-![Visitors](https://img.shields.io/badge/Status-Building%20in%20Public-C9A84C?style=flat-square&labelColor=080E1A)
+**DEXARIS** &nbsp;·&nbsp; DeFi Yield Intelligence &nbsp;·&nbsp; [dexaris.io](https://dexaris.io)
 
 </div>
