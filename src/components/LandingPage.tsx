@@ -109,6 +109,8 @@ function StarIcon() {
 }
 
 function ProtocolLogoStrip() {
+  const { allPools } = usePools();
+  const protocolCount = useMemo(() => new Set(allPools.map(p => p.project)).size, [allPools]);
   const chains = [
     { name: 'Ethereum', logo: '/logos/chains/ethereum.png' },
     { name: 'Solana',   logo: '/logos/chains/solana.png' },
@@ -147,7 +149,7 @@ function ProtocolLogoStrip() {
           padding: '12px 16px',
           borderBottom: '0.5px solid rgba(255,255,255,0.2)',
         }}>
-          Live yield data across 6 chains and 140+ protocols
+          Live yield data across 6 chains and {protocolCount > 0 ? `${protocolCount}+` : '140+'} protocols
         </p>
         <div style={{ position: 'relative', overflow: 'hidden', width: '100%' }}>
           {/* Edge scrims — a solid gradient overlay fades logos out cleanly
@@ -393,6 +395,7 @@ export default function LandingPage() {
     .filter(p => p.previewScore >= 60)
     .sort((a, b) => b.previewScore - a.previewScore)
     .slice(0, 5);
+  const protocolCount = new Set(allPools.map(p => p.project)).size;
 
   return (
     <div style={{ background: '#050505', minHeight: '100vh', fontFamily: "'Inter', sans-serif", color: '#F2F2F2' }}>
@@ -818,7 +821,7 @@ export default function LandingPage() {
               transition: 'background 0.2s, border-color 0.2s',
             }}
           >
-            View all 140+ protocols →
+            View all {protocolCount > 0 ? `${protocolCount}+` : '140+'} protocols →
           </button>
         </div>
       </motion.section>
