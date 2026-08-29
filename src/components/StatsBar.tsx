@@ -84,7 +84,7 @@ export default function StatsBar({ highestApy, totalTvl, protocolCount, chainCou
     {
       label: 'Highest Yield Today',
       value: `${highestApy.toFixed(2)}%`,
-      color: '#0E7C7C',
+      color: '#5DCACA',
       delta: apyDelta !== null && apyDelta > 0 ? `+${apyDelta.toFixed(2)}%` : null,
     },
     {

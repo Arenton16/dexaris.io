@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
+import DexarisIcon from './DexarisIcon';
 
 interface Props {
   children: ReactNode;
@@ -35,11 +36,7 @@ export default class ErrorBoundary extends Component<Props, State> {
           padding: '24px',
           textAlign: 'center',
         }}>
-          <svg width="36" height="36" viewBox="0 0 44 44" fill="none">
-            <polygon points="4,42 10,26 16,26 10,42" fill="rgba(255,255,255,0.3)" />
-            <polygon points="16,42 22,16 28,16 22,42" fill="rgba(255,255,255,0.6)" />
-            <polygon points="28,42 34,5 40,5 34,42"  fill="#0E7C7C" />
-          </svg>
+          <DexarisIcon size={36} />
           <p style={{ fontSize: '18px', fontWeight: 500, margin: 0 }}>
             Something went wrong
           </p>

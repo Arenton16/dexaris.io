@@ -6,6 +6,7 @@ import {
   ResponsiveContainer, ZAxis,
 } from 'recharts';
 import DexarisLogo from './DexarisLogo';
+import DexarisIcon from './DexarisIcon';
 import { usePools } from '../contexts/PoolsContext';
 import { calculateDexarisScore, getDexarisScoreColour } from '../utils/dexarisScore';
 
@@ -106,17 +107,6 @@ function StarIcon() {
     </svg>
   );
 }
-
-function D4Icon() {
-  return (
-    <svg width="24" height="24" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <polygon points="4,42 10,26 16,26 10,42" fill="rgba(255,255,255,0.5)" />
-      <polygon points="16,42 22,16 28,16 22,42" fill="rgba(255,255,255,0.75)" />
-      <polygon points="28,42 34,5 40,5 34,42" fill="#0E7C7C" />
-    </svg>
-  );
-}
-
 
 function ProtocolLogoStrip() {
   const chains = [
@@ -642,7 +632,7 @@ export default function LandingPage() {
         <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: '16px', marginBottom: '16px' }}>
           {[
             {
-              icon: <D4Icon />,
+              icon: <DexarisIcon size={24} />,
               title: 'Risk vs Reward intelligence',
               desc: 'Our unique scatter chart plots every pool by APY and TVL so you can instantly see which yields are worth the risk and which to avoid.',
               delay: 0,
