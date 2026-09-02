@@ -395,6 +395,95 @@ Return valid JSON only, no markdown, no backticks:
 {"posts":[{"text":"..."}]}`;
 }
 
+// ── LinkedIn ─────────────────────────────────────────────────────────────
+// A different register from X on purpose — LinkedIn's audience skews more
+// institutional than CT, and rewards a story or a worked-through insight
+// over a stat blast. Meant for a low cadence (every few days/week), not the
+// 3x/day X rhythm, so this generates one post at a time with a manually
+// picked content type rather than the X tab's auto-rotated three-per-batch.
+
+const LINKEDIN_VOICE_CONTRACT = `You are writing a LinkedIn post for Antony, founder of Dexaris — a DeFi yield intelligence platform.
+
+VOICE:
+- First person, reflective, and specific — a founder sharing something real, not a company account posting marketing copy
+- LinkedIn rewards a story or a worked-through insight, not a stat blast — use the live data point to support a point, don't just state it
+- Structure: a strong opening line (LinkedIn only shows ~2-3 lines before "see more" cuts it off — that line has to earn the click), then short paragraphs (1-3 sentences each) separated by line breaks, building to a clear takeaway
+- Confident and specific. Never vague corporate language.
+- Never uses: "I'm thrilled to share", "excited to announce", "in today's fast-paced world", "let's dive in", "game-changer", generic hashtag spam
+- Length: roughly 150-300 words — long enough to say something real, short enough that people actually read the whole thing
+- Up to 3-5 relevant hashtags at the very end if genuinely useful (e.g. #DeFi), never mid-sentence, never more than a handful
+- Never gives financial advice — describes patterns and reasoning, never buy/sell instructions
+
+BAD EXAMPLE (never write like this):
+"Excited to share some insights from Dexaris this week! 🚀 In today's fast-paced DeFi landscape, it's more important than ever to leverage data-driven decision making. Let's dive into what we're seeing! #DeFi #Crypto #Web3 #Innovation"
+
+GOOD EXAMPLE (tone/structure reference — today's actual angle is assigned below, don't default to this shape):
+"Most people chasing the highest APY on a pool never check one number: how much of that yield is actually organic.
+
+I built the Dexaris Score because I kept seeing pools advertise 80%+ APY that were almost entirely funded by token incentives — yields that vanish the moment the incentive program ends.
+
+Right now, the pool with the single highest listed APY on Dexaris only scores a 34/100. The pools scoring above 80 average a fraction of that headline number — and they're still paying out next month.
+
+High APY isn't the same as good yield. It's just the number that's easiest to advertise."`;
+
+type LinkedInTypeId = 'founder_reflection' | 'market_insight' | 'myth_bust_longform' | 'building_in_public' | 'industry_commentary';
+
+interface LinkedInTypeDef {
+  id: LinkedInTypeId;
+  label: string;
+  needsDataPoint: boolean;
+  guidance: string;
+}
+
+const LINKEDIN_CONTENT_TYPES: LinkedInTypeDef[] = [
+  {
+    id: 'founder_reflection', needsDataPoint: false, label: 'Founder Reflection',
+    guidance: 'A genuine first-person reflection on building Dexaris — a decision you made and why, a mistake and what it taught you, or something the data has changed your mind about. Not a product pitch. Should read like something only the founder could have written.',
+  },
+  {
+    id: 'market_insight', needsDataPoint: true, label: 'Market Insight',
+    guidance: "A bigger-picture observation about DeFi yield trends that the live data supports — not just a stat, but what that stat implies about where the market is heading or reveals about investor behavior.",
+  },
+  {
+    id: 'myth_bust_longform', needsDataPoint: true, label: 'Myth Bust (Long Form)',
+    guidance: 'Take the "high APY isn\'t the same as safe yield" idea and actually walk through the reasoning, not just assert it. Use the real numbers provided as the anchor, then explain the mechanism (token incentives vs organic fees) so the reader understands why, not just that.',
+  },
+  {
+    id: 'building_in_public', needsDataPoint: false, label: 'Building In Public',
+    guidance: 'A concrete update on Dexaris — a feature shipped, a tradeoff made building the scoring model, a piece of user feedback that changed something. Specific and real, not a generic "we\'re growing!" update.',
+  },
+  {
+    id: 'industry_commentary', needsDataPoint: true, label: 'Industry Commentary',
+    guidance: 'React to a broader pattern visible in the current DeFi data with a real opinion — what it says about the state of the market, where attention/capital is flowing, or a prediction. Ground the opinion in the live numbers provided, don\'t just have a take with no evidence.',
+  },
+];
+
+function buildLinkedInDataHint(typeId: LinkedInTypeId, snap: LiveSnapshot): string {
+  switch (typeId) {
+    case 'market_insight':
+      return `Live data point: ${snap.domCount} of the top ${snap.top20Count} pools by Dexaris Score right now are on ${snap.domChain}, and the average Score across all tracked pools is ${snap.avgScore} against an average APY of ${snap.avgApy.toFixed(2)}%.`;
+    case 'myth_bust_longform':
+      return `Live data point: the highest-APY pool right now, ${snap.topApy.pool.project} (${snap.topApy.pool.symbol} on ${snap.topApy.pool.chain}), pays ${fmtApy(snap.topApy.pool.apy)} but only scores ${snap.topApy.score} on Dexaris. Meanwhile ${snap.topScore.pool.project} scores ${snap.topScore.score} at a more modest ${fmtApy(snap.topScore.pool.apy)} APY. Use this contrast as the anchor for the reasoning.`;
+    case 'industry_commentary':
+      return snap.flaggedPool
+        ? `Live data point: ${snap.flaggedPool.pool.project} (${snap.flaggedPool.pool.symbol} on ${snap.flaggedPool.pool.chain}) is showing ${fmtApy(snap.flaggedPool.pool.apy)} APY that's mostly incentive-driven rather than organic, and ${snap.flaggedCount} pool(s) in today's tracked set show the same pattern.`
+        : `Live data point: average Dexaris Score right now is ${snap.avgScore} against an average APY of ${snap.avgApy.toFixed(2)}% — a meaningful gap between "highest paying" and "highest quality" worth commenting on.`;
+    case 'founder_reflection':
+    case 'building_in_public':
+      return '';
+  }
+}
+
+function buildLinkedInSystemPrompt(type: LinkedInTypeDef, dataHint: string): string {
+  return `${LINKEDIN_VOICE_CONTRACT}
+
+CONTENT TYPE FOR TODAY'S POST:
+${type.label} — ${type.guidance}
+
+${dataHint ? `${dataHint}\n\n` : ''}Return valid JSON only, no markdown, no backticks:
+{"posts":[{"text":"..."}]}`;
+}
+
 const NEWSLETTER_SYSTEM_PROMPT = `You are writing The Dexaris Brief — a weekly DeFi yield intelligence newsletter written by Antony, founder of Dexaris.
 
 VOICE AND TONE:
@@ -1837,12 +1926,228 @@ function ReplyTab({ allPools }: { allPools: Pool[] }) {
   );
 }
 
+// ── LinkedIn tab ──────────────────────────────────────────────────────────
+
+function LinkedInTab() {
+  const [typeId, setTypeId]   = useState<LinkedInTypeId>('founder_reflection');
+  const [post, setPost]       = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError]     = useState('');
+  const [copied, setCopied]   = useState(false);
+
+  async function handleGenerate() {
+    setLoading(true);
+    setError('');
+    setPost('');
+
+    try {
+      const type = LINKEDIN_CONTENT_TYPES.find(t => t.id === typeId)!;
+      let dataHint = '';
+
+      if (type.needsDataPoint) {
+        const poolRes = await fetch('https://yields.llama.fi/pools');
+        if (!poolRes.ok) throw new Error(`DeFiLlama fetch failed: ${poolRes.status}`);
+        const poolJson = await poolRes.json();
+        const filtered = (poolJson.data as Pool[])
+          .filter(p => p.tvlUsd > 1_000_000 && (p.apy ?? 0) > 0)
+          .sort((a, b) => b.tvlUsd - a.tvlUsd)
+          .slice(0, 30);
+        const snapshot = buildLiveSnapshot(filtered);
+        dataHint = buildLinkedInDataHint(typeId, snapshot);
+      }
+
+      const aiRes = await fetch('/api/generate-content', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemPrompt: buildLinkedInSystemPrompt(type, dataHint),
+          userMessage: 'Write today\'s LinkedIn post following the content type and rules above.',
+          format: 'longform',
+        }),
+      });
+
+      if (!aiRes.ok) {
+        const errorText = await aiRes.text();
+        setError(`Generation failed: ${aiRes.status} — ${errorText}`);
+        return;
+      }
+
+      const aiData = await aiRes.json();
+      const rawText: string = (aiData as { result: string }).result ?? '';
+      const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error('Could not parse JSON from AI response');
+      const parsed: { posts?: Array<{ text: string }> } = JSON.parse(jsonMatch[0]);
+      const text = parsed.posts?.[0]?.text;
+      if (!text) throw new Error('AI returned an unexpected response shape');
+      setPost(text);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Generation failed — please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function copyPost() {
+    try {
+      await navigator.clipboard.writeText(post);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch { /* clipboard unavailable */ }
+  }
+
+  const S: React.CSSProperties = { fontFamily: "'Inter', sans-serif" };
+  const wordCount = post.trim() ? post.trim().split(/\s+/).length : 0;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+
+      {/* Intro note */}
+      <div style={{
+        ...S,
+        background: 'rgba(255,255,255,0.06)',
+        border: '0.5px solid rgba(255,255,255,0.2)',
+        borderRadius: '10px',
+        padding: '14px 16px',
+        fontSize: '13px',
+        color: 'rgba(242,242,242,0.45)',
+        lineHeight: 1.6,
+      }}>
+        A slower, longer-form register than X — a story or a worked insight, not a stat blast. Meant for every
+        few days or once a week, not a daily post. Generate, review, then copy into Buffer's LinkedIn queue.
+      </div>
+
+      {/* Content type picker */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <span style={{ ...S, fontSize: '13px', fontWeight: 600, color: '#F2F2F2' }}>Content type</span>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          {LINKEDIN_CONTENT_TYPES.map(t => (
+            <button
+              key={t.id}
+              onClick={() => setTypeId(t.id)}
+              style={{
+                ...S,
+                background: typeId === t.id ? 'rgba(14,124,124,0.15)' : '#0A0A0A',
+                border: `1px solid ${typeId === t.id ? 'rgba(14,124,124,0.5)' : 'rgba(255,255,255,0.2)'}`,
+                borderRadius: '8px',
+                padding: '6px 14px',
+                fontSize: '12px',
+                fontWeight: typeId === t.id ? 600 : 400,
+                color: typeId === t.id ? '#14B8B8' : 'rgba(242,242,242,0.6)',
+                cursor: 'pointer',
+              }}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+        <span style={{ ...S, fontSize: '11px', color: 'rgba(242,242,242,0.35)' }}>
+          {LINKEDIN_CONTENT_TYPES.find(t => t.id === typeId)?.guidance}
+        </span>
+      </div>
+
+      {/* Generate button */}
+      <button
+        onClick={handleGenerate}
+        disabled={loading}
+        style={{
+          ...S,
+          alignSelf: 'flex-start',
+          background: loading ? 'rgba(255,255,255,0.4)' : '#0E7C7C',
+          border: 'none',
+          borderRadius: '10px',
+          padding: '12px 28px',
+          fontSize: '14px',
+          fontWeight: 600,
+          color: '#fff',
+          cursor: loading ? 'not-allowed' : 'pointer',
+          transition: 'background 0.15s',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+        }}
+      >
+        {loading ? (
+          <>
+            <span style={{ display: 'inline-block', width: 14, height: 14, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'nlgen-spin 0.7s linear infinite' }} />
+            Drafting post…
+          </>
+        ) : (
+          'Generate LinkedIn post'
+        )}
+      </button>
+
+      {/* Error */}
+      {error && (
+        <div style={{
+          ...S,
+          background: 'rgba(255,107,107,0.08)',
+          border: '1px solid rgba(255,107,107,0.25)',
+          borderRadius: '10px',
+          padding: '12px 16px',
+          fontSize: '13px',
+          color: '#FF8A8A',
+          lineHeight: 1.5,
+        }}>
+          {error}
+        </div>
+      )}
+
+      {/* Result */}
+      {post && (
+        <div style={{
+          background: '#0A0A0A',
+          border: '1px solid rgba(255,255,255,0.18)',
+          borderRadius: '12px',
+          padding: '20px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '12px',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ ...S, fontSize: '12px', fontWeight: 500, color: 'rgba(242,242,242,0.35)' }}>
+              {wordCount} words · {post.length} chars
+            </span>
+            <button
+              onClick={copyPost}
+              style={{
+                ...S,
+                background: copied ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.1)',
+                border: `1px solid ${copied ? 'rgba(52,211,153,0.3)' : 'rgba(255,255,255,0.25)'}`,
+                borderRadius: '6px',
+                padding: '4px 12px',
+                fontSize: '12px',
+                fontWeight: 500,
+                color: copied ? '#34D399' : '#14B8B8',
+                cursor: 'pointer',
+                transition: 'all 0.15s',
+              }}
+            >
+              {copied ? '✓ Copied' : 'Copy'}
+            </button>
+          </div>
+          <p style={{
+            ...S,
+            margin: 0,
+            fontSize: '14px',
+            lineHeight: 1.7,
+            color: '#F2F2F2',
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word',
+          }}>
+            {post}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Component ─────────────────────────────────────────────────────────────
 
 export default function NewsletterGenerator() {
   // All hooks unconditionally at the top
   const [unlocked, setUnlocked] = useState(() => sessionStorage.getItem(SESSION_KEY) === '1');
-  const [activeTab, setActiveTab] = useState<'newsletter' | 'xcontent' | 'reply'>('newsletter');
+  const [activeTab, setActiveTab] = useState<'newsletter' | 'xcontent' | 'reply' | 'linkedin'>('newsletter');
   const { allPools, isLoading } = usePools();
   const [bodyCopied, setBodyCopied] = useState(false);
   const [subCopied, setSubCopied]  = useState(false);
@@ -1937,7 +2242,7 @@ export default function NewsletterGenerator() {
   }
 
   // Tab button style helper
-  function tabStyle(tab: 'newsletter' | 'xcontent' | 'reply'): React.CSSProperties {
+  function tabStyle(tab: 'newsletter' | 'xcontent' | 'reply' | 'linkedin'): React.CSSProperties {
     const active = activeTab === tab;
     return {
       fontFamily: "'Inter', sans-serif",
@@ -1980,6 +2285,9 @@ export default function NewsletterGenerator() {
         </button>
         <button style={tabStyle('reply')} onClick={() => setActiveTab('reply')}>
           Reply
+        </button>
+        <button style={tabStyle('linkedin')} onClick={() => setActiveTab('linkedin')}>
+          LinkedIn
         </button>
       </div>
 
@@ -2172,6 +2480,9 @@ export default function NewsletterGenerator() {
 
       {/* ── Reply tab ── */}
       {activeTab === 'reply' && <ReplyTab allPools={allPools} />}
+
+      {/* ── LinkedIn tab ── */}
+      {activeTab === 'linkedin' && <LinkedInTab />}
     </div>
   );
 }

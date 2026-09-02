@@ -25,7 +25,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { systemPrompt, userMessage, recentPostTypes } = req.body
+  const { systemPrompt, userMessage, recentPostTypes, format } = req.body
 
   if (!systemPrompt || !userMessage) {
     return res.status(400).json({ error: 'Missing systemPrompt or userMessage' })
@@ -94,7 +94,10 @@ export default async function handler(req, res) {
   // Enforce X's character limits post-generation. Thread beats are checked
   // and capped individually — never as a combined total — while single
   // tweets get a hard 280-character cap regardless of what the model returned.
-  if (Array.isArray(parsed.posts)) {
+  // Only applies to tweet-shaped content — longform (e.g. LinkedIn) has no
+  // such limit, and truncating a 250-word post at 280 characters would
+  // mangle it mid-sentence rather than enforce a real platform constraint.
+  if (format !== 'longform' && Array.isArray(parsed.posts)) {
     for (const post of parsed.posts) {
       if (typeof post.text !== 'string') continue
 
