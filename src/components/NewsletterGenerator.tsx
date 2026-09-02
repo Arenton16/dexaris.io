@@ -319,6 +319,82 @@ Return valid JSON only, no markdown, no backticks:
 Set each "type" field to "<Content Type Label> · <Tone Label>" (e.g. "Data Drop · Analytical"). Set "chars" to the actual character count of that post's "text" field.`;
 }
 
+// ── Reply mode ───────────────────────────────────────────────────────────
+// Original scheduled posts (above) are one growth lever. Replying into an
+// already-trending tweet with a Score-grounded take is the other — it puts
+// the take in front of an audience that already exists, rather than only
+// broadcasting from a small account. This mode drafts that reply.
+
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// Pool symbols often bundle a marketing/product word into the ticker itself
+// (e.g. "KPK-USDC-YIELD", "WETH-NOW") — matching those tokens against a
+// tweet's ordinary English would false-positive on the word "yield" or "now"
+// appearing for unrelated reasons, wrongly grounding a public reply in the
+// wrong pool's data. Excluded from symbol-token matching (not project-name
+// matching, which isn't prone to this since protocol names aren't dictionary
+// words).
+const SYMBOL_MATCH_STOPWORDS = new Set([
+  'yield', 'now', 'new', 'old', 'up', 'down', 'max', 'min', 'high', 'low',
+  'deep', 'safe', 'real', 'boost', 'pool', 'farm', 'stake', 'staking', 'vault',
+  'plus', 'pro', 'lite', 'core', 'main', 'auto', 'fixed', 'variable', 'super',
+  'mega', 'ultra', 'prime', 'flex', 'lending', 'earn', 'save', 'v1', 'v2', 'v3',
+]);
+
+// Matches a pasted tweet's text against tracked pools by project name or
+// symbol token, so the reply can cite that exact pool's live Score instead
+// of a generic platform stat — case-insensitive, whole-word for symbols
+// (so "SOL" doesn't match inside an unrelated word).
+function findMatchingPools(tweetText: string, pools: Pool[]): Pool[] {
+  const lower = tweetText.toLowerCase();
+  const matches = pools.filter(p => {
+    const project = (p.project ?? '').toLowerCase();
+    if (project.length > 2 && lower.includes(project)) return true;
+    const symbol = (p.symbol ?? '').toLowerCase();
+    if (symbol.length > 2) {
+      return symbol.split(/[-/]/).some(tok =>
+        tok.length > 2 && !SYMBOL_MATCH_STOPWORDS.has(tok) && new RegExp(`\\b${escapeRegExp(tok)}\\b`).test(lower)
+      );
+    }
+    return false;
+  });
+
+  // Dedup by project (keep the deepest pool per protocol), then rank by TVL
+  // so the most liquid — most likely to be "the" pool being discussed —
+  // sorts first.
+  const byProject = new Map<string, Pool>();
+  for (const p of matches) {
+    const existing = byProject.get(p.project);
+    if (!existing || p.tvlUsd > existing.tvlUsd) byProject.set(p.project, p);
+  }
+  return [...byProject.values()].sort((a, b) => b.tvlUsd - a.tvlUsd).slice(0, 5);
+}
+
+function buildReplySystemPrompt(tone: ToneDef, matchedPool: Pool | null, poolScore: number | null): string {
+  const groundingBlock = matchedPool
+    ? `The tweet you're replying to appears to be about ${matchedPool.project} (${matchedPool.symbol} on ${matchedPool.chain}). Live Dexaris data on this exact pool: APY ${fmtApy(matchedPool.apy)}, TVL ${fmtTvl(matchedPool.tvlUsd)}, Dexaris Score ${poolScore} (${getDexarisScoreTier(poolScore ?? 0)}). Use this real number if it genuinely strengthens the reply — don't force it in if the tweet isn't actually about this pool's yield quality.`
+    : `No specific pool was matched to this tweet. Reply with a general point of view grounded in the Dexaris Score philosophy (a 0-100 score weighing APY consistency, TVL depth, and organic vs incentive-driven yield — not just raw APY). Do not invent a specific number that wasn't provided.`;
+
+  return `${X_VOICE_CONTRACT}
+
+You are drafting a REPLY to someone else's tweet — not an original post. The goal is to insert a sharp, data-backed take into a conversation that's already happening, not to restate a generic Dexaris fact.
+
+TONE FOR THIS REPLY:
+${tone.label} — ${tone.guidance}
+
+${groundingBlock}
+
+REPLY RULES:
+- Directly engage with the specific point in their tweet — agree and add information they didn't have, or push back if the data disagrees with their take. Never generic agreement ("great point!") and never a non-sequitur that ignores what they said.
+- FORMAT: a single tweet. Under 280 characters, hard limit. No numbering, no thread markers, no leading "@username" (the platform threads that automatically).
+- No hashtags. No emojis. No financial advice framing.
+
+Return valid JSON only, no markdown, no backticks:
+{"posts":[{"text":"..."}]}`;
+}
+
 const NEWSLETTER_SYSTEM_PROMPT = `You are writing The Dexaris Brief — a weekly DeFi yield intelligence newsletter written by Antony, founder of Dexaris.
 
 VOICE AND TONE:
@@ -920,7 +996,7 @@ const RECENT_TONES_KEY = 'nlgen_recent_post_tones';
 
 function loadRecentIds(key: string): string[] {
   try {
-    const raw = sessionStorage.getItem(key);
+    const raw = localStorage.getItem(key);
     return raw ? (JSON.parse(raw) as string[]) : [];
   } catch {
     return [];
@@ -935,9 +1011,9 @@ function XContentTab() {
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
   const [allCopied, setAllCopied] = useState(false);
 
-  // Last-used content types/tones, persisted across generations (and page
-  // reloads within the session) so the next generation automatically avoids
-  // repeating them — no manual input required.
+  // Last-used content types/tones, persisted across generations — including
+  // across days, since localStorage (not sessionStorage) survives the tab
+  // closing — so tomorrow's generation still avoids repeating today's shape.
   const [recentTypeIds, setRecentTypeIds] = useState<string[]>(() => loadRecentIds(RECENT_TYPES_KEY));
   const [recentToneIds, setRecentToneIds] = useState<string[]>(() => loadRecentIds(RECENT_TONES_KEY));
 
@@ -1031,8 +1107,8 @@ function XContentTab() {
       const updatedToneIds = Array.from(new Set([...chosenTones.map(t => t.id), ...recentToneIds])).slice(0, 4);
       setRecentTypeIds(updatedTypeIds);
       setRecentToneIds(updatedToneIds);
-      sessionStorage.setItem(RECENT_TYPES_KEY, JSON.stringify(updatedTypeIds));
-      sessionStorage.setItem(RECENT_TONES_KEY, JSON.stringify(updatedToneIds));
+      localStorage.setItem(RECENT_TYPES_KEY, JSON.stringify(updatedTypeIds));
+      localStorage.setItem(RECENT_TONES_KEY, JSON.stringify(updatedToneIds));
 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Generation failed — please try again.');
@@ -1281,12 +1357,308 @@ function XContentTab() {
   );
 }
 
+// ── Reply tab ─────────────────────────────────────────────────────────────
+
+function ReplyTab({ allPools }: { allPools: Pool[] }) {
+  const [tweetText, setTweetText]           = useState('');
+  const [toneId, setToneId]                 = useState<ToneId>('direct');
+  const [candidatePools, setCandidatePools]  = useState<Pool[]>([]);
+  const [selectedPoolId, setSelectedPoolId]  = useState<string | null>(null);
+  const [reply, setReply]                   = useState('');
+  const [loading, setLoading]               = useState(false);
+  const [error, setError]                   = useState('');
+  const [copied, setCopied]                 = useState(false);
+
+  useEffect(() => {
+    if (tweetText.trim().length < 5 || allPools.length === 0) {
+      setCandidatePools([]);
+      setSelectedPoolId(null);
+      return;
+    }
+    const matches = findMatchingPools(tweetText, allPools);
+    setCandidatePools(matches);
+    setSelectedPoolId(matches[0]?.pool ?? null);
+  }, [tweetText, allPools]);
+
+  async function handleGenerate() {
+    if (!tweetText.trim()) return;
+    setLoading(true);
+    setError('');
+    setReply('');
+
+    try {
+      const matchedPool = selectedPoolId ? allPools.find(p => p.pool === selectedPoolId) ?? null : null;
+      const poolScore = matchedPool ? calculateDexarisScore(matchedPool) : null;
+      const tone = TONES.find(t => t.id === toneId)!;
+
+      const aiRes = await fetch('/api/generate-content', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemPrompt: buildReplySystemPrompt(tone, matchedPool, poolScore),
+          userMessage: `Here is the tweet you're replying to:\n"""\n${tweetText.trim()}\n"""\n\nDraft the reply following the rules above.`,
+        }),
+      });
+
+      if (!aiRes.ok) {
+        const errorText = await aiRes.text();
+        setError(`Generation failed: ${aiRes.status} — ${errorText}`);
+        return;
+      }
+
+      const aiData = await aiRes.json();
+      const rawText: string = (aiData as { result: string }).result ?? '';
+      const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error('Could not parse JSON from AI response');
+      const parsed: { posts?: Array<{ text: string }> } = JSON.parse(jsonMatch[0]);
+      const text = parsed.posts?.[0]?.text;
+      if (!text) throw new Error('AI returned an unexpected response shape');
+      setReply(text);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Generation failed — please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function copyReply() {
+    try {
+      await navigator.clipboard.writeText(reply);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch { /* clipboard unavailable */ }
+  }
+
+  const S: React.CSSProperties = { fontFamily: "'Inter', sans-serif" };
+  const overLimit = reply.length > 280;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+
+      {/* Intro note */}
+      <div style={{
+        ...S,
+        background: 'rgba(255,255,255,0.06)',
+        border: '0.5px solid rgba(255,255,255,0.2)',
+        borderRadius: '10px',
+        padding: '14px 16px',
+        fontSize: '13px',
+        color: 'rgba(242,242,242,0.45)',
+        lineHeight: 1.6,
+      }}>
+        Paste a tweet that's already trending and get a Score-grounded reply drafted — inserting a real take into
+        a conversation that already has an audience, rather than only posting from @DexarisHQ.
+      </div>
+
+      {/* Tweet input */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <label style={{ ...S, fontSize: '13px', fontWeight: 600, color: '#F2F2F2' }}>
+          Tweet you're replying to
+        </label>
+        <textarea
+          value={tweetText}
+          onChange={e => setTweetText(e.target.value)}
+          placeholder="Paste the tweet text you want to reply to…"
+          rows={4}
+          style={{
+            ...S,
+            background: '#0A0A0A',
+            border: '1px solid rgba(255,255,255,0.2)',
+            borderRadius: '10px',
+            padding: '12px 14px',
+            fontSize: '14px',
+            color: '#F2F2F2',
+            outline: 'none',
+            resize: 'vertical',
+            boxSizing: 'border-box',
+          }}
+        />
+      </div>
+
+      {/* Matched pool picker */}
+      {tweetText.trim().length >= 5 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <span style={{ ...S, fontSize: '12px', color: 'rgba(242,242,242,0.45)' }}>
+            {candidatePools.length > 0
+              ? "Ground the reply in a specific pool's live data, or use a general take:"
+              : 'No pool matched this tweet — will reply with a general take.'}
+          </span>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {candidatePools.map(p => {
+              const selected = selectedPoolId === p.pool;
+              const score = calculateDexarisScore(p);
+              const colour = getDexarisScoreColour(score);
+              return (
+                <button
+                  key={p.pool}
+                  onClick={() => setSelectedPoolId(p.pool)}
+                  style={{
+                    ...S,
+                    background: selected ? 'rgba(14,124,124,0.15)' : '#0A0A0A',
+                    border: `1px solid ${selected ? 'rgba(14,124,124,0.5)' : 'rgba(255,255,255,0.2)'}`,
+                    borderRadius: '8px',
+                    padding: '6px 12px',
+                    fontSize: '12px',
+                    color: selected ? '#14B8B8' : '#F2F2F2',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                  }}
+                >
+                  {p.project} ({p.symbol})
+                  <span style={{ color: colour, fontWeight: 600 }}>{score}</span>
+                </button>
+              );
+            })}
+            <button
+              onClick={() => setSelectedPoolId(null)}
+              style={{
+                ...S,
+                background: selectedPoolId === null ? 'rgba(14,124,124,0.15)' : '#0A0A0A',
+                border: `1px solid ${selectedPoolId === null ? 'rgba(14,124,124,0.5)' : 'rgba(255,255,255,0.2)'}`,
+                borderRadius: '8px',
+                padding: '6px 12px',
+                fontSize: '12px',
+                color: selectedPoolId === null ? '#14B8B8' : 'rgba(242,242,242,0.5)',
+                cursor: 'pointer',
+              }}
+            >
+              General take (no specific pool)
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Tone picker */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <span style={{ ...S, fontSize: '13px', fontWeight: 600, color: '#F2F2F2' }}>Tone</span>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          {TONES.map(t => (
+            <button
+              key={t.id}
+              onClick={() => setToneId(t.id)}
+              style={{
+                ...S,
+                background: toneId === t.id ? 'rgba(14,124,124,0.15)' : '#0A0A0A',
+                border: `1px solid ${toneId === t.id ? 'rgba(14,124,124,0.5)' : 'rgba(255,255,255,0.2)'}`,
+                borderRadius: '8px',
+                padding: '6px 14px',
+                fontSize: '12px',
+                fontWeight: toneId === t.id ? 600 : 400,
+                color: toneId === t.id ? '#14B8B8' : 'rgba(242,242,242,0.6)',
+                cursor: 'pointer',
+              }}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Generate button */}
+      <button
+        onClick={handleGenerate}
+        disabled={loading || !tweetText.trim()}
+        style={{
+          ...S,
+          alignSelf: 'flex-start',
+          background: (loading || !tweetText.trim()) ? 'rgba(255,255,255,0.15)' : '#0E7C7C',
+          border: 'none',
+          borderRadius: '10px',
+          padding: '12px 28px',
+          fontSize: '14px',
+          fontWeight: 600,
+          color: (loading || !tweetText.trim()) ? 'rgba(255,255,255,0.4)' : '#fff',
+          cursor: (loading || !tweetText.trim()) ? 'not-allowed' : 'pointer',
+          transition: 'background 0.15s',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+        }}
+      >
+        {loading ? (
+          <>
+            <span style={{ display: 'inline-block', width: 14, height: 14, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'nlgen-spin 0.7s linear infinite' }} />
+            Drafting reply…
+          </>
+        ) : (
+          'Draft reply'
+        )}
+      </button>
+
+      {/* Error */}
+      {error && (
+        <div style={{
+          ...S,
+          background: 'rgba(255,107,107,0.08)',
+          border: '1px solid rgba(255,107,107,0.25)',
+          borderRadius: '10px',
+          padding: '12px 16px',
+          fontSize: '13px',
+          color: '#FF8A8A',
+          lineHeight: 1.5,
+        }}>
+          {error}
+        </div>
+      )}
+
+      {/* Result */}
+      {reply && (
+        <div style={{
+          background: '#0A0A0A',
+          border: '1px solid rgba(255,255,255,0.18)',
+          borderRadius: '12px',
+          padding: '20px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '12px',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ ...S, fontSize: '12px', fontWeight: 500, color: overLimit ? '#FF6B6B' : 'rgba(242,242,242,0.35)' }}>
+              {reply.length} / 280
+            </span>
+            <button
+              onClick={copyReply}
+              style={{
+                ...S,
+                background: copied ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.1)',
+                border: `1px solid ${copied ? 'rgba(52,211,153,0.3)' : 'rgba(255,255,255,0.25)'}`,
+                borderRadius: '6px',
+                padding: '4px 12px',
+                fontSize: '12px',
+                fontWeight: 500,
+                color: copied ? '#34D399' : '#14B8B8',
+                cursor: 'pointer',
+                transition: 'all 0.15s',
+              }}
+            >
+              {copied ? '✓ Copied' : 'Copy'}
+            </button>
+          </div>
+          <p style={{
+            ...S,
+            margin: 0,
+            fontSize: '14px',
+            lineHeight: 1.65,
+            color: '#F2F2F2',
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word',
+          }}>
+            {reply}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Component ─────────────────────────────────────────────────────────────
 
 export default function NewsletterGenerator() {
   // All hooks unconditionally at the top
   const [unlocked, setUnlocked] = useState(() => sessionStorage.getItem(SESSION_KEY) === '1');
-  const [activeTab, setActiveTab] = useState<'newsletter' | 'xcontent'>('newsletter');
+  const [activeTab, setActiveTab] = useState<'newsletter' | 'xcontent' | 'reply'>('newsletter');
   const { allPools, isLoading } = usePools();
   const [bodyCopied, setBodyCopied] = useState(false);
   const [subCopied, setSubCopied]  = useState(false);
@@ -1381,7 +1753,7 @@ export default function NewsletterGenerator() {
   }
 
   // Tab button style helper
-  function tabStyle(tab: 'newsletter' | 'xcontent'): React.CSSProperties {
+  function tabStyle(tab: 'newsletter' | 'xcontent' | 'reply'): React.CSSProperties {
     const active = activeTab === tab;
     return {
       fontFamily: "'Inter', sans-serif",
@@ -1421,6 +1793,9 @@ export default function NewsletterGenerator() {
         </button>
         <button style={tabStyle('xcontent')} onClick={() => setActiveTab('xcontent')}>
           X Content
+        </button>
+        <button style={tabStyle('reply')} onClick={() => setActiveTab('reply')}>
+          Reply
         </button>
       </div>
 
@@ -1610,6 +1985,9 @@ export default function NewsletterGenerator() {
 
       {/* ── X Content tab ── */}
       {activeTab === 'xcontent' && <XContentTab />}
+
+      {/* ── Reply tab ── */}
+      {activeTab === 'reply' && <ReplyTab allPools={allPools} />}
     </div>
   );
 }
