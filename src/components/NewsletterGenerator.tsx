@@ -1003,6 +1003,152 @@ function loadRecentIds(key: string): string[] {
   }
 }
 
+// ── Direct posting ───────────────────────────────────────────────────────
+// Posts to the live @DexarisHQ account, so this needs its own server-checked
+// secret — the page's password gate is client-side only and doesn't protect
+// /api/post-tweet. Kept in sessionStorage (not localStorage) so it doesn't
+// linger on disk across browser restarts, matching the login gate's own
+// session-only lifetime.
+
+const POSTER_SECRET_KEY = 'nlgen_poster_secret';
+
+function readPosterSecret(): string {
+  try { return sessionStorage.getItem(POSTER_SECRET_KEY) ?? ''; } catch { return ''; }
+}
+
+function writePosterSecret(v: string): void {
+  try { sessionStorage.setItem(POSTER_SECRET_KEY, v); } catch { /* storage unavailable */ }
+}
+
+interface PostActionProps {
+  text: string;
+  replyToUrl?: string;
+  disabledReason?: string;
+}
+
+// Shared by the X Content tab (original posts) and the Reply tab (replyToUrl
+// set). Requires a second click within 4s to actually publish — a stray
+// misclick shouldn't be able to put something out under the brand's name.
+function PostAction({ text, replyToUrl, disabledReason }: PostActionProps) {
+  const [secret, setSecret]         = useState(() => readPosterSecret());
+  const [secretInput, setSecretInput] = useState('');
+  const [confirming, setConfirming] = useState(false);
+  const [posting, setPosting]       = useState(false);
+  const [result, setResult]         = useState<{ url: string | null } | null>(null);
+  const [error, setError]           = useState('');
+  const confirmTimer = useRef<number | null>(null);
+
+  useEffect(() => () => {
+    if (confirmTimer.current) window.clearTimeout(confirmTimer.current);
+  }, []);
+
+  async function doPost() {
+    setPosting(true);
+    setError('');
+    try {
+      const res = await fetch('/api/post-tweet', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-poster-secret': secret },
+        body: JSON.stringify({ text, replyToUrl }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || `Post failed: ${res.status}`);
+      setResult({ url: data.url ?? null });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Post failed — please try again.');
+    } finally {
+      setPosting(false);
+    }
+  }
+
+  function handleClick() {
+    if (!confirming) {
+      setConfirming(true);
+      confirmTimer.current = window.setTimeout(() => setConfirming(false), 4000);
+      return;
+    }
+    if (confirmTimer.current) window.clearTimeout(confirmTimer.current);
+    setConfirming(false);
+    void doPost();
+  }
+
+  function saveSecret(e: FormEvent) {
+    e.preventDefault();
+    if (!secretInput.trim()) return;
+    writePosterSecret(secretInput.trim());
+    setSecret(secretInput.trim());
+  }
+
+  const S: React.CSSProperties = { fontFamily: "'Inter', sans-serif" };
+
+  if (result) {
+    return result.url ? (
+      <a href={result.url} target="_blank" rel="noopener noreferrer"
+        style={{ ...S, fontSize: 12, fontWeight: 600, color: '#34D399', textDecoration: 'none' }}>
+        ✓ Posted — view on X →
+      </a>
+    ) : (
+      <span style={{ ...S, fontSize: 12, fontWeight: 600, color: '#34D399' }}>✓ Posted</span>
+    );
+  }
+
+  if (!secret) {
+    return (
+      <form onSubmit={saveSecret} style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+        <input
+          type="password"
+          value={secretInput}
+          onChange={e => setSecretInput(e.target.value)}
+          placeholder="Poster secret to enable direct posting"
+          style={{
+            ...S,
+            background: 'rgba(255,255,255,0.08)',
+            border: '1px solid rgba(255,255,255,0.25)',
+            borderRadius: 6,
+            padding: '4px 8px',
+            fontSize: 11,
+            color: '#F2F2F2',
+            outline: 'none',
+            width: 190,
+          }}
+        />
+        <button type="submit" style={{
+          ...S, background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.25)',
+          borderRadius: 6, padding: '4px 10px', fontSize: 11, fontWeight: 500, color: '#14B8B8', cursor: 'pointer',
+        }}>
+          Save
+        </button>
+      </form>
+    );
+  }
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      {error && <span style={{ ...S, fontSize: 11, color: '#FF6B6B', maxWidth: 220 }}>{error}</span>}
+      <button
+        onClick={handleClick}
+        disabled={posting || !!disabledReason}
+        title={disabledReason}
+        style={{
+          ...S,
+          background: confirming ? '#FF6B6B' : posting ? 'rgba(255,255,255,0.15)' : 'rgba(14,124,124,0.18)',
+          border: `1px solid ${confirming ? 'rgba(255,107,107,0.5)' : 'rgba(14,124,124,0.4)'}`,
+          borderRadius: 6,
+          padding: '4px 12px',
+          fontSize: 12,
+          fontWeight: 600,
+          color: confirming ? '#fff' : '#14B8B8',
+          cursor: (posting || disabledReason) ? 'not-allowed' : 'pointer',
+          opacity: disabledReason ? 0.5 : 1,
+          transition: 'all 0.15s',
+        }}
+      >
+        {posting ? 'Posting…' : confirming ? 'Click to confirm' : 'Post now'}
+      </button>
+    </div>
+  );
+}
+
 function XContentTab() {
   const [posts, setPosts]         = useState<XPost[]>([]);
   const [topPools, setTopPools]   = useState<Pool[]>([]);
@@ -1302,6 +1448,10 @@ function XContentTab() {
                     >
                       {copiedIdx === idx ? '✓ Copied' : 'Copy'}
                     </button>
+                    <PostAction
+                      text={post.text}
+                      disabledReason={isThread ? "Threads can't be posted directly — copy/paste instead" : undefined}
+                    />
                   </div>
                 </div>
 
@@ -1361,6 +1511,7 @@ function XContentTab() {
 
 function ReplyTab({ allPools }: { allPools: Pool[] }) {
   const [tweetText, setTweetText]           = useState('');
+  const [replyToUrl, setReplyToUrl]         = useState('');
   const [toneId, setToneId]                 = useState<ToneId>('direct');
   const [candidatePools, setCandidatePools]  = useState<Pool[]>([]);
   const [selectedPoolId, setSelectedPoolId]  = useState<string | null>(null);
@@ -1470,6 +1621,32 @@ function ReplyTab({ allPools }: { allPools: Pool[] }) {
             color: '#F2F2F2',
             outline: 'none',
             resize: 'vertical',
+            boxSizing: 'border-box',
+          }}
+        />
+      </div>
+
+      {/* Tweet URL — separate from the text above: the text is what grounds
+          the drafted reply, but posting an actual reply requires the target
+          tweet's ID, which only the URL (or a bare ID) carries. */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <label style={{ ...S, fontSize: '13px', fontWeight: 600, color: '#F2F2F2' }}>
+          Tweet URL <span style={{ fontWeight: 400, color: 'rgba(242,242,242,0.4)' }}>(only needed to post directly — optional if you're just copying the draft)</span>
+        </label>
+        <input
+          type="text"
+          value={replyToUrl}
+          onChange={e => setReplyToUrl(e.target.value)}
+          placeholder="https://x.com/user/status/1234567890"
+          style={{
+            ...S,
+            background: '#0A0A0A',
+            border: '1px solid rgba(255,255,255,0.2)',
+            borderRadius: '10px',
+            padding: '10px 14px',
+            fontSize: '14px',
+            color: '#F2F2F2',
+            outline: 'none',
             boxSizing: 'border-box',
           }}
         />
@@ -1614,27 +1791,34 @@ function ReplyTab({ allPools }: { allPools: Pool[] }) {
           flexDirection: 'column',
           gap: '12px',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap' }}>
             <span style={{ ...S, fontSize: '12px', fontWeight: 500, color: overLimit ? '#FF6B6B' : 'rgba(242,242,242,0.35)' }}>
               {reply.length} / 280
             </span>
-            <button
-              onClick={copyReply}
-              style={{
-                ...S,
-                background: copied ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.1)',
-                border: `1px solid ${copied ? 'rgba(52,211,153,0.3)' : 'rgba(255,255,255,0.25)'}`,
-                borderRadius: '6px',
-                padding: '4px 12px',
-                fontSize: '12px',
-                fontWeight: 500,
-                color: copied ? '#34D399' : '#14B8B8',
-                cursor: 'pointer',
-                transition: 'all 0.15s',
-              }}
-            >
-              {copied ? '✓ Copied' : 'Copy'}
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <button
+                onClick={copyReply}
+                style={{
+                  ...S,
+                  background: copied ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.1)',
+                  border: `1px solid ${copied ? 'rgba(52,211,153,0.3)' : 'rgba(255,255,255,0.25)'}`,
+                  borderRadius: '6px',
+                  padding: '4px 12px',
+                  fontSize: '12px',
+                  fontWeight: 500,
+                  color: copied ? '#34D399' : '#14B8B8',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s',
+                }}
+              >
+                {copied ? '✓ Copied' : 'Copy'}
+              </button>
+              <PostAction
+                text={reply}
+                replyToUrl={replyToUrl.trim() || undefined}
+                disabledReason={!replyToUrl.trim() ? "Paste the tweet's URL above to enable direct posting" : undefined}
+              />
+            </div>
           </div>
           <p style={{
             ...S,
